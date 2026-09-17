@@ -1,0 +1,33 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environments
+.venv/
+venv/
+env/
+
+# Data — downloaded at run time by scripts/fetch_data.py, never committed
+data/
+*.csv
+*.xlsx
+!results/**/*.csv
+
+# Outputs that are not the recorded results
+outputs/
+build/
+dist/
+*.egg-info/
+
+# macOS / editors
+.DS_Store
+.vscode/
+.idea/
+
+# Secrets
+.env
+*.key

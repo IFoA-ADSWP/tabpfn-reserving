@@ -1,0 +1,15 @@
+# Dependencies are deliberately unpinned until the first results land: the pins that matter are the
+# environment that produced results/, and they will be committed alongside it.
+#
+# Built with TabPFN-3.5: the `tabpfn` 9.0.0 release (2026-09-15) ships the 3.5 family
+# (Base, Plus, Thinking, and Fast in alpha).
+tabpfn>=9.0.0
+
+# The baseline side: the Casualty Actuarial Society's own reserving package —
+# Chain Ladder, Mack's method, and the ODP bootstrap used for the uncertainty comparison.
+chainladder
+
+pandas
+numpy
+matplotlib
+jupyter
