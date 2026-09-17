@@ -353,8 +353,8 @@ def main() -> int:
             rows.append(row)
             print(f"  k={k:2d} actual={actual:13,.0f} | tabpfn={res:13,.0f} ({row.get('err_pct_tabpfn_reserve', float('nan')):+6.1f}%) "
                   f"| placebo={plc_res:13,.0f} ({row.get('err_pct_placebo_reserve', float('nan')):+6.1f}%) "
-                  f"| CL={row.get('cl_reserve', float('nan')):13,.0f} ({row.get('err_pct_cl_reserve', float('nan')):+6.1f}%) "
-                  f"| mack={row.get('mack_reserve', float('nan')):13,.0f} "
+                  f"| CLf={row.get('cl_factor_reserve', float('nan')):13,.0f} ({row.get('err_pct_cl_factor_reserve', float('nan')):+6.1f}%) "
+                  f"| mack={row.get('mack_ibnr_reference', float('nan')):13,.0f} "
                   f"| fit={row['fit_seconds']:.1f}s pred={row['predict_seconds']:.1f}s")
 
     df = pd.DataFrame(rows)
