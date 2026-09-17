@@ -91,6 +91,14 @@ numbers, and they are why it was parked:
 arm's median absolute error of **14.9%**, and (b) does not lose to the Chain Ladder arm on the mean — i.e.
 it inherits no blowups. Failing either, it is reported and dropped, not re-tuned until it passes.
 
+**Data at hand — checked, not assumed.** `chainladder` bundles the CAS Loss Reserve Database as `clrd`:
+**775 triangles**, indexed by (GRNAME, LOB) — insurer-groups across six lines of business — each 10 origins ×
+10 developments, carrying incurred loss, cumulative paid, bulk loss and earned premium. `clrd2025` is the
+2026 refresh with ten more accident years, and there are ~40 further single-triangle sets (`raa`, `usauto`,
+`mack_1997`, the `friedland_*` family) for extra test cases. So the context available to one fit goes from
+**6–36 rows to tens of thousands of transitions** — precisely the sample size run 2 identified as missing,
+and enough to power E4's regime map at the same time.
+
 **What it would mean if it works:** the first evidence that cross-triangle context — the fleet — is what a
 tabular foundation model needs to beat the actuarial standard on its own home ground, and a genuine
 "showcase a harness / formalize a new problem" result rather than a domain demo.
