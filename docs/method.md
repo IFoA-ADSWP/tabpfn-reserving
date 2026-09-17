@@ -1,7 +1,8 @@
 # What this project shows, and how it will be judged
 
 This page is the demonstration plan. It exists so that the claims are fixed before the numbers are, and so
-that a reader can tell what is being asserted and what would disprove it.
+that a reader can tell what is being asserted and what would disprove it. The schedule, roles and definition
+of done are in [`brief.md`](brief.md).
 
 ## The demonstration, in one sentence
 
