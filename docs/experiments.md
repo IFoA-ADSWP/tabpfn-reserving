@@ -64,6 +64,37 @@ A5's interpretability arm matters beyond performance: Chain Ladder **imposes** n
 construction. If the model finds one, that is a result an actuary can use, and it is the kind of finding that
 reads as originality rather than as a leaderboard.
 
+### E2b — the fleet as context (promoted from parked after run 2)
+
+**Why this exists.** The Δ arm showed that no deviation from Chain Ladder is learnable from 6–36 rows: each
+fit sees one triangle's cells. The deviation has to be learned from *many* triangles, which is in-context
+meta-learning's whole mechanism. Idea #7 in §3 was parked on leakage grounds; run 2 makes it the leading
+candidate for the point estimate.
+
+**Design.** A fit for triangle T receives its own observed cell-transitions **plus a context sample of
+transitions drawn from other triangles in the database** — features and targets, as in-context examples.
+The model predicts T's unknown cells as before. Everything else (anchors, scoring target, arms) is unchanged,
+so a result is comparable to runs 1 and 2.
+
+**The leakage rules, which are the whole design.** Without them this produces beautiful, meaningless
+numbers, and they are why it was parked:
+
+| Rule | Statement |
+|---|---|
+| R1 | No context row may come from T itself. |
+| R2 | **Every context transition must be observable as of T's anchor** — its calendar valuation date must be at or before the anchor being predicted. This is what makes the arm legitimate rather than clever: information from other insurers up to the same calendar date is exactly what a reserving actuary actually has (industry statistics, market data). Anything later is the future, whoever it belongs to. |
+| R3 | **A cross-triangle null**: rerun with T's own rows removed from the context entirely. This is pure cross-triangle prediction — if it scores well, R1 and R2 are holding; if it scores *better* than the self-fit, something is wrong with the guard and the whole arm is void. |
+| R4 | The shuffled-target placebo, applied to the context rows. |
+| R5 | The anchor-time assertion already in the harness, extended to assert every context row's date ≤ anchor. |
+
+**Pre-registered bar, fixed before the run.** The arm is worth keeping only if it (a) beats the raw-ratio
+arm's median absolute error of **14.9%**, and (b) does not lose to the Chain Ladder arm on the mean — i.e.
+it inherits no blowups. Failing either, it is reported and dropped, not re-tuned until it passes.
+
+**What it would mean if it works:** the first evidence that cross-triangle context — the fleet — is what a
+tabular foundation model needs to beat the actuarial standard on its own home ground, and a genuine
+"showcase a harness / formalize a new problem" result rather than a domain demo.
+
 ### E3 — The distribution, which is the point
 
 | Arm | What it establishes |
