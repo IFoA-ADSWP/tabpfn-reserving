@@ -1,7 +1,48 @@
-# Spike run 1 — the reframing works, the distribution looks right, the point estimate does not yet compete
+# Spike runs 1 and 2 — the reframing works, the distribution looks right, the point estimate does not compete
 
-**Command:** `.venv/bin/python scripts/spike_e0_e1.py --triangles abc genins mcl ukmotor`
-**Artifacts:** `results/spike/spike_e0_e1.csv`, `spike_e0_e1.json`, `probe.json`
+## Run 2 — the Δ arm reproduces Chain Ladder, which is the most useful thing this run found
+
+**Command:** `.venv/bin/python scripts/spike_e0_e1.py --triangles abc genins mcl ukmotor --target delta`
+**Artifacts:** `spike_e0_e1_delta.csv`, `spike_e0_e1_delta.json`. Same eleven evaluations, same folds,
+same seed; **only the target changed** — from the raw link ratio to the ratio *relative to* the
+volume-weighted factor for that age, so the model only has to correct a strong stable prior.
+
+| arm | mean err % | median abs % | worst case | closer than Chain Ladder | deviation from Chain Ladder (median) |
+|---|---|---|---|---|---|
+| `ratio` (run 1) | +99.3 | 14.9 | +593.7% | 5 of 11 | **13.8%** |
+| `delta` (run 2) | +34.0 | 20.2 | +101.9% | 5 of 11 | **1.86%** |
+| Chain Ladder arm | +12.8 | 16.1 | +84.2% | — | — |
+
+**The Δ arm set out to reduce variance and did — by losing the signal entirely.** Its reserve differs from
+the Chain Ladder arm by **1.86% at the median**: it is Chain Ladder with rounding. That is the mechanism
+working as designed (if the model predicts a deviation of one, the arm *is* Chain Ladder), and it means the
+model found **no learnable deviation** at these sample sizes. Where it did deviate, it hurt — `mcl` k=3
+(+101.9% against Chain Ladder's −31.4%) and `genins` k=6 (+26.8% against +13.9%).
+
+Its intervals also under-cover: 55/73/82/82 against nominal 50/75/90/95, versus the raw-ratio arm's
+55/82/91/91. Narrowing the arm toward Chain Ladder narrowed its distribution in a way the data does not
+support.
+
+### What that tells us
+
+1. **The point estimate does not beat Chain Ladder in either formulation** — one is noisy, the other is
+   Chain Ladder. This is not a reason to abandon the entry; it is the entry's honest finding, and it is
+   exactly what `docs/method.md` pre-registered ("a straight answer on where the actuarial standard still
+   wins"). The distribution remains the claim with evidence behind it.
+2. **The failure is about sample size, not about the model being unable to do it.** Each fit sees the
+   *cells of one triangle* — 6 to 36 rows. There is no way for a model to learn "when does this insurer
+   deviate from Chain Ladder" from six rows. This is the strongest possible motivation for the idea that
+   was parked as too risky: **the fleet as context** — hand the model the other triangles' development
+   patterns, so the deviation it must learn is learned from hundreds of triangles rather than one. Parked
+   at idea #7 in `docs/experiments.md` on leakage grounds; this run promotes it to the leading candidate
+   for making the point estimate competitive, with anchor-time discipline the thing to get right.
+3. **The raw-ratio arm is the one carrying signal** — it deviates 13.8% from Chain Ladder and beats it on
+   5 of 11 — and its problem is the tail, not the centre. That is the arm to stabilise, not to replace.
+
+## Run 1 — the raw-ratio arm
+
+**Command:** `.venv/bin/python scripts/spike_e0_e1.py --triangles abc genins mcl ukmotor --target ratio`
+**Artifacts:** `spike_e0_e1_ratio.csv`, `spike_e0_e1_ratio.json`, `probe.json`
 **Environment:** tabpfn 9.0.0 (TabPFN-3.5) · chainladder 0.10.1 · torch 2.14.0 · numpy 2.5.3 · pandas 2.3.3 · scikit-learn 1.9.1 · CPU only, no API calls · seed 0, 300 draws.
 
 ## What was actually run
