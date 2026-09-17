@@ -48,6 +48,23 @@ evaluations; Chain Ladder on 6.
 |---|---|---|---|---|
 | empirical | **55%** | **82%** | **91%** | **91%** |
 
+## The exact-distribution route, on both backends
+
+Both the local package and the hosted client return, under `output_type="full"`, not only the quantile
+grid but the **bar distribution itself**: `logits` (n × 5000 bin weights), `borders` (5001 bin edges) and
+`criterion` (a `FullSupportBarDistribution`). So the reserve distribution can be drawn from the model's
+exact CDF rather than interpolated from a quantile grid — the figures in this file come from interpolating
+a 15-level grid, which is the approximation to replace in E3.
+
+Reproducibility has two roads, and a reader's environment may force the choice:
+
+| Route | Needs | First fit |
+|---|---|---|
+| Local (`tabpfn`, CPU) | one-time licence acceptance on the account, then a valid `TABPFN_TOKEN` | 30s including the weight download; ~5s thereafter |
+| Hosted (`tabpfn_client` 0.6.0) | only the account token; no weights, no licence gate beyond it | 7.3s |
+
+Both return the same dict shape; the hosted one adds `borders` and `orders` alongside the rest.
+
 ## What this establishes
 
 1. **The reframing works end to end, on CPU, with no API.** A triangle becomes a prediction problem, the
