@@ -56,6 +56,7 @@ working-party portfolio data.
 | Public Apache-2.0 repository | **Exists** — `IFoA-ADSWP/tabpfn-reserving`, commit `4dc9e72` | — |
 | `docs/brief.md` (this page) | This commit | — |
 | `docs/method.md` — claims, falsifiers, pre-registered bars | **Exists** | Revisited once, after the spike, if a gate fails |
+| `docs/experiments.md` — the goal, and the experiments E0–E6 | **Exists** | Revisited after E0, which gates everything downstream |
 | `src/` package + CLI | Not started | One triangle end to end from the command line |
 | `scripts/fetch_data.py` | Not started | Downloads public triangles, records URLs and hashes |
 | `notebooks/quickstart.ipynb` | Not started | Runs end to end in Colab, distribution plotted |
