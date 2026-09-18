@@ -4,6 +4,9 @@
 > brief's definition of done, and the rubric weights — not against how the work feels. **Verdict: not yet,
 > and the gap is not the science.** The hard parts are proven; what is missing is almost entirely the
 > artefact a judge opens.
+>
+> **Every gap below is filed as an issue in this repository (#1–#12)** — this page is the ledger, the issues
+> are the worklist. Labels: `submission-blocker`, `human-only`, `judge-facing`, `experiment`, `packaging`.
 
 ## 1. Compliance gaps — the terms, clause by clause
 
@@ -69,6 +72,10 @@ the same days.
 **Recommendation: A first, B after.** Get to a submittable entry by ~25–26 September, submit it, then spend
 whatever remains on the fleet arm and re-submit — the latest version counts. That is exactly the sequencing
 the brief set out, and the reason it set aside four days of slack.
+
+Filed as: **#1** join and submit (yours), **#2** the description, **#3** the package and CLI, **#4** figures,
+**#5** the notebook, **#6** the unlocks page, **#7** the README table — then **#8–#11** the experiments, and
+**#12** the pins.
 
 **The one thing that is not mine to do:** joining the hackathon and submitting. Until that happens there is
 no entry, however good the repository is.
