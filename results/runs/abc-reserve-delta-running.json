@@ -1,0 +1,47 @@
+{
+  "mode": "reserve",
+  "triangle": "abc",
+  "fingerprint": {
+    "name": "abc",
+    "shape": [
+      11,
+      11
+    ],
+    "columns": [
+      "values"
+    ],
+    "sha256_16": "bc97a934645b8bb0"
+  },
+  "anchor": 10,
+  "target": "delta",
+  "reserve": 8616244.622423101,
+  "factor_reserve": 5277760.35762586,
+  "chainladder": {
+    "note": "ibnr includes the tail beyond the last diagonal; reference only",
+    "shape": [
+      11,
+      11
+    ],
+    "chainladder_ibnr": 5277760.357625862,
+    "mack_ibnr": 5277760.357625862,
+    "total_mack_std_err": 152712.93319662946
+  },
+  "distribution_route": "exact",
+  "fit_seconds": 4.876514673233032,
+  "predict_seconds": 39.23379039764404,
+  "percentiles": {
+    "p5": 7086481.647099009,
+    "p25": 7847045.555771079,
+    "p50": 8307185.08689974,
+    "p75": 9055167.186857726,
+    "p90": 9621189.565816564,
+    "p95": 10062427.177618967,
+    "p99": 10696935.414360017
+  },
+  "command": "tabpfn_reserving abc --target delta --features running --distribution --figure results/figures/abc_reserve_distribution_delta_running.png --json results/runs/abc-reserve-delta-running.json",
+  "started_at": "2026-09-18T01:43:37",
+  "seed": 0,
+  "draws": 300,
+  "features": "running",
+  "finished_at": "2026-09-18T01:44:22"
+}

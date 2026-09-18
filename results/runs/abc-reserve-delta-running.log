@@ -1,0 +1,9 @@
+abc: 11x11  anchor = last diagonal (age 132)  55 observed transitions
+  projecting every origin to age 132 -- the longest development in the
+  triangle. The tail beyond it needs a tail factor and is out of scope.
+  reserve (TabPFN-3.5)           8,616,245   fit 4.9s  predict 39.2s  [exact]
+  reserve (chain-ladder)         5,277,760   like-for-like, same cells
+  reserve (CAS package)          5,277,760   reference: includes a tail nobody can score
+  distribution              p5=7,086,482  p25=7,847,046  p50=8,307,185  p75=9,055,167  p90=9,621,190  p95=10,062,427  p99=10,696,935
+  wrote results/figures/abc_reserve_distribution_delta_running.png
+  wrote results/runs/abc-reserve-delta-running.json

@@ -90,6 +90,7 @@ def reserve(
     rng: np.random.Generator,
     target: str = "ratio",
     targets: list[int] | None = None,
+    mode: str = "frozen",
 ) -> dict:
     """Project every unknown cell one diagonal at a time; return the reserve and its distribution.
 
@@ -120,7 +121,8 @@ def reserve(
         coords = [(a, diag - a) for a in range(n) if 1 <= diag - a < n and a <= anchor]
         if not coords:
             continue
-        X = np.asarray([features_for(tri, a, d, anchor, gf, running) for a, d in coords], dtype=float)
+        X = np.asarray([features_for(tri, a, d, anchor, gf, running, mode=mode) for a, d in coords],
+                       dtype=float)
         point = np.atleast_1d(np.asarray(model.predict(X), dtype=float))
         d_draws, route = draws(model, X, n_draws, rng) if n_draws else (None, "none")
         routes.add(route)
@@ -161,6 +163,7 @@ def reserve(
         "triangle": tri.name,
         "anchor": int(anchor),
         "target": target,
+        "features": mode,
         "reserve": float(point_reserve),
         "samples": samples,
         "distribution_route": ",".join(sorted(routes)),

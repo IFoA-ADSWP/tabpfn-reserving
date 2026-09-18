@@ -11,7 +11,8 @@ import pytest
 
 from tabpfn_reserving import arm
 from tabpfn_reserving.triangle import (
-    Triangle, chainladder_baseline, factor_reserve, target_ages, training_rows,
+    FEATURES, RUNNING_FEATURES, Triangle, chainladder_baseline, factor_reserve, features_for,
+    target_ages, training_rows,
 )
 
 
@@ -125,23 +126,75 @@ def test_both_arms_are_scored_on_the_same_cells() -> None:
 # No leakage: features may not see anything that was not observable at the anchor.
 # ---------------------------------------------------------------------------------------------
 
-def test_features_ignore_the_unknown_region() -> None:
+@pytest.mark.parametrize("mode", ["frozen", "running"])
+def test_features_ignore_the_unknown_region(mode: str) -> None:
     """Corrupt every cell after the anchor and the training features must be bit-identical. Anything that
-    moves is a look-ahead, and a look-ahead is the difference between a forecast and a fit."""
+    moves is a look-ahead, and a look-ahead is the difference between a forecast and a fit.
+
+    Checked for both feature sets: `running` is allowed to see the model's *own* projections, never the
+    truth, and the training rows are all observed cells, so corrupting the future must change nothing.
+    """
     tri = Triangle.load("abc")
     anchor = 6
     known = tri.known(anchor)
     gf = tri.global_factors(known)
-    X_clean, y_clean = training_rows(tri, anchor, gf)
+    X_clean, y_clean = training_rows(tri, anchor, gf, mode=mode)
 
     corrupted = tri.values.copy()
     corrupted[~known] = 9.9e9
     doctored = Triangle(name=tri.name, values=corrupted, columns=tri.columns,
                         origin=tri.origin, ages=tri.ages)
-    X_dirty, y_dirty = training_rows(doctored, anchor, gf)
+    X_dirty, y_dirty = training_rows(doctored, anchor, gf, mode=mode)
 
-    assert np.array_equal(X_clean, X_dirty)
-    assert np.array_equal(y_clean, y_dirty)
+    assert np.array_equal(X_clean, X_dirty, equal_nan=True)
+    assert np.array_equal(y_clean, y_dirty, equal_nan=True)
+
+
+def test_running_features_extend_the_frozen_ones() -> None:
+    """The arms must be nested, so an improvement is attributable to the information and not to a change
+    of representation."""
+    tri = Triangle.load("abc")
+    anchor = tri.n - 1
+    gf = tri.global_factors(tri.known(anchor))
+    frozen = features_for(tri, 3, 8, anchor, gf, tri.values, mode="frozen")
+    running = features_for(tri, 3, 8, anchor, gf, tri.values, mode="running")
+    assert len(frozen) == len(FEATURES)
+    assert len(running) == len(FEATURES) + len(RUNNING_FEATURES)
+    assert running[: len(frozen)] == frozen
+
+
+def test_frozen_features_are_blind_to_the_projection_and_running_ones_are_not() -> None:
+    """The claim in #14, tested directly rather than argued.
+
+    The frozen vector still varies across steps -- it carries the development and calendar indices, which
+    are the only thing telling the steps apart. What it cannot do is say *how far the projection has pushed
+    the origin*: its anchor-state block (the origin's level and last ratio at the anchor) is identical at
+    every step, so "first step" and "ninth step" are described identically apart from the index. In running
+    mode the level already reached enters that block.
+    """
+    tri = Triangle.load("abc")
+    anchor = tri.n - 1
+    gf = tri.global_factors(tri.known(anchor))
+    a = 5
+    projected = tri.values.copy()
+    for d in range(anchor - a + 1, tri.n):
+        projected[a, d] = projected[a, d - 1] * 1.05
+
+    steps = list(range(anchor - a + 1, tri.n))
+    anchor_state = slice(3, 6)      # latest_cum, log_latest_cum, own_last_ratio -- origin state
+    projection_state = slice(len(FEATURES), len(FEATURES) + len(RUNNING_FEATURES))
+
+    frozen_anchor = {tuple(features_for(tri, a, d, anchor, gf, projected, mode="frozen")[anchor_state])
+                     for d in steps}
+    running_projection = {tuple(features_for(tri, a, d, anchor, gf, projected, mode="running")
+                                [projection_state]) for d in steps}
+    frozen_has_projection_block = len(features_for(tri, a, steps[0], anchor, gf, projected,
+                                                   mode="frozen")) > len(FEATURES)
+
+    assert len(frozen_anchor) == 1, "the frozen anchor-state block should not vary across the projection"
+    assert not frozen_has_projection_block, "frozen mode must not carry a projection block at all"
+    assert len(running_projection) == len(steps), \
+        "running mode should describe every step of the projection distinctly"
 
 
 # ---------------------------------------------------------------------------------------------

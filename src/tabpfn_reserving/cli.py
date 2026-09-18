@@ -68,7 +68,8 @@ def figure(samples: np.ndarray, point: float, path: pathlib.Path, title: str) ->
 def run_reserve(args, tri: Triangle) -> dict:
     """The production case: everything observed, project to the longest development age seen."""
     anchor = tri.n - 1
-    X, y = training_rows(tri, anchor, tri.global_factors(tri.known(anchor)), target=args.target)
+    X, y = training_rows(tri, anchor, tri.global_factors(tri.known(anchor)), target=args.target,
+                         mode=args.features)
     print(f"{tri.name}: {tri.n}x{tri.n}  anchor = last diagonal (age {tri.ages[-1]})  "
           f"{len(y)} observed transitions")
     print(f"  projecting every origin to age {tri.ages[-1]} -- the longest development in the\n  triangle. The tail beyond it needs a tail factor and is out of scope.")
@@ -78,7 +79,7 @@ def run_reserve(args, tri: Triangle) -> dict:
     fit_s = time.time() - t0
     t0 = time.time()
     out = reserve(model, tri, anchor, args.draws, np.random.default_rng(args.seed),
-                  target=args.target, targets=[tri.n - 1] * tri.n)
+                  target=args.target, targets=[tri.n - 1] * tri.n, mode=args.features)
     pred_s = time.time() - t0
 
     cl = chainladder_baseline(tri, anchor)
@@ -116,11 +117,11 @@ def run_backtest(args, tri: Triangle) -> dict:
         known = tri.known(k)
         gf = tri.global_factors(known)
         actual = tri.actual_future(k)
-        X, y = training_rows(tri, k, gf, target=args.target)
+        X, y = training_rows(tri, k, gf, target=args.target, mode=args.features)
         model = make_model(args.backend)
         model.fit(X, y)
         out = reserve(model, tri, k, args.draws, rng, target=args.target,
-                      targets=[tri.n - 1 - a for a in range(tri.n)])
+                      targets=[tri.n - 1 - a for a in range(tri.n)], mode=args.features)
         factor = factor_reserve(tri, k, gf, targets=[tri.n - 1 - a for a in range(tri.n)])
         row = {"anchor": int(k), "n_train_rows": int(len(y)), "actual": actual,
                "tabpfn": out["reserve"], "factor": factor,
@@ -143,6 +144,10 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="tabpfn_reserving", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("triangle", help="a bundled chainladder sample, e.g. abc, genins, mcl, clrd")
+    ap.add_argument("--features", choices=["frozen", "running"], default="frozen",
+                    help="frozen: the cell is described by the origin's position at the anchor, the same "
+                         "for every step of the recursion. running: also describe where the projection has "
+                         "already pushed that origin (issue #14)")
     ap.add_argument("--target", choices=["ratio", "delta"], default="ratio",
                     help="ratio: learn raw link ratios. delta: learn the ratio relative to the "
                          "volume-weighted factor (measured: reproduces Chain Ladder)")
@@ -164,6 +169,7 @@ def main(argv: list[str] | None = None) -> int:
     result, samples = (run_backtest(args, tri) if args.backtest else run_reserve(args, tri))
     result |= {"command": " ".join(["tabpfn_reserving"] + (argv or sys.argv[1:])),
                "started_at": started, "seed": args.seed, "draws": args.draws,
+               "features": args.features,
                "finished_at": time.strftime("%Y-%m-%dT%H:%M:%S")}
     if args.figure and samples is not None:
         title = (f"{tri.name}: reserve distribution, TabPFN-3.5 ({args.target} arm, "

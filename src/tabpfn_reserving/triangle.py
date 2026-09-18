@@ -126,6 +126,12 @@ class Triangle:
 FEATURES = ["origin_idx", "dev_idx", "cal_idx", "latest_cum", "log_latest_cum",
             "own_last_ratio", "global_factor_prev", "global_factor_available"]
 
+# Appended only when the arm is allowed to see where it has already pushed the origin. Kept as *extra*
+# columns rather than replacing the frozen ones, so the two arms are nested and an improvement (or its
+# absence) can be attributed to the information rather than to a change of representation.
+RUNNING_FEATURES = ["steps_into_projection", "level_before", "log_level_before",
+                    "factor_since_anchor", "step_ratio"]
+
 
 def gf_used(d: int, anchor: int, gf: np.ndarray) -> tuple[float, float]:
     """The factor this cell is entitled to see, and whether it existed at the anchor.
@@ -138,10 +144,18 @@ def gf_used(d: int, anchor: int, gf: np.ndarray) -> tuple[float, float]:
     return (float(gf[anchor]) if anchor < len(gf) and np.isfinite(gf[anchor]) else 1.0), 0.0
 
 
-def features_for(tri: Triangle, a: int, d: int, anchor: int, gf: np.ndarray, running: np.ndarray) -> list:
-    """Features for the link ratio C[a,d]/C[a,d-1], using only cells known at the anchor.
+def features_for(tri: Triangle, a: int, d: int, anchor: int, gf: np.ndarray, running: np.ndarray,
+                 mode: str = "frozen") -> list:
+    """Features for the link ratio C[a,d]/C[a,d-1], using only cells known at the anchor *or already
+    projected by this model* -- never the truth.
 
-    `running` is the triangle as projected so far -- observed cells plus anything already predicted.
+    `running` is the triangle as projected so far: observed cells plus anything predicted.
+
+    `mode="frozen"` describes the cell with the origin's position at the *anchor*, which is the same for
+    every cell of that origin and does not change as the projection proceeds. `mode="running"` adds where
+    the origin has actually got to. The difference matters: in frozen mode the model is asked to predict a
+    ratio for a cell whose current level it was never shown, so the depth of the projection is invisible to
+    it -- suspected cause of the residual over-reserve. See issue #14.
     """
     n = tri.n
     last_age = min(anchor - a, n - 1)
@@ -149,15 +163,33 @@ def features_for(tri: Triangle, a: int, d: int, anchor: int, gf: np.ndarray, run
     prev = running[a, last_age - 1] if last_age >= 1 else np.nan
     own_last_ratio = (latest / prev) if (last_age >= 1 and prev and prev > 0) else np.nan
     gf_val, gf_available = gf_used(d, anchor, gf)
-    return [a, d, a + d, latest, np.log1p(max(latest, 0.0)), own_last_ratio, gf_val, gf_available]
+    row = [a, d, a + d, latest, np.log1p(max(latest, 0.0)), own_last_ratio, gf_val, gf_available]
+    if mode == "running":
+        level = running[a, d - 1] if d >= 1 else np.nan
+        prev_level = running[a, d - 2] if d >= 2 else np.nan
+        anchor_level = running[a, anchor - a] if 0 <= anchor - a < n else np.nan
+        steps = d - 1 - (anchor - a)
+        factor_since = (level / anchor_level) if (np.isfinite(level) and np.isfinite(anchor_level)
+                                                 and anchor_level > 0) else np.nan
+        step_ratio = (level / prev_level) if (np.isfinite(prev_level) and prev_level > 0) else np.nan
+        row += [steps, level,
+                np.log1p(max(level, 0.0)) if np.isfinite(level) else np.nan,
+                factor_since, step_ratio]
+    return row
 
 
 def training_rows(tri: Triangle, anchor: int, gf: np.ndarray, target: str = "ratio",
-                  shuffle: bool = False, rng: np.random.Generator | None = None):
+                  shuffle: bool = False, rng: np.random.Generator | None = None,
+                  mode: str = "frozen"):
     """Observed cell -> next cell transitions at the anchor: the link-ratio training set.
 
     `target="ratio"` learns the raw link ratio. `target="delta"` learns the ratio relative to the
     volume-weighted factor, which turned out to reproduce Chain Ladder rather than improve on it.
+
+    Training rows are always observed cells, so in `mode="running"` they are built at depth <= 0 -- the
+    model learns from positions where the level is known, and is then asked to predict at positions where
+    its own predictions form the level. That train/predict mismatch is the point of the experiment, not an
+    oversight, and it is why the arm has to beat a stated bar to ship.
     """
     known = tri.known(anchor)
     X, y = [], []
@@ -174,7 +206,7 @@ def training_rows(tri: Triangle, anchor: int, gf: np.ndarray, target: str = "rat
                 if base <= 0:
                     continue
                 ratio = ratio / base
-            X.append(features_for(tri, a, d, anchor, gf, tri.values))
+            X.append(features_for(tri, a, d, anchor, gf, tri.values, mode=mode))
             y.append(ratio)
     X = np.asarray(X, dtype=float)
     y = np.asarray(y, dtype=float)
