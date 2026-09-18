@@ -25,18 +25,25 @@ class Triangle:
     origin: list[str] = field(default_factory=list)
     ages: list[int] = field(default_factory=list)
     raw: object = None                      # the chainladder object, for the CAS baselines
+    column_index: int = 0                   # which column of a multi-column sample this is
+    column: str | None = None
 
     @property
     def n(self) -> int:
         return int(self.values.shape[0])
 
     @classmethod
-    def load(cls, name) -> "Triangle":
+    def load(cls, name, column=None) -> "Triangle":
         """Load a bundled sample by name, or wrap a chainladder triangle object directly.
 
-        The CAS Loss Reserve Database (`clrd`) ships with chainladder, but it is a *collection* -- 775
-        triangles across lines of business -- so `load("clrd")` is refused rather than silently reduced to
-        its first member. Pass one of its triangles in explicitly.
+        Two ways a sample can be more than one triangle, and they are treated differently:
+
+        * **keys** (e.g. `clrd`, 775 triangles across lines of business) -- always refused. There is no
+          principled way to pick one, and silently reporting the first would be a reserve for an arbitrary
+          line of business with nothing downstream able to notice.
+        * **columns** (e.g. `mcl`, which carries `incurred` and `paid`) -- must be *named*, because the
+          choice changes the numbers while looking legitimate either way. `mcl` was silently reduced to its
+          first column (`incurred`) by the spike script for exactly this reason.
         """
         import chainladder as cl
 
@@ -46,28 +53,41 @@ class Triangle:
         else:
             tri = cl.load_sample(name)
         vals = np.asarray(tri.values, dtype=float)
-        # chainladder values are (keys, columns, origin, development), so a single triangle keeps two
-        # leading dimensions of length 1 and a collection does not. Counting dims alone is not enough:
-        # abc is 4-d too, at (1, 1, 11, 11).
-        n_slices = int(np.prod(vals.shape[:-2])) if vals.ndim > 2 else 1
-        if n_slices > 1:
+        shape = vals.shape
+        n_keys = int(np.prod(shape[:-3])) if vals.ndim > 3 else 1
+        n_columns = int(shape[-3]) if vals.ndim >= 3 else 1
+        columns = [str(c) for c in getattr(tri, "columns", [])] or [f"column{i}" for i in range(n_columns)]
+
+        if n_keys > 1:
             key = getattr(tri, "key_labels", None)
             raise ValueError(
-                f"{name!r} is a collection of {n_slices} triangles, not one: its values are {vals.shape}"
+                f"{name!r} is a collection of {n_keys} triangles, not one: its values are {shape}"
                 + (f", keyed by {list(key)}" if key is not None else "")
                 + ". Taking the first slice silently would report a reserve for an arbitrary member of the "
                   "set, and nothing downstream could tell. Pass one triangle in instead -- index the sample "
                   "down to a single triangle and hand that object to Triangle.load()."
             )
+        if n_columns > 1 and column is None:
+            raise ValueError(
+                f"{name!r} carries {n_columns} columns ({', '.join(columns)}), and the choice changes the "
+                f"numbers. Name one: Triangle.load({name!r}, column={columns[0]!r})."
+            )
+        col_idx = 0
+        if n_columns > 1:
+            col_idx = columns.index(column) if isinstance(column, str) else int(column)
+        if vals.ndim >= 3:
+            vals = vals[..., col_idx, :, :]
         while vals.ndim > 2:
             vals = vals[0]
         return cls(
             name=name,
             values=vals,
-            columns=[str(c) for c in tri.columns],
+            columns=[columns[col_idx]],
             origin=[str(o)[:10] for o in tri.origin],
             ages=[int(a) for a in tri.development],
             raw=tri,
+            column_index=col_idx,
+            column=columns[col_idx],
         )
 
     def fingerprint(self) -> dict:
@@ -257,15 +277,27 @@ def chainladder_baseline(tri: Triangle, anchor: int) -> dict:
     import chainladder as cl
 
     out: dict = {"note": "ibnr includes the tail beyond the last diagonal; reference only"}
+
+    def pick_column(arr: np.ndarray) -> np.ndarray:
+        """Slice the column axis only where there is one. The Mack arrays are not all the same rank as
+        `ibnr_`, and indexing a 2-d array with three indices is an IndexError, not a silent no-op."""
+        arr = np.asarray(arr).astype(float)
+        if arr.ndim >= 3 and arr.shape[-3] > 1:
+            return arr[..., tri.column_index, :, :]
+        return arr
+
     try:
         sub = tri.raw[tri.raw.valuation <= tri.raw.valuation[anchor]]
         out["shape"] = list(np.asarray(sub.values).shape[-2:])
-        out["chainladder_ibnr"] = float(np.nansum(np.asarray(cl.Chainladder().fit(sub).ibnr_)))
+        fitted = np.asarray(cl.Chainladder().fit(sub).ibnr_).astype(float)
+        if fitted.ndim >= 3 and fitted.shape[-3] > 1:
+            out["column"] = tri.column
+        out["chainladder_ibnr"] = float(np.nansum(pick_column(fitted)))
         mack = cl.MackChainladder().fit(sub)
-        out["mack_ibnr"] = float(np.nansum(np.asarray(mack.ibnr_)))
+        out["mack_ibnr"] = float(np.nansum(pick_column(mack.ibnr_)))
         for attr in ("total_mack_std_err_", "total_process_std_err_", "total_parameter_std_err_"):
             if hasattr(mack, attr):
-                out[attr.rstrip("_")] = float(np.nansum(np.asarray(getattr(mack, attr))))
+                out[attr.rstrip("_")] = float(np.nansum(pick_column(getattr(mack, attr))))
     except Exception as exc:  # noqa: BLE001 -- a baseline failure must not take the arm down
         out["error"] = f"{type(exc).__name__}: {exc}"
     return out

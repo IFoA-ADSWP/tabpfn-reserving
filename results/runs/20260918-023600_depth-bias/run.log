@@ -1,0 +1,59 @@
+command: depth_bias.py --triangles abc genins --targets delta
+anchor policy: the last 3 anchors below the ultimate, per triangle
+
+abc: anchors [3, 4, 5, 6, 7, 8, 9] -- deepest step reachable is depth 6
+     abc delta k=3  steps scored=28  mean log error=+0.0941  (x1.0987 per step)
+     abc delta k=4  steps scored=30  mean log error=+0.0399  (x1.0407 per step)
+     abc delta k=5  steps scored=30  mean log error=+0.0149  (x1.0150 per step)
+     abc delta k=6  steps scored=28  mean log error=+0.0026  (x1.0026 per step)
+     abc delta k=7  steps scored=24  mean log error=-0.0094  (x0.9907 per step)
+     abc delta k=8  steps scored=18  mean log error=-0.0064  (x0.9936 per step)
+     abc delta k=9  steps scored=10  mean log error=+0.0024  (x1.0024 per step)
+genins: anchors [3, 4, 5, 6, 7, 8] -- deepest step reachable is depth 5
+  genins delta k=3  steps scored=24  mean log error=+0.2390  (x1.2700 per step)
+  genins delta k=4  steps scored=25  mean log error=+0.1540  (x1.1665 per step)
+  genins delta k=5  steps scored=24  mean log error=+0.0542  (x1.0557 per step)
+  genins delta k=6  steps scored=21  mean log error=+0.0313  (x1.0318 per step)
+  genins delta k=7  steps scored=16  mean log error=-0.0349  (x0.9657 per step)
+  genins delta k=8  steps scored=9   mean log error=-0.0144  (x0.9857 per step)
+
+=== mean log error by depth (all triangles and anchors pooled) ===
+depth  steps  mean log err   x error       se
+    0     88       +0.0102    1.0103   0.0092
+    1     69       +0.0209    1.0211   0.0087
+    2     52       +0.0501    1.0514   0.0117
+    3     37       +0.0979    1.1028   0.0205
+    4     24       +0.1374    1.1473   0.0246
+    5     13       +0.1881    1.2069   0.0442
+    6      4       +0.1446    1.1555   0.0047
+
+=== regressed on depth ===
+  n=287  slope=+0.03168 per step (se 0.00363)  intercept=+0.00011
+  a slope of +0.03168 compounds to x1.3300 over nine steps
+  the measured over-reserve on abc delta production is x1.67 (see results/runs/abc-reserve-delta.md)
+
+=== the same slope, per triangle (delta arm) ===
+       abc  n=168 slope=+0.01903 (se 0.00161)  mean log error=+0.0240
+    genins  n=119 slope=+0.06170 (se 0.00785)  mean log error=+0.0912
+
+=== currency decomposition, delta arm (a reserve is a sum, so weight the steps) ===
+depth  steps        exposure  mean log err   exposure-weighted log err
+    0     88     133,774,648       +0.0102                     +0.0157
+    1     69     122,348,425       +0.0209                     +0.0365
+    2     52     102,252,680       +0.0501                     +0.0793
+    3     37      77,340,344       +0.0979                     +0.1538
+    4     24      50,641,022       +0.1374                     +0.2082
+    5     13      25,749,266       +0.1881                     +0.2977
+    6      4       3,578,032       +0.1446                     +0.1439
+
+=== the largest residuals by origin, delta arm (where the money actually is) ===
+    genins k=3  origin=2  steps=6  base= 1,292,306 predicted=  37,562,473 actual=   3,617,009 residual= +33,945,464 (+938.5%)
+    genins k=3  origin=3  steps=6  base=   310,608 predicted=  24,344,004 actual=   4,277,660 residual= +20,066,344 (+469.1%)
+    genins k=3  origin=1  steps=6  base= 2,170,033 predicted=  12,848,231 actual=   3,169,052 residual=  +9,679,179 (+305.4%)
+    genins k=4  origin=3  steps=5  base= 1,418,858 predicted=  10,384,493 actual=   3,169,410 residual=  +7,215,083 (+227.6%)
+    genins k=3  origin=0  steps=6  base= 2,218,270 predicted=   7,884,239 actual=   1,683,193 residual=  +6,201,046 (+368.4%)
+    genins k=4  origin=1  steps=5  base= 3,353,322 predicted=   7,989,227 actual=   1,985,763 residual=  +6,003,464 (+302.3%)
+    genins k=4  origin=2  steps=5  base= 2,218,525 predicted=   7,994,037 actual=   2,690,790 residual=  +5,303,247 (+197.1%)
+    genins k=4  origin=4  steps=5  base=   443,160 predicted=   8,625,463 actual=   3,430,151 residual=  +5,195,312 (+151.5%)
+
+wrote results/runs/20260918-023600_depth-bias/depth_bias.json and run.log (287 scored steps)

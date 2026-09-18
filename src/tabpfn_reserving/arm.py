@@ -146,6 +146,7 @@ def reserve(
     target: str = "ratio",
     targets: list[int] | None = None,
     mode: str = "frozen",
+    trace: list | None = None,
 ) -> dict:
     """Project every unknown cell one diagonal at a time; return the reserve and its distribution.
 
@@ -196,6 +197,22 @@ def reserve(
                 r_hat = 1.0
             running[a, d] = prev * r_hat
             point_ratios[(a, d)] = r_hat
+            if trace is not None:
+                # The per-step record, so a diagnosis can be run on the steps rather than on the total.
+                # `depth` is how far into the projection this step sits: every training row is at depth
+                # <= 0, so any bias that grows with depth is bias in the extrapolation, not in the fit.
+                actual = tri.values[a, d]
+                actual_ratio = (actual / tri.values[a, d - 1]
+                                if np.isfinite(actual) and tri.values[a, d - 1] > 0 else np.nan)
+                trace.append({
+                    "origin": int(a), "dev": int(d), "depth": int((d - 1) - (anchor - a)),
+                    "predicted_ratio": float(r_hat), "actual_ratio": float(actual_ratio),
+                    "prev_observed": float(tri.values[a, d - 1]),
+                    "log_error": (float(np.log(r_hat / actual_ratio))
+                                  if np.isfinite(actual_ratio) and actual_ratio > 0 and r_hat > 0
+                                  else np.nan),
+                    "base_observed": float(tri.values[a, anchor - a]),
+                })
         draws_by_cell.append((coords, d_draws))
 
     point_reserve = sum(running[a, tgt[a]] - tri.values[a, anchor - a]

@@ -263,3 +263,29 @@ def test_a_collection_of_triangles_is_refused() -> None:
     arbitrary line of business with nothing downstream able to notice."""
     with pytest.raises(ValueError, match="collection"):
         Triangle.load("clrd")
+
+
+def test_a_multi_column_sample_must_name_its_column() -> None:
+    """`mcl` carries both incurred and paid. The spike script silently took the first; the choice changes
+    the numbers while looking equally legitimate either way, so it has to be said out loud."""
+    with pytest.raises(ValueError, match="columns"):
+        Triangle.load("mcl")
+
+
+def test_the_named_column_is_the_one_actually_used() -> None:
+    incurred = Triangle.load("mcl", column="incurred")
+    paid = Triangle.load("mcl", column="paid")
+    assert incurred.column == "incurred" and paid.column == "paid"
+    assert not np.allclose(incurred.values, paid.values, equal_nan=True)
+    assert incurred.values[0, 0] == 978 and paid.values[0, 0] == 576
+
+
+@pytest.mark.parametrize("column", ["incurred", "paid"])
+def test_the_baseline_is_sliced_to_the_modelled_column(column: str) -> None:
+    """The CAS package fits one Chain Ladder per column. If the baseline summed both while the model saw
+    one, the comparison would silently be between different triangles."""
+    tri = Triangle.load("mcl", column=column)
+    anchor = tri.n - 1
+    ours = factor_reserve(tri, anchor, tri.global_factors(tri.known(anchor)))
+    theirs = chainladder_baseline(tri, anchor)["chainladder_ibnr"]
+    assert ours == pytest.approx(theirs, rel=1e-9), f"{column}: {ours} vs {theirs}"
