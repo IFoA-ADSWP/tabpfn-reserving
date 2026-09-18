@@ -62,3 +62,17 @@ next experiment is the fleet-as-context arm rather than more presentation.
 
 Pre-registered in `docs/method.md`: this arm was expected to carry signal, and it does in the *shape* of the
 uncertainty. It was never registered as competitive on the point estimate, and it is not.
+
+## A consequence for E3, which is worth more than the result itself
+
+The spike's coverage figures (55/82/91/91 at 50/75/90/95) came from **backtests**, where each origin is
+predicted at most a few development steps ahead. This production run asks for the **whole tail at once** —
+up to nine compounding steps — and at that horizon the point estimate is 2.4× high and the interval misses
+Chain Ladder completely.
+
+Those two facts are not in tension; they are the same fact at two horizons. **Error compounds with the
+horizon, and so does the interval's inability to cover.** So E3 as pre-registered — coverage over the fleet
+— is not sufficient on its own: run over backtests it would measure the easy end of the problem and report a
+flattering number. E3 must measure coverage **at the horizon the tool is actually used at**, or it measures
+nothing that matters. That is a change to the experiment design, and it is recorded here rather than applied
+quietly.
