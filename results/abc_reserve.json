@@ -1,0 +1,46 @@
+{
+  "mode": "reserve",
+  "triangle": "abc",
+  "fingerprint": {
+    "name": "abc",
+    "shape": [
+      11,
+      11
+    ],
+    "columns": [
+      "values"
+    ],
+    "sha256_16": "bc97a934645b8bb0"
+  },
+  "anchor": 10,
+  "target": "ratio",
+  "reserve": 0.0,
+  "factor_reserve": 0.0,
+  "chainladder": {
+    "note": "ibnr includes the tail beyond the last diagonal; reference only",
+    "shape": [
+      11,
+      11
+    ],
+    "chainladder_ibnr": 5277760.357625862,
+    "mack_ibnr": 5277760.357625862,
+    "total_mack_std_err": 152712.93319662946
+  },
+  "distribution_route": "exact",
+  "fit_seconds": 4.155925989151001,
+  "predict_seconds": 42.723405838012695,
+  "percentiles": {
+    "p5": 0.0,
+    "p25": 0.0,
+    "p50": 0.0,
+    "p75": 0.0,
+    "p90": 0.0,
+    "p95": 0.0,
+    "p99": 0.0
+  },
+  "command": "tabpfn_reserving abc --distribution --figure results/figures/abc_reserve_distribution.png --json results/abc_reserve.json",
+  "started_at": "2026-09-18T01:18:27",
+  "seed": 0,
+  "draws": 300,
+  "finished_at": "2026-09-18T01:19:14"
+}

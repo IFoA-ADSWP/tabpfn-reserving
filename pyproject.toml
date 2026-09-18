@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tabpfn-reserving"
+version = "0.1.0"
+description = "Loss reserving as a prediction problem: a reserve with its full predictive distribution, from a single forward pass."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+dependencies = [
+    # TabPFN-3.5: the 9.0.0 release (2026-09-15) is the one that ships the 3.5 family.
+    "tabpfn>=9.0.0",
+    # The baseline side: the Casualty Actuarial Society's own package, and the CAS Loss Reserve
+    # Database that ships inside it.
+    "chainladder",
+    "pandas",
+    "numpy",
+    "matplotlib",
+]
+
+[project.scripts]
+tabpfn-reserving = "tabpfn_reserving.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

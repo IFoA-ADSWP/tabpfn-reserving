@@ -7,10 +7,12 @@ Built with **[TabPFN-3.5](https://priorlabs.ai/technical-reports/tabpfn-3-5)** f
 [TabPFN-3.5 Hackathon](https://platform.priorlabs.ai/hackathon-3.5) — *Formalize a new problem* / *Showcase a
 harness*.
 
-> **Status: in development.** The method is settled and the first end-to-end spike is running. Results will
-> land in `results/` alongside the code that produces them, with the exact commands in `README`. **Nothing in
-> this repository is a measured claim yet** — the bars this project will be judged against are pre-registered
-> in [`docs/method.md`](docs/method.md) so that the numbers cannot be spun once they exist.
+> **Status: working, results provisional.** The method is settled, the package runs end to end on CPU, and
+> the first production run is stored in `results/runs/`. Its verdict is not flattering and is written up
+> rather than buried: the **distribution** works, the **point estimate over-reserves on `abc` by 2.4×**
+> against Chain Ladder ([`results/runs/abc-reserve.md`](results/runs/abc-reserve.md)). The bars this project
+> is judged against were pre-registered in [`docs/method.md`](docs/method.md) before any of these numbers
+> existed. Live gap list: [`docs/readiness.md`](docs/readiness.md).
 
 ## The idea
 
@@ -61,25 +63,43 @@ Both sides are public and maintained, so the comparison has authority:
 
 ## Quickstart
 
-**The interface below is planned, not built** — `src/tabpfn_reserving` does not exist yet. What runs today is
-the spike harness in `scripts/`, and `results/spike/FINDINGS.md` says what it has found so far.
+The package installs from this repository and runs on CPU. The first run downloads the TabPFN-3.5 weights
+once and needs a Prior Labs token in `TABPFN_TOKEN` (`results/spike/FINDINGS.md` has the two-minute version
+and the hosted alternative).
 
 ```bash
 git clone https://github.com/IFoA-ADSWP/tabpfn-reserving
-cd tabpfn-reserving && pip install -r requirements.txt
-.venv/bin/python scripts/spike_e0_e1.py --triangles abc genins mcl ukmotor --target ratio
+cd tabpfn-reserving
+python -m venv .venv && . .venv/bin/activate
+pip install -e .
+export TABPFN_TOKEN=...               # your Prior Labs token
+
+# The reserve as of the latest diagonal, with its distribution, from one triangle
+python -m tabpfn_reserving abc --distribution
+
+# The same, writing the figure and the machine-readable run record
+python -m tabpfn_reserving abc --distribution \
+    --figure results/figures/abc_reserve_distribution.png \
+    --json   results/runs/abc-reserve.json
+
+# Scored against what actually developed afterwards, one row per anchor
+python -m tabpfn_reserving abc --backtest
 ```
 
-The MVP will replace that with a package and a CLI, and the README's examples will be copied from real output:
+Real output from the first of those, unedited — including the part that does not flatter the method:
 
-```bash
-python -m tabpfn_reserving abc                  # beats 1-2: the reframing, and the reserve vs Chain Ladder
-python -m tabpfn_reserving abc --distribution   # beat 3: the reserve distribution and the timings
-python -m tabpfn_reserving backtest clrd        # beats 4-5: coverage and the fleet
+```
+abc: 11x11  anchor = last diagonal (age 132)  55 observed transitions
+  reserve (TabPFN-3.5)          12,844,223   fit 4.4s  predict 42.9s  [exact]
+  reserve (chain-ladder)         5,277,760   like-for-like, same cells
+  reserve (CAS package)          5,277,760   reference: includes a tail nobody can score
+  distribution              p5=7,180,819  ...  p50=9,758,413  ...  p95=17,226,566
 ```
 
-The first local run downloads the TabPFN-3.5 weights once and needs a Prior Labs token in `TABPFN_TOKEN`
-(`results/spike/FINDINGS.md` has the two-minute version, plus the hosted alternative).
+The figure it writes is the one below; `results/runs/abc-reserve.md` says what the numbers mean and
+`docs/readiness.md` says what is still missing.
+
+![The reserve as a distribution: abc, TabPFN-3.5, 300 draws](results/figures/abc_reserve_distribution.png)
 
 Current state, honestly: [`docs/readiness.md`](docs/readiness.md).
 
