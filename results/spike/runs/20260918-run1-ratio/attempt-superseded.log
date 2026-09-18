@@ -1,0 +1,7 @@
+env: {'tabpfn': '9.0.0', 'tabpfn-client': '0.6.0', 'chainladder': '0.10.1', 'torch': '2.14.0', 'numpy': '2.5.3', 'pandas': '2.3.3', 'scikit-learn': '1.9.0'}
+
+=== abc: 11x11 (cumulative) ===
+  k= 5 actual=    2,092,802 | tabpfn=    2,152,788 (  +2.9%) | placebo=   60,289,027 (+2780.8%) | CL=          nan (  +nan%) | mack=          nan | fit=7.6s pred=28.7s
+  k= 6 actual=    2,049,742 | tabpfn=    2,114,874 (  +3.2%) | placebo=   25,172,973 (+1128.1%) | CL=          nan (  +nan%) | mack=          nan | fit=5.3s pred=32.6s
+/opt/anaconda3/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

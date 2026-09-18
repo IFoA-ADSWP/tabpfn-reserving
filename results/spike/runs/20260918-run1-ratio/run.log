@@ -1,0 +1,45 @@
+env: {'tabpfn': '9.0.0', 'tabpfn-client': '0.6.0', 'chainladder': '0.10.1', 'torch': '2.14.0', 'numpy': '2.5.3', 'pandas': '2.3.3', 'scikit-learn': '1.9.0'}
+
+=== abc: 11x11 (cumulative) ===
+  k= 5 actual=    2,092,802 | tabpfn=    2,152,788 (  +2.9%) | placebo=   60,289,027 (+2780.8%) | CL=          nan (  +nan%) | mack=          nan | fit=5.4s pred=20.0s
+  k= 6 actual=    2,049,742 | tabpfn=    2,114,874 (  +3.2%) | placebo=   25,172,973 (+1128.1%) | CL=          nan (  +nan%) | mack=          nan | fit=4.8s pred=27.5s
+  k= 7 actual=    2,089,266 | tabpfn=    1,777,489 ( -14.9%) | placebo=   13,359,732 (+539.4%) | CL=          nan (  +nan%) | mack=          nan | fit=4.1s pred=35.4s
+  k= 8 actual=    2,055,248 | tabpfn=    1,907,989 (  -7.2%) | placebo=    7,962,908 (+287.4%) | CL=          nan (  +nan%) | mack=          nan | fit=5.4s pred=44.5s
+
+=== genins: 10x10 (cumulative) ===
+  k= 5 actual=   12,221,385 | tabpfn=   19,811,736 ( +62.1%) | placebo=  431,478,486 (+3430.5%) | CL=          nan (  +nan%) | mack=          nan | fit=4.9s pred=33.5s
+  k= 6 actual=   10,554,061 | tabpfn=   15,646,682 ( +48.3%) | placebo=  210,116,241 (+1890.9%) | CL=          nan (  +nan%) | mack=          nan | fit=4.8s pred=30.6s
+  k= 7 actual=    9,507,303 | tabpfn=    8,856,074 (  -6.8%) | placebo=   83,262,658 (+775.8%) | CL=          nan (  +nan%) | mack=          nan | fit=5.0s pred=35.3s
+
+=== mcl: 7x7 (cumulative) ===
+  k= 3 actual=        2,948 | tabpfn=       20,451 (+593.7%) | placebo=       22,263 (+655.2%) | CL=          nan (  +nan%) | mack=          nan | fit=5.1s pred=29.1s
+  k= 4 actual=        2,144 | tabpfn=        8,418 (+292.6%) | placebo=       26,461 (+1134.2%) | CL=          nan (  +nan%) | mack=          nan | fit=6.6s pred=68.1s
+
+=== ukmotor: 7x7 (cumulative) ===
+  k= 3 actual=       16,255 | tabpfn=       36,662 (+125.5%) | placebo=       41,038 (+152.5%) | CL=          nan (  +nan%) | mack=          nan | fit=6.6s pred=55.6s
+  k= 4 actual=       14,682 | tabpfn=       13,595 (  -7.4%) | placebo=       51,114 (+248.1%) | CL=          nan (  +nan%) | mack=          nan | fit=10.0s pred=29.9s
+
+wrote /Users/Scott/projects/tabpfn-reserving/results/spike/spike_e0_e1.csv
+
+--- summary ---
+triangle  anchor_k  actual_future  tabpfn_reserve  placebo_reserve
+     abc         5      2092802.0    2.152788e+06     6.028903e+07
+     abc         6      2049742.0    2.114874e+06     2.517297e+07
+     abc         7      2089266.0    1.777489e+06     1.335973e+07
+     abc         8      2055248.0    1.907989e+06     7.962908e+06
+  genins         5     12221385.0    1.981174e+07     4.314785e+08
+  genins         6     10554061.0    1.564668e+07     2.101162e+08
+  genins         7      9507303.0    8.856074e+06     8.326266e+07
+     mcl         3         2948.0    2.045064e+04     2.226308e+04
+     mcl         4         2144.0    8.418220e+03     2.646095e+04
+ ukmotor         3        16255.0    3.666162e+04     4.103752e+04
+ ukmotor         4        14682.0    1.359466e+04     5.111409e+04
+  mean err% tabpfn_reserve           +99.27   median abs   14.92
+  mean err% placebo_reserve        +1183.90   median abs  775.78
+  mean err% cl_factor_reserve        +12.85   median abs   16.13
+  mean err% cl_ibnr_reference        +41.10   median abs   23.20
+  mean err% mack_ibnr_reference      +41.10   median abs   23.20
+  coverage 50% (tabpfn): 55% of 11 scored
+  coverage 75% (tabpfn): 82% of 11 scored
+  coverage 90% (tabpfn): 91% of 11 scored
+  coverage 95% (tabpfn): 91% of 11 scored

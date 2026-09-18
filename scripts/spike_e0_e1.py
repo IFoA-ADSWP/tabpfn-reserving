@@ -21,10 +21,12 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import platform
 import re
+import subprocess
 import sys
 import time
 import warnings
@@ -41,6 +43,46 @@ OUT.mkdir(parents=True, exist_ok=True)
 SEED = 0
 N_DRAWS = 300
 QUANTILE_LEVELS = [0.01, 0.025, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.975, 0.99]
+
+
+# ------------------------------------------------------------------------------ provenance and isolation
+def fingerprint(arr, name: str, columns) -> dict:
+    """A hash of the actual matrix a result was computed from.
+
+    Not a hash of 'the CAS database': of the numbers that went into this run, so a later change of
+    dataset version cannot silently invalidate a stored result.
+    """
+    a = np.nan_to_num(np.asarray(arr, dtype=float), nan=-1.0, posinf=-1.0, neginf=-1.0)
+    return {
+        "name": name,
+        "shape": list(a.shape),
+        "columns": [str(c) for c in columns],
+        "sha256_16": hashlib.sha256(np.round(a, 6).tobytes()).hexdigest()[:16],
+    }
+
+
+def git_state() -> dict:
+    """The revision the result came from -- a result with no revision cannot be re-derived."""
+    def run(args):
+        try:
+            return subprocess.run(args, capture_output=True, text=True, cwd=ROOT, timeout=20).stdout.strip()
+        except Exception:
+            return ""
+    return {"sha": run(["git", "rev-parse", "HEAD"])[:12],
+            "dirty": bool(run(["git", "status", "--porcelain"])),
+            "branch": run(["git", "rev-parse", "--abbrev-ref", "HEAD"])}
+
+
+def guarded(fn, errors: list, where: str, default=None):
+    """Run one arm; on failure record where and why, and keep going.
+
+    A run that dies at triangle 400 of 775 and stores nothing is a run that produced nothing.
+    """
+    try:
+        return fn()
+    except Exception as exc:  # noqa: BLE001
+        errors.append({"where": where, "type": type(exc).__name__, "message": str(exc)[:400]})
+        return default
 
 
 def load_token() -> str | None:
@@ -75,6 +117,7 @@ def load_triangle(name: str) -> dict:
         "name": name,
         "origin": [str(o)[:10] for o in tri.origin],
         "ages": [int(a) for a in tri.development],
+        "columns": [str(c) for c in tri.columns],
         "C": vals,
         "tri": tri,
     }
@@ -307,16 +350,27 @@ def main() -> int:
                     help="ratio: learn raw link ratios. delta: learn the ratio relative to the "
                          "volume-weighted factor, correcting a strong prior instead of rediscovering it.")
     ap.add_argument("--draws", type=int, default=N_DRAWS)
+    ap.add_argument("--max-anchors", type=int, default=0,
+                    help="cap the anchors per triangle (0 = all); for smoke tests")
     args = ap.parse_args()
 
     tok = load_token()
     if tok:
         os.environ["TABPFN_TOKEN"] = tok
     rng = np.random.default_rng(SEED)
+    t_start = time.time()
+    started_at = time.strftime("%Y-%m-%dT%H:%M:%S")
+    run_id = time.strftime("%Y%m%d-%H%M%S") + f"_{args.target}_{args.backend}"
+    run_dir = OUT / "runs" / run_id
+    run_dir.mkdir(parents=True, exist_ok=True)
+    errors: list = []
+    fingerprints: list = []
     report = {
-        "seed": SEED, "n_draws": args.draws, "backend": args.backend,
+        "run_id": run_id, "command": " ".join([Path(sys.argv[0]).name] + sys.argv[1:]),
+        "started_at": started_at, "git": git_state(),
+        "seed": SEED, "n_draws": args.draws, "backend": args.backend, "target": args.target,
         "python": sys.version.split()[0], "platform": platform.platform(),
-        "env": {}, "triangles": {}, "notes": [],
+        "env": {}, "triangles": {}, "notes": [], "errors": errors, "data_fingerprints": fingerprints,
     }
     import importlib.metadata as md
     for pkg in ("tabpfn", "tabpfn-client", "chainladder", "torch", "numpy", "pandas", "scikit-learn"):
@@ -324,14 +378,22 @@ def main() -> int:
             report["env"][pkg] = md.version(pkg)
         except Exception:
             pass
+    print("run:", run_id, "| git:", report["git"]["sha"], "dirty" if report["git"]["dirty"] else "clean")
     print("env:", report["env"])
 
     rows = []
     for name in args.triangles:
-        d = load_triangle(name)
+        d = guarded(lambda name=name: load_triangle(name), errors, f"{name}: load")
+        if d is None:
+            print(f"\n=== {name}: LOAD FAILED (recorded, continuing) ===")
+            continue
         C, N = d["C"], d["C"].shape[0]
+        fingerprints.append(fingerprint(C, name, d.get("columns", [])))
         print(f"\n=== {name}: {N}x{N} (cumulative) ===")
-        for k in range(N // 2, N - 2):
+        anchors = list(range(N // 2, N - 2))
+        if args.max_anchors:
+            anchors = anchors[: args.max_anchors]
+        for k in anchors:
             known = known_mask(C, k)
             assert not np.any(known & (np.add.outer(np.arange(N), np.arange(N)) > k)), "anchor leak"
             gf = global_factors(C, known)
@@ -388,11 +450,20 @@ def main() -> int:
 
     df = pd.DataFrame(rows)
     stem = f"spike_e0_e1_{args.target}"
-    df.to_csv(OUT / f"{stem}.csv", index=False)
+    df.to_csv(run_dir / f"{stem}.csv", index=False)
     report["triangles"] = df.to_dict(orient="records")
     report["draws_error"] = getattr(draws_from, "error", None)
-    (OUT / f"{stem}.json").write_text(json.dumps(report, indent=2, default=str))
-    print(f"\nwrote {OUT}/{stem}.csv")
+    report["finished_at"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+    report["n_evaluations"] = int(len(df))
+    report["eval_seconds"] = round(time.time() - t_start, 1)
+    report["outputs"] = [f"{stem}.csv", f"{stem}.json", "manifest.json", "run.log"]
+    (run_dir / f"{stem}.json").write_text(json.dumps(report, indent=2, default=str))
+    manifest_keys = ("run_id", "command", "started_at", "finished_at", "git", "seed", "n_draws",
+                     "backend", "target", "python", "platform", "env", "data_fingerprints",
+                     "n_evaluations", "eval_seconds", "outputs", "errors")
+    (run_dir / "manifest.json").write_text(
+        json.dumps({k: report[k] for k in manifest_keys}, indent=2, default=str))
+    print(f"\nwrote {run_dir}/{stem}.csv  (+ manifest.json, {len(errors)} recorded error(s))")
     if df.empty:
         return 1
     print("\n--- summary ---")

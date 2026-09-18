@@ -3,7 +3,8 @@
 ## Run 2 — the Δ arm reproduces Chain Ladder, which is the most useful thing this run found
 
 **Command:** `.venv/bin/python scripts/spike_e0_e1.py --triangles abc genins mcl ukmotor --target delta`
-**Artifacts:** `spike_e0_e1_delta.csv`, `spike_e0_e1_delta.json`. Same eleven evaluations, same folds,
+**Artifacts:** `runs/20260918-run2-delta/` — results, `run.log`, and a retrofitted `MANIFEST.md`. Same
+eleven evaluations, same folds,
 same seed; **only the target changed** — from the raw link ratio to the ratio *relative to* the
 volume-weighted factor for that age, so the model only has to correct a strong stable prior.
 
@@ -42,7 +43,8 @@ support.
 ## Run 1 — the raw-ratio arm
 
 **Command:** `.venv/bin/python scripts/spike_e0_e1.py --triangles abc genins mcl ukmotor --target ratio`
-**Artifacts:** `spike_e0_e1_ratio.csv`, `spike_e0_e1_ratio.json`, `probe.json`
+**Artifacts:** `runs/20260918-run1-ratio/` — results, `run.log`, the environment install log, and a
+retrofitted `MANIFEST.md`.
 **Environment:** tabpfn 9.0.0 (TabPFN-3.5) · chainladder 0.10.1 · torch 2.14.0 · numpy 2.5.3 · pandas 2.3.3 · scikit-learn 1.9.1 · CPU only, no API calls · seed 0, 300 draws.
 
 ## What was actually run
@@ -105,6 +107,20 @@ Reproducibility has two roads, and a reader's environment may force the choice:
 | Hosted (`tabpfn_client` 0.6.0) | only the account token; no weights, no licence gate beyond it | 7.3s |
 
 Both return the same dict shape; the hosted one adds `borders` and `orders` alongside the rest.
+
+## How these runs are stored
+
+Every run lives in its own directory under `runs/`, carrying its results, its console log and its manifest.
+The manifest records the **git revision** the result came from, the **package versions**, the **seed and
+draws**, the exact **command**, the **data fingerprints** (a hash of the matrices that actually entered the
+run, not of "the CAS database"), the timings, and an **error list** — `{where, type, message}` for anything
+that failed, with the run continuing around a failed arm rather than dying and storing nothing.
+
+Runs 1 and 2 predate that discipline: their manifests are retrofits, and both say so, including the one thing
+a retrofit cannot recover — that their code revision was uncommitted at the time. Two earlier attempts at run
+1 produced no artifacts at all, one of them dying outright on a `chainladder` constructor error whose
+traceback exists only in the conversation. Storing the failures is the point; that is why the discipline now
+writes itself.
 
 ## What this establishes
 
