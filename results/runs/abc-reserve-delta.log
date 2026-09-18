@@ -1,7 +1,7 @@
 abc: 11x11  anchor = last diagonal (age 132)  55 observed transitions
   projecting every origin to age 132 -- the longest development in the
   triangle. The tail beyond it needs a tail factor and is out of scope.
-  reserve (compounded point)      8,801,618   fit 4.8s  predict 51.2s
+  reserve (compounded point)      8,801,618   fit 5.3s  predict 74.5s
   reserve (chain-ladder)          5,277,760   like-for-like, on the same cells
   reserve (CAS package)           5,277,760   reference: includes a tail nobody can score
   reserve (sampled mean)          8,714,268   -1.0% vs the point

@@ -32,8 +32,8 @@
   },
   "distribution_route": "exact",
   "draws_method": "bar-bins",
-  "fit_seconds": 4.4437172412872314,
-  "predict_seconds": 39.16876697540283,
+  "fit_seconds": 3.7746880054473877,
+  "predict_seconds": 47.582911014556885,
   "percentiles": {
     "p5": 7452234.674154116,
     "p25": 8527105.285381515,
@@ -44,7 +44,8 @@
     "p99": 34882827.61608971
   },
   "command": "tabpfn_reserving abc --distribution --figure results/figures/abc_reserve_distribution.png --json results/runs/abc-reserve.json",
-  "started_at": "2026-09-18T02:03:16",
+  "started_at": "2026-09-18T02:10:00",
   "seed": 0,
-  "finished_at": "2026-09-18T02:04:00"
+  "finished_at": "2026-09-18T02:10:52",
+  "samples_file": "abc-reserve-samples.npy"
 }

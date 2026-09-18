@@ -32,8 +32,8 @@
   },
   "distribution_route": "exact",
   "draws_method": "bar-bins",
-  "fit_seconds": 4.7872068881988525,
-  "predict_seconds": 51.17018008232117,
+  "fit_seconds": 5.345139980316162,
+  "predict_seconds": 74.49422001838684,
   "percentiles": {
     "p5": 7727039.750511459,
     "p25": 8193732.987523697,
@@ -44,7 +44,8 @@
     "p99": 11764541.35280369
   },
   "command": "tabpfn_reserving abc --target delta --distribution --figure results/figures/abc_reserve_distribution_delta.png --json results/runs/abc-reserve-delta.json",
-  "started_at": "2026-09-18T02:04:10",
+  "started_at": "2026-09-18T02:11:03",
   "seed": 0,
-  "finished_at": "2026-09-18T02:05:06"
+  "finished_at": "2026-09-18T02:12:24",
+  "samples_file": "abc-reserve-delta-samples.npy"
 }

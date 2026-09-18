@@ -43,19 +43,35 @@ def percentile_table(samples: np.ndarray) -> dict:
 
 
 def figure(samples: np.ndarray, point: float, path: pathlib.Path, title: str) -> None:
-    """The picture the claim rests on: the reserve as a distribution, not a number."""
+    """The picture the claim rests on: the reserve as a distribution, not a number.
+
+    Log x-axis when the draws are positive, which they are for a reserve: the distribution is strongly
+    right-skewed and the point estimate is many times the median, so a linear axis crushes every draw but
+    the handful in the tail into one bar and hides the shape being claimed. The axis is labelled, because a
+    log axis that does not say so is a different kind of misrepresentation.
+    """
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
+    finite = samples[np.isfinite(samples)]
+    positive = finite[finite > 0]
+    use_log = len(positive) == len(finite) and len(positive) > 1
+
     fig, ax = plt.subplots(figsize=(8, 4.5))
-    ax.hist(samples, bins=50, color="#4C72B0", alpha=0.85, edgecolor="white", linewidth=0.4)
+    if use_log:
+        bins = np.logspace(np.log10(positive.min()), np.log10(positive.max()), 45)
+        ax.set_xscale("log")
+        ax.set_xlabel("reserve (log scale)")
+    else:
+        bins = 50
+        ax.set_xlabel("reserve")
+    ax.hist(finite, bins=bins, color="#4C72B0", alpha=0.85, edgecolor="white", linewidth=0.4)
     for q, style in ((0.5, "-"), (0.9, "--"), (0.99, ":")):
-        v = float(np.quantile(samples, q))
+        v = float(np.quantile(finite, q))
         ax.axvline(v, color="#333333", linestyle=style, linewidth=1.2,
                    label=f"p{int(q * 100)} = {v:,.0f}")
     ax.axvline(point, color="#C44E52", linewidth=1.6, label=f"point reserve = {point:,.0f}")
-    ax.set_xlabel("reserve")
     ax.set_ylabel("draws")
     ax.set_title(title)
     ax.legend(frameon=False, fontsize=8)
@@ -190,6 +206,13 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  wrote {args.figure}")
     if args.json_out:
         args.json_out.parent.mkdir(parents=True, exist_ok=True)
+        # Keep the draws themselves, not just their percentiles: the joint distribution is the artefact
+        # this project is about, and a figure that can only be redrawn by re-fitting the model is a figure
+        # nobody will check.
+        if samples is not None:
+            samples_path = args.json_out.with_name(args.json_out.stem + "-samples.npy")
+            np.save(samples_path, samples)
+            result["samples_file"] = samples_path.name
         args.json_out.write_text(json.dumps(result, indent=2, default=str))
         print(f"  wrote {args.json_out}")
     return 0

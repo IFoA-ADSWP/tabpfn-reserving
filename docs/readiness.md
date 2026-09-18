@@ -34,8 +34,10 @@
 
 1. **n = 11.** The coverage result (55/82/91/91 against nominal 50/75/90/95) is *indicative, not a result*.
    E3 over the fleet is what turns it into one, and it has not run. This is the largest scientific gap.
-2. **The intervals are interpolated** from a 15-level quantile grid. We now know the exact route — the bar
-   distribution's `borders` and `logits` — and have not taken it.
+2. ~~**The intervals are interpolated** from a 15-level quantile grid.~~ **Closed (#16, 510c0e8).** Draws now come
+   by inverse-CDF sampling from the bar distribution itself. It mattered: the ratio arm's p99 was understated
+   by 62% (21,525,679 → 34,882,828) because the grid clamped the tail. The point reserves are unchanged to
+   the pound, which is the check that the projection was never touched.
 3. **Timings are contaminated.** They were measured while other work ran on the same machine; E5 needs a
    clean run before any speed claim is made.
 4. **The point estimate loses to Chain Ladder** in both formulations tried. The fleet-as-context arm that
