@@ -7,12 +7,14 @@ Built with **[TabPFN-3.5](https://priorlabs.ai/technical-reports/tabpfn-3-5)** f
 [TabPFN-3.5 Hackathon](https://platform.priorlabs.ai/hackathon-3.5) — *Formalize a new problem* / *Showcase a
 harness*.
 
-> **Status: working, results provisional.** The method is settled, the package runs end to end on CPU, and
-> the first production run is stored in `results/runs/`. Its verdict is not flattering and is written up
-> rather than buried: the **distribution** works, the **point estimate over-reserves on `abc` by 2.4×**
-> against Chain Ladder ([`results/runs/abc-reserve.md`](results/runs/abc-reserve.md)). The bars this project
-> is judged against were pre-registered in [`docs/method.md`](docs/method.md) before any of these numbers
-> existed. Live gap list: [`docs/readiness.md`](docs/readiness.md).
+> **Status: working, and the honest result is now the interesting one.** The package runs end to end on CPU;
+> the reserve distribution is drawn from the model's own bar distribution and its arithmetic reproduces the
+> CAS package's Chain Ladder to the pound. The point estimate still over-reserves against Chain Ladder — and
+> *why* is measured rather than guessed: the model is **unbiased where it has training examples and biased
+> +3.2% per step where it extrapolates**, compounding to ×1.33 over the nine steps production asks for
+> ([`results/runs/20260918-023600_depth-bias/FINDINGS.md`](results/runs/20260918-023600_depth-bias/FINDINGS.md)).
+> The bars were pre-registered in [`docs/method.md`](docs/method.md) before any of these numbers existed, and
+> live status is in [`docs/readiness.md`](docs/readiness.md).
 
 ## The idea
 
@@ -39,6 +41,27 @@ That is the claim this repository sets out to measure rather than assert.
 | 4 | **Coverage** | Do the 90% intervals contain the truth 90% of the time — for all three methods, over hundreds of real triangles |
 | 5 | **Speed** | Reserve a whole book, not one triangle: per-triangle wall-clock, including the Fast checkpoint |
 | 6 | **Where it does not win** | The triangles and cells where Chain Ladder is closer, stated in the open |
+
+## What the model gets wrong, measured
+
+A recursive forecast asks the model for the next step, feeds its own answer back, and asks again — nine times
+over for the youngest accident year. So the per-step behaviour is where the error lives, and it can be measured
+directly: `scripts/depth_bias.py` records `log(predicted ratio / actual ratio)` for every step of every
+projection, against how deep into the projection that step sits. 287 scored steps across two triangles:
+
+| depth | 0 | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|---|
+| mean log error | +0.010 | +0.021 | +0.050 | +0.098 | +0.137 | +0.188 |
+
+**Unbiased where it has training examples; +3.2% per step (se 0.36%) where it extrapolates.** The intercept is
++0.0001 — which is what makes the measurement credible — and the slope compounds to ×1.33 over nine steps.
+
+The same diagnostic produced the trap worth more than the number: anchored at the last three valuation dates,
+projections are at most two steps long, the deepest measurable depth is 2, and the slope reads **−0.0018
+(se 0.0030)** — flat, and the hypothesis looks dead. Anchored from nine years back, the same triangle gives
+**+0.0190 (se 0.0016)**. A backtest anchored near the ultimate cannot see the depths production uses, and it
+reports a flat line while doing so. Full write-up:
+[`results/runs/20260918-023600_depth-bias/FINDINGS.md`](results/runs/20260918-023600_depth-bias/FINDINGS.md).
 
 ## Why a triangle is a different problem from claims modelling
 

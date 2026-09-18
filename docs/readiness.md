@@ -1,83 +1,101 @@
 # Are we ready? A gap ledger
 
-> **Status:** readiness assessment, 2026-09-18 (day 4 of 19). Checked against the hackathon terms, the
-> brief's definition of done, and the rubric weights — not against how the work feels. **Verdict: not yet,
-> and the gap is not the science.** The hard parts are proven; what is missing is almost entirely the
-> artefact a judge opens.
+> **Status:** updated 2026-09-18, end of day 4 of 19. Checked against the hackathon terms, the brief's
+> definition of done, and the rubric weights — not against how the work feels.
 >
-> **Every gap below is filed as an issue in this repository (#1–#12)** — this page is the ledger, the issues
-> are the worklist. Labels: `submission-blocker`, `human-only`, `judge-facing`, `experiment`, `packaging`.
+> **Verdict then: not ready, and the gap was not the science. Verdict now: the science got real, and the
+> gap is the artefact a judge opens.**
+>
+> Every gap is filed as an issue in this repository (**#1–#18**) — this page is the ledger, the issues are the
+> worklist. Labels: `submission-blocker`, `human-only`, `judge-facing`, `experiment`, `packaging`, `redesign`.
 
-## 1. Compliance gaps — the terms, clause by clause
+## 1. Compliance — the terms, clause by clause
 
 | Clause | Requirement | State |
 |---|---|---|
-| 2.2 | A valid Prior Labs account; **entries are tied to the account** | ⚠️ An account exists (the token works, the 3.5 licence is accepted) but **the entry is not joined and nothing is submitted**. Only the entrant can do this |
+| 2.2 | A valid Prior Labs account; **entries are tied to the account** | ⚠️ Account exists (token works, 3.5 licence accepted), but **the entry is not joined and nothing is submitted**. Only the entrant can do this (**#1**) |
 | 2.4 | Accept the terms | ⚠️ Same step as joining |
 | 3.1 | Built with TabPFN-3.5, as a core part | ✅ `tabpfn` 9.0.0 = the 3.5 family, running locally on CPU |
-| 3.2 | The repository must contain **the code and instructions needed to run your project** | ❌ **The instructions are broken.** The README's quickstart names `python -m tabpfn_reserving …`; no such package exists. A reader can only run `scripts/spike_e0_e1.py` |
-| 3.2 | Input data included **or available at a public URL** | ✅ Data ships inside the pinned `chainladder` package; CAS publishes the source at a URL. The README should name that URL explicitly |
-| 3.3 | Rights to everything published | ✅ No third-party restricted data; CAS/package data only |
-| 3.5 | Public repository **under Apache-2.0** | ✅ `IFoA-ADSWP/tabpfn-reserving`, public, GitHub detects Apache-2.0 |
-| 3.5 | **A description** a third-party developer can comprehend | ❌ **Does not exist** |
-| 3.7 | Submit before 6 Oct, 23:59 CEST | ⚠️ Nothing submitted; target 2 Oct |
+| 3.2 | The repository must contain **the code and instructions to run it** | ✅ **Closed (#3, 6ae586b).** `src/tabpfn_reserving` + `pip install -e .`; the README's quickstart is copied from real output, and 25 tests run in 7 seconds without a token |
+| 3.2 | Input data included **or available at a public URL** | ✅ Ships inside the pinned `chainladder` package; CAS publishes the source. **Now explicit**: `mcl` carries incurred *and* paid, so the column must be named or the run is refused |
+| 3.3 | Rights to everything published | ✅ No third-party restricted data |
+| 3.5 | Public repository **under Apache-2.0** | ✅ `IFoA-ADSWP/tabpfn-reserving` |
+| 3.5 | **A description** a third-party developer can comprehend | ❌ **Still does not exist (#2)** |
+| 3.7 | Submit before 6 Oct, 23:59 CEST | ⚠️ Nothing submitted; target 2 Oct (**#1**) |
 
-## 2. Judge-facing gaps — where the rubric weights actually land
+## 2. Judge-facing — where the rubric weights land
 
 | Weight | Needs | State |
 |---|---|---|
-| **50%** Showcase of TabPFN-3.5 | A working prototype demonstrating the capabilities convincingly | ⚠️ The capabilities are demonstrated *in a CSV*. **Not one figure exists.** No notebook, no demo, no picture of the distribution — which is the whole claim |
-| **30%** Creativity and originality | The reframing, plus practical value | ⚠️ The reframing is real and written down; the **practical-value page (`docs/what_it_unlocks.md`) does not exist**, so the reserving actuary's reason to care is currently one sentence in a README |
-| **20%** Technical quality and reproducibility | A stranger can run it | ⚠️ Provenance is now excellent (manifests, fingerprints, logs, errors). But there is no package, no CLI, no notebook, no test, no CI — and the README's quickstart does not run |
+| **50%** Showcase of TabPFN-3.5 | A working prototype demonstrating the capabilities convincingly | ✅/⚠️ The distribution is now shown, not described: a log-scaled figure read off the model's own bar distribution, with the exact sampling route recorded per run (**#16**). Still missing: the reframing view and the coverage curve (**#4**) |
+| **30%** Creativity and originality | The reframing, plus practical value | ⚠️ The reframing is real, and the **depth-bias finding** is now the strongest originality evidence in the repository (§3.1). `docs/what_it_unlocks.md` still does not exist (**#6**) |
+| **20%** Technical quality and reproducibility | A stranger can run it | ✅/⚠️ Package, CLI, 25 tests, CI on 3.11/3.12, per-run records with fingerprints and the draws themselves. Missing: the notebook (**#5**), pinned requirements (**#12**) |
 
-## 3. Scientific gaps — the honest ones
+## 3. Scientific — the honest ones
 
-1. **n = 11.** The coverage result (55/82/91/91 against nominal 50/75/90/95) is *indicative, not a result*.
-   E3 over the fleet is what turns it into one, and it has not run. This is the largest scientific gap.
-2. ~~**The intervals are interpolated** from a 15-level quantile grid.~~ **Closed (#16, 510c0e8).** Draws now come
-   by inverse-CDF sampling from the bar distribution itself. It mattered: the ratio arm's p99 was understated
-   by 62% (21,525,679 → 34,882,828) because the grid clamped the tail. The point reserves are unchanged to
-   the pound, which is the check that the projection was never touched.
-3. **Timings are contaminated.** They were measured while other work ran on the same machine; E5 needs a
-   clean run before any speed claim is made.
-4. **The point estimate loses to Chain Ladder** in both formulations tried. The fleet-as-context arm that
-   might fix it is designed, controlled and barred — and unbuilt.
-5. **E4's regime map is unrun**, so there is no "use it when…" rule — which is the house style and the most
-   useful thing we could hand an actuary.
-6. `requirements.txt` is unpinned, though the brief said pins land with the first results. Results exist.
+1. **The point estimate explains itself, and the fix is queued.** It over-reserves (abc delta, +63.3% at best,
+   against Chain Ladder) and the cause is now measured rather than guessed: **per-step bias is zero where the
+   model has training rows and grows +3.2% per step as it extrapolates** (287 scored steps, t≈8.7,
+   intercept +0.0001), compounding to ×1.33 over the nine steps production asks for, against a measured ×1.67.
+   → `results/runs/20260918-023600_depth-bias/FINDINGS.md`, **#17 answered, #18 to build**.
+2. **n = 11.** The coverage result (55/82/91/91) is *indicative, not a result*, and E3 must be run at the
+   horizon the tool is used at — a backtest-based version would flatter us. **The largest gap (#8).**
+3. **The independent-draws limitation is stated but not fixed** (**#15**): per-cell draws are independent, so
+   the p99 — the number a risk margin actually uses — has no correlation structure. Cheap to fix, not yet done.
+4. **Timings are contaminated** (**#9**); a clean E5 run is needed before any speed claim.
+5. **E4's regime map is unrun** (**#11**), so there is no "use it when…" rule.
+6. `requirements.txt` is unpinned (**#12**) — a five-minute job for the packaging pass.
+
+### 3.1 The finding, in one paragraph
+
+A tabular foundation model used recursively is **unbiased exactly where it has training examples and biased
+upward where it extrapolates**, by about 3.2% per development step, with a clean zero intercept. That is a
+measurable, reproducible statement about *when a model of this class should not be trusted*, it comes with the
+diagnostic that establishes it (`scripts/depth_bias.py`, 287 scored steps in one command), and the trap that
+nearly hid it is documented too: backtests anchored near the ultimate cannot see the depths production uses and
+report a flat line while doing so. This is the intellectual centrepiece of the entry.
 
 ## 4. What is genuinely done
 
-Not everything is a gap, and the expensive parts are the ones that are closed:
+- **Feasibility, end to end**, and now packaged: a triangle becomes a prediction problem, a reserve and its
+  full distribution come back from one forward pass, on CPU, with no API calls.
+- **The distribution claim is verified rather than asserted** — drawn from the model's own bar distribution,
+  and the arithmetic underneath reproduces the CAS package's Chain Ladder **to the pound** (pinned by tests on
+  three triangles, and per column on a two-column sample).
+- **The over-reserve is diagnosed, not excused** (§3.1).
+- **The measurement discipline is real**: the same command twice gives the same reserve to the pound, the point
+  estimate does not depend on the seed, and the draw noise floor (~1.6% at 300 draws) is stated beside every
+  percentile.
+- **25 tests and CI**, catching three defects of one class that had already shipped once.
+- **Provenance**: per-run manifests, fingerprints, logs, the draws themselves, and every figure regenerable
+  from a committed command.
+- **The pre-registration**, which is why a mixed result reads as an answer.
 
-- **Feasibility, proven end to end**: 3.5 running locally on CPU with no API calls, a triangle becoming a
-  prediction problem, a reserve and its distribution coming back.
-- **The distribution claim has first evidence**, and it is the claim the project rests on.
-- **The controls work.** A shuffled-target placebo at 775% median error against the model's 14.9% means the
-  harness is not leaking — which is what makes every other number readable.
-- **Provenance discipline** — per-run manifests, data fingerprints, committed logs, recorded errors.
-- **A public Apache-2.0 repository** in the working party's own org.
-- **The pre-registration**, which is why a mixed result reads as an answer rather than a failure.
+## 5. The plan, with estimates
 
-## 5. The judgement call
+Measured throughput, not optimism: this session completed three substantial increments (a feature mode and its
+controlled A/B; the sampling overhaul; the depth-bias diagnostic). Today is **Friday 18 September**.
 
-Two paths compete for the same fourteen days, and they are not the same bet:
+| item | estimate |
+|---|---|
+| **#18** direct horizon prediction — delete the recursion, remove the compounding | 1.0–1.5 d |
+| **#8** E3 coverage over one `clrd` line of business, at the production horizon | 1.5–2.0 d |
+| packaging: **#5** notebook, **#6** unlocks page, **#7** README table, **#12** pins | 1.0–1.5 d |
+| **#2** submission description + final read-through | 0.5–1.0 d |
+| **to a submittable entry** | **4.0–6.0 d** |
 
-**Path A — make what exists presentable.** Package, CLI, figures, notebook, `what_it_unlocks`, the
-description. Roughly four to five days. It guarantees a *complete, honest, runnable* entry whose claim is the
-distribution, with the honest finding that the point estimate does not beat Chain Ladder.
+That lands **Thursday 24 – Tuesday 29 September**: on the brief's own 25 September target, with 5 working days
+of slack to 2 October and 12 to the hard close on 6 October. The variance is not build time — compute is cheap
+and unattended — it is how many iterations **#18** needs. So it is capped: **one implementation, one
+measurement, one decision.** If it does not clear the bar first time, the honest-negative write-up costs half a
+day and the plan falls back to packaging, with the distribution as the deliverable.
 
-**Path B — chase the fleet arm.** Higher ceiling: it is the one route to a point estimate that competes, and
-the data (775 triangles) is already on disk. But it is research, its duration is unknown, and it competes for
-the same days.
+**Parked deliberately:** **#10** the fleet-as-context arm (biggest build, most uncertain payoff, and #18 is a
+better-motivated attack on the same problem), **#11** the regime map, **#15** the correlation structure until
+there is time to do it properly, **#9** clean timings.
 
-**Recommendation: A first, B after.** Get to a submittable entry by ~25–26 September, submit it, then spend
-whatever remains on the fleet arm and re-submit — the latest version counts. That is exactly the sequencing
-the brief set out, and the reason it set aside four days of slack.
+## 6. The one thing that is not mine to do
 
-Filed as: **#1** join and submit (yours), **#2** the description, **#3** the package and CLI, **#4** figures,
-**#5** the notebook, **#6** the unlocks page, **#7** the README table — then **#8–#11** the experiments, and
-**#12** the pins.
-
-**The one thing that is not mine to do:** joining the hackathon and submitting. Until that happens there is
-no entry, however good the repository is.
+**Joining the hackathon and submitting (#1)** — about thirty minutes of the entrant's time. Until it happens
+there is no entry however good the repository is, it cannot be compressed later, and it is the only item on this
+page with a hard deadline attached that no further work can move.
