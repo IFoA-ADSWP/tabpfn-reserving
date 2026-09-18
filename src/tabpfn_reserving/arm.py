@@ -16,7 +16,7 @@ from __future__ import annotations
 import numpy as np
 from tabpfn import TabPFNRegressor
 
-from .triangle import Triangle, features_for, gf_used
+from .triangle import Triangle, features_for, gf_used, target_ages
 
 QUANTILE_LEVELS = [0.01, 0.025, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.975, 0.99]
 
@@ -109,10 +109,11 @@ def reserve(
     observed.
     """
     n = tri.n
-    tgt = targets if targets is not None else [n - 1] * n
+    tgt = targets if targets is not None else target_ages(n, "production")
     gf = tri.global_factors(tri.known(anchor))
     running = tri.values.copy()
     draws_by_cell: list[tuple[list, np.ndarray | None]] = []
+    point_ratios: dict[tuple[int, int], float] = {}
     routes: set[str] = set()
 
     for diag in range(anchor + 1, 2 * n - 1):
@@ -132,6 +133,7 @@ def reserve(
             if not (np.isfinite(r_hat) and r_hat > 0):
                 r_hat = 1.0
             running[a, d] = prev * r_hat
+            point_ratios[(a, d)] = r_hat
         draws_by_cell.append((coords, d_draws))
 
     point_reserve = sum(running[a, tgt[a]] - tri.values[a, anchor - a]
@@ -144,8 +146,13 @@ def reserve(
             if d_draws is None:
                 continue
             for i, (a, d) in enumerate(coords):
-                col = d_draws[:, i]
-                col = np.where(np.isfinite(col) & (col > 0), col, 1.0)
+                base, _ = gf_used(d, anchor, gf)
+                # The delta arm's draws live on the same relative scale as its point predictions, so
+                # they need the same rescaling. Without this the sampled reserve is a product of
+                # near-1.0 ratios while the point reserve is a product of factor-sized ones, and the
+                # distribution silently describes a different quantity than the headline number.
+                col = d_draws[:, i] * (base if target == "delta" else 1.0)
+                col = np.where(np.isfinite(col) & (col > 0), col, point_ratios.get((a, d), 1.0))
                 paths[:, a, d] = paths[:, a, d - 1] * col
         samples = np.array([paths[:, a, tgt[a]] - tri.values[a, anchor - a]
                             for a in range(anchor + 1)]).sum(axis=0)

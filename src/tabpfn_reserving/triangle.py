@@ -31,12 +31,34 @@ class Triangle:
         return int(self.values.shape[0])
 
     @classmethod
-    def load(cls, name: str) -> "Triangle":
-        """Load a bundled sample. The CAS Loss Reserve Database (`clrd`) ships with chainladder."""
+    def load(cls, name) -> "Triangle":
+        """Load a bundled sample by name, or wrap a chainladder triangle object directly.
+
+        The CAS Loss Reserve Database (`clrd`) ships with chainladder, but it is a *collection* -- 775
+        triangles across lines of business -- so `load("clrd")` is refused rather than silently reduced to
+        its first member. Pass one of its triangles in explicitly.
+        """
         import chainladder as cl
 
-        tri = cl.load_sample(name)
+        if not isinstance(name, str):
+            tri = name
+            name = str(getattr(tri, "columns", [getattr(tri, "key_labels", ["unnamed"])])[0])
+        else:
+            tri = cl.load_sample(name)
         vals = np.asarray(tri.values, dtype=float)
+        # chainladder values are (keys, columns, origin, development), so a single triangle keeps two
+        # leading dimensions of length 1 and a collection does not. Counting dims alone is not enough:
+        # abc is 4-d too, at (1, 1, 11, 11).
+        n_slices = int(np.prod(vals.shape[:-2])) if vals.ndim > 2 else 1
+        if n_slices > 1:
+            key = getattr(tri, "key_labels", None)
+            raise ValueError(
+                f"{name!r} is a collection of {n_slices} triangles, not one: its values are {vals.shape}"
+                + (f", keyed by {list(key)}" if key is not None else "")
+                + ". Taking the first slice silently would report a reserve for an arbitrary member of the "
+                  "set, and nothing downstream could tell. Pass one triangle in instead -- index the sample "
+                  "down to a single triangle and hand that object to Triangle.load()."
+            )
         while vals.ndim > 2:
             vals = vals[0]
         return cls(
@@ -161,14 +183,29 @@ def training_rows(tri: Triangle, anchor: int, gf: np.ndarray, target: str = "rat
     return X, y
 
 
+def target_ages(n: int, mode: str) -> list[int]:
+    """The development age each origin is projected to, in ONE place, because two copies can disagree.
+
+    `mode="production"` is the reserve being asked for: every origin out to the longest development seen
+    anywhere in the triangle. `mode="backtest"` is the only future the data can score: each origin out to
+    its own last observed age. A model arm and a baseline arm run in different modes produce two numbers
+    that look comparable and are not, which is exactly the bug that returned a reserve of zero.
+    """
+    if mode == "production":
+        return [n - 1] * n
+    if mode == "backtest":
+        return [n - 1 - a for a in range(n)]
+    raise ValueError(f"unknown mode {mode!r}: expected 'production' or 'backtest'")
+
+
 def factor_reserve(tri: Triangle, anchor: int, gf: np.ndarray, targets: list[int] | None = None) -> float:
     """Chain Ladder arithmetic over exactly the cells the model is scored on -- the fair comparison.
 
-    Takes the same `targets` as the model arm, because comparing a backtest-shaped projection against a
-    production-shaped one is how a comparison quietly stops being one.
+    Defaults to the production convention, the same default as the model arm in `arm.reserve`, so calling
+    the two without arguments compares like with like.
     """
     n = tri.n
-    tgt = targets if targets is not None else [n - 1 - a for a in range(n)]
+    tgt = targets if targets is not None else target_ages(n, "production")
     total = 0.0
     for a in range(anchor + 1):
         base = tri.values[a, anchor - a]

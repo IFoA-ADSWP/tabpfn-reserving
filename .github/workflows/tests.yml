@@ -1,0 +1,27 @@
+name: tests
+
+# The arithmetic contracts, in seconds, with no TabPFN fit and no token. Two bugs of the same class
+# (the reserve's target ages) reached the first CLI run; these are the tests that would have caught both.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e . pytest
+      - name: Run the arithmetic and leakage tests
+        run: pytest -q tests/
