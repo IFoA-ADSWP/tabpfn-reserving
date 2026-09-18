@@ -127,6 +127,9 @@ version counts.
 
 ## 11. Definition of done — the submission checklist
 
+**Live status, checked against the terms rather than against how the work feels: [`readiness.md`](readiness.md)**
+(the gap ledger, dated). The checklist itself:
+
 - [ ] Repository public, on `main`, **Apache-2.0** (clause 3.5)
 - [ ] `README.md` runs from a clean clone, with output copied from real runs
 - [ ] Data available by public URL with hashes recorded (clause 3.2)

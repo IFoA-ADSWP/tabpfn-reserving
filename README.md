@@ -61,28 +61,27 @@ Both sides are public and maintained, so the comparison has authority:
 
 ## Quickstart
 
+**The interface below is planned, not built** — `src/tabpfn_reserving` does not exist yet. What runs today is
+the spike harness in `scripts/`, and `results/spike/FINDINGS.md` says what it has found so far.
+
 ```bash
 git clone https://github.com/IFoA-ADSWP/tabpfn-reserving
-cd tabpfn-reserving
-pip install -r requirements.txt
-python -m tabpfn_reserving abc          # beat 1 and 2: the reframing, and the reserve vs Chain Ladder
-python -m tabpfn_reserving abc --distribution   # beat 3: the reserve distribution and the timings
-python -m tabpfn_reserving backtest clrd        # beats 4 and 5: coverage and the fleet
-```
-
-Until those land, the working harness is `scripts/spike_e0_e1.py` (see `results/spike/FINDINGS.md` for what
-it has found so far):
-
-```bash
+cd tabpfn-reserving && pip install -r requirements.txt
 .venv/bin/python scripts/spike_e0_e1.py --triangles abc genins mcl ukmotor --target ratio
 ```
 
-Requires a Prior Labs token in `TABPFN_TOKEN` for the first local weight download — see
-`results/spike/FINDINGS.md` for the two-minute version of that setup, and for the hosted alternative if your
-machine fights the local path.
+The MVP will replace that with a package and a CLI, and the README's examples will be copied from real output:
 
-The commands above are the intended interface; they land with the MVP and the README's examples will be
-copied from real output. `notebooks/quickstart.ipynb` runs the same thing end to end in Colab.
+```bash
+python -m tabpfn_reserving abc                  # beats 1-2: the reframing, and the reserve vs Chain Ladder
+python -m tabpfn_reserving abc --distribution   # beat 3: the reserve distribution and the timings
+python -m tabpfn_reserving backtest clrd        # beats 4-5: coverage and the fleet
+```
+
+The first local run downloads the TabPFN-3.5 weights once and needs a Prior Labs token in `TABPFN_TOKEN`
+(`results/spike/FINDINGS.md` has the two-minute version, plus the hosted alternative).
+
+Current state, honestly: [`docs/readiness.md`](docs/readiness.md).
 
 ## Reproducibility
 
