@@ -27,6 +27,22 @@ number for this arm existed before now.
 | point vs its own median | +32% | **+4%** | — |
 | fit / predict | 4.9 s / 48.1 s | 4.6 s / 34.7 s | — |
 
+## Note: the distribution numbers were re-generated the same day (#16)
+
+The percentiles in the table above were produced by grid inversion (a fixed 15-level grid, which clamps the
+tails). #16 replaced that with inverse-CDF sampling from the bar distribution itself. Re-run, same command:
+
+| | before (#16) | after (#16) |
+|---|---|---|
+| point reserve | 8,801,618 | **8,801,618** (unchanged) |
+| sampled mean | — | 8,714,268 (−1.0% vs the point) |
+| sampled median | 8,481,123 | 8,599,058 |
+| p5 | 7,257,215 | 7,727,040 |
+| p99 | 10,968,953 | 11,764,541 |
+| point vs its own median | +3.8% | **+2.3%** |
+
+The qualitative reading is unchanged and the delta arm still beats the ratio arm on every column.
+
 ## What it means
 
 **Dividing out the stable factors removes about half the compounding.** The raw-ratio arm has to rediscover

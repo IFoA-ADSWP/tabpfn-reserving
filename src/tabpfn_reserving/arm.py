@@ -69,17 +69,72 @@ def quantiles(model, X: np.ndarray, levels=QUANTILE_LEVELS) -> tuple[np.ndarray,
     return q, "grid"
 
 
-def draws(model, X: np.ndarray, n: int, rng: np.random.Generator) -> tuple[np.ndarray | None, str]:
-    """n draws per row by inverting the quantile function. Returns ((n, n_rows), route)."""
+def _bar_weights(full: dict) -> tuple[np.ndarray, np.ndarray] | None:
+    """Bin edges and normalised bin weights of the bar distribution, if this backend exposes them.
+
+    A `FullSupportBarDistribution` is piecewise-uniform over `borders` with weights given by `logits`, so
+    it can be sampled directly -- no grid, no interpolation, no clamped tails.
+    """
+    borders = _borders_from(full)
+    logits = full.get("logits") if isinstance(full, dict) else None
+    if borders is None or logits is None:
+        return None
+    w = np.asarray(logits, dtype=float)
+    if w.ndim != 2 or len(borders) != w.shape[1] + 1:
+        return None
+    w = np.exp(w - w.max(axis=1, keepdims=True))
+    w /= w.sum(axis=1, keepdims=True)
+    return np.asarray(borders, dtype=float), w
+
+
+def sample_from_bars(borders: np.ndarray, weights: np.ndarray, n: int,
+                     rng: np.random.Generator) -> np.ndarray:
+    """Draw n samples per row by inverse-CDF sampling straight from the bar distribution.
+
+    Bin index by the cumulative weights, position uniform inside the bin -- which is the distribution the
+    model actually returns. Unlike inverting a 15-level grid this does not clamp the tails, and it uses
+    every bin the model has, so a p99 is a p99 rather than an interpolation between two reported levels.
+    """
+    cum = np.cumsum(weights, axis=1)
+    out = np.empty((n, weights.shape[0]))
+    for r in range(weights.shape[0]):
+        u = rng.random(n)
+        idx = np.clip(np.searchsorted(cum[r], u), 0, len(borders) - 2)
+        lo, hi = borders[idx], borders[idx + 1]
+        out[:, r] = lo + rng.random(n) * (hi - lo)
+    return out
+
+
+def draws(model, X: np.ndarray, n: int, rng: np.random.Generator) -> tuple[np.ndarray | None, dict]:
+    """n draws per row, and a record of how they were obtained.
+
+    Two methods, and which one was used is reported rather than assumed:
+
+    * **bar-bins** -- inverse-CDF sampling from the bar distribution. Exact given the model's own output.
+    * **quantile-inversion** -- interpolate a fixed quantile grid. Used when the borders are not exposed
+      for the active backend; the grid is 15 levels wide, so tails are clamped and the mixture is coarse.
+    """
+    try:
+        bars = _bar_weights(model.predict(X, output_type="full"))
+        if bars is not None:
+            borders, weights = bars
+            return sample_from_bars(borders, weights, n, rng), {
+                "method": "bar-bins", "quantile_route": "exact"}
+    except Exception as exc:  # noqa: BLE001 -- fall through to the grid, but say so
+        failure = f"{type(exc).__name__}: {exc}"
+    else:
+        failure = "no borders in the model's full output"
+
     q, route = quantiles(model, X)
     if q.shape[1] != len(QUANTILE_LEVELS) or q.shape[0] != X.shape[0]:
-        return None, f"unusable shape {q.shape}"
+        return None, {"method": "none", "quantile_route": route,
+                      "why": f"unusable quantile shape {q.shape}"}
     levels = np.asarray(QUANTILE_LEVELS, dtype=float)
     u = rng.uniform(levels[0], levels[-1], size=n)
     out = np.empty((n, X.shape[0]))
     for r in range(X.shape[0]):
         out[:, r] = np.interp(u, levels, q[r])   # invert the quantile function
-    return out, route
+    return out, {"method": "quantile-inversion", "quantile_route": route, "why": failure}
 
 
 def reserve(
@@ -116,6 +171,7 @@ def reserve(
     draws_by_cell: list[tuple[list, np.ndarray | None]] = []
     point_ratios: dict[tuple[int, int], float] = {}
     routes: set[str] = set()
+    draw_methods: set[str] = set()
 
     for diag in range(anchor + 1, 2 * n - 1):
         coords = [(a, diag - a) for a in range(n) if 1 <= diag - a < n and a <= anchor]
@@ -124,8 +180,12 @@ def reserve(
         X = np.asarray([features_for(tri, a, d, anchor, gf, running, mode=mode) for a, d in coords],
                        dtype=float)
         point = np.atleast_1d(np.asarray(model.predict(X), dtype=float))
-        d_draws, route = draws(model, X, n_draws, rng) if n_draws else (None, "none")
-        routes.add(route)
+        if n_draws:
+            d_draws, info = draws(model, X, n_draws, rng)
+            draw_methods.add(str(info.get("method", "unknown")))
+            routes.add(str(info.get("quantile_route", "unknown")))
+        else:
+            d_draws = None
         for i, (a, d) in enumerate(coords):
             prev = running[a, d - 1]
             if not (np.isfinite(prev) and prev > 0):
@@ -164,8 +224,15 @@ def reserve(
         "anchor": int(anchor),
         "target": target,
         "features": mode,
+        # Three summaries of the same object. They are reported separately because they are not equal and
+        # the difference is the compounding, not a rounding error: `reserve` multiplies per-cell
+        # predictions, `mean`/`median` are the sampled paths. Calling any of them "the reserve" without
+        # saying which is what let a point estimate sit 32% above its own distribution unnoticed.
         "reserve": float(point_reserve),
+        "reserve_mean": float(np.mean(samples)) if samples is not None else None,
+        "reserve_median": float(np.median(samples)) if samples is not None else None,
         "samples": samples,
-        "distribution_route": ",".join(sorted(routes)),
+        "distribution_route": ",".join(sorted(routes)) or "none",
+        "draws_method": ",".join(sorted(draw_methods)) or "none",
         "targets": [int(t) for t in tgt[: anchor + 1]],
     }

@@ -85,23 +85,35 @@ def run_reserve(args, tri: Triangle) -> dict:
     cl = chainladder_baseline(tri, anchor)
     factor = factor_reserve(tri, anchor, tri.global_factors(tri.known(anchor)),
                             targets=[tri.n - 1] * tri.n)
-    print(f"  reserve (TabPFN-3.5)      {out['reserve']:>14,.0f}   fit {fit_s:.1f}s  predict {pred_s:.1f}s"
-          f"  [{out['distribution_route']}]")
-    print(f"  reserve (chain-ladder)    {factor:>14,.0f}   like-for-like, same cells")
+    print(f"  reserve (compounded point)  {out['reserve']:>13,.0f}   fit {fit_s:.1f}s  predict {pred_s:.1f}s")
+    print(f"  reserve (chain-ladder)      {factor:>13,.0f}   like-for-like, on the same cells")
     if "chainladder_ibnr" in cl:
-        print(f"  reserve (CAS package)     {cl['chainladder_ibnr']:>14,.0f}   reference: includes a tail "
+        print(f"  reserve (CAS package)       {cl['chainladder_ibnr']:>13,.0f}   reference: includes a tail "
               f"nobody can score")
     if "mack_total_mack_std_err" in cl:
-        print(f"  Mack standard error       {cl['mack_total_mack_std_err']:>14,.0f}")
+        print(f"  Mack standard error         {cl['mack_total_mack_std_err']:>13,.0f}")
     result = {"mode": "reserve", "triangle": tri.name, "fingerprint": tri.fingerprint(),
-              "anchor": anchor, "target": args.target, "reserve": out["reserve"],
+              "anchor": anchor, "target": args.target, "features": args.features,
+              "reserve": out["reserve"], "reserve_mean": out["reserve_mean"],
+              "reserve_median": out["reserve_median"], "draws": args.draws,
               "factor_reserve": factor, "chainladder": cl,
               "distribution_route": out["distribution_route"],
+              "draws_method": out["draws_method"],
               "fit_seconds": fit_s, "predict_seconds": pred_s}
     if out["samples"] is not None:
+        # Say which summary is which. The three differ by the compounding, not by rounding.
+        print(f"  reserve (sampled mean)      {out['reserve_mean']:>13,.0f}   "
+              f"{100 * (out['reserve_mean'] - out['reserve']) / out['reserve']:+.1f}% vs the point")
+        print(f"  reserve (sampled median)    {out['reserve_median']:>13,.0f}   "
+              f"{100 * (out['reserve_median'] - out['reserve']) / out['reserve']:+.1f}% vs the point")
         result["percentiles"] = percentile_table(out["samples"])
-        print("  distribution              " + "  ".join(f"{k}={v:,.0f}"
-                                                         for k, v in result["percentiles"].items()))
+        print("  distribution             " + "  ".join(f"{k}={v:,.0f}"
+                                                        for k, v in result["percentiles"].items()))
+        print(f"  distribution route          {out['distribution_route']} quantiles, "
+              f"{out['draws_method']} draws, {args.draws} of them")
+        print(f"  note: {args.draws} draws means p99 is carried by roughly the top "
+              f"{max(1, args.draws // 100)} draws, and the median moves about 1.6% between seeds "
+              f"(measured, results/runs/abc-reserve-delta-running.md)")
     return result, out["samples"]
 
 

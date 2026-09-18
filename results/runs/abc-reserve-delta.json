@@ -14,7 +14,11 @@
   },
   "anchor": 10,
   "target": "delta",
+  "features": "frozen",
   "reserve": 8801617.76479058,
+  "reserve_mean": 8714267.905261153,
+  "reserve_median": 8599057.556282477,
+  "draws": 300,
   "factor_reserve": 5277760.35762586,
   "chainladder": {
     "note": "ibnr includes the tail beyond the last diagonal; reference only",
@@ -27,20 +31,20 @@
     "total_mack_std_err": 152712.93319662946
   },
   "distribution_route": "exact",
-  "fit_seconds": 4.594592094421387,
-  "predict_seconds": 34.65374207496643,
+  "draws_method": "bar-bins",
+  "fit_seconds": 4.7872068881988525,
+  "predict_seconds": 51.17018008232117,
   "percentiles": {
-    "p5": 7257215.224730075,
-    "p25": 7999871.269281976,
-    "p50": 8481122.86247763,
-    "p75": 9212711.5814417,
-    "p90": 9814681.868421568,
-    "p95": 10287630.962197239,
-    "p99": 10968952.781562302
+    "p5": 7727039.750511459,
+    "p25": 8193732.987523697,
+    "p50": 8599057.556282477,
+    "p75": 9028099.311318561,
+    "p90": 9568676.62372046,
+    "p95": 9923702.420248019,
+    "p99": 11764541.35280369
   },
   "command": "tabpfn_reserving abc --target delta --distribution --figure results/figures/abc_reserve_distribution_delta.png --json results/runs/abc-reserve-delta.json",
-  "started_at": "2026-09-18T01:33:38",
+  "started_at": "2026-09-18T02:04:10",
   "seed": 0,
-  "draws": 300,
-  "finished_at": "2026-09-18T01:34:17"
+  "finished_at": "2026-09-18T02:05:06"
 }

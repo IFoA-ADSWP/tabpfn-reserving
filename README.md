@@ -90,11 +90,18 @@ Real output from the first of those, unedited — including the part that does n
 
 ```
 abc: 11x11  anchor = last diagonal (age 132)  55 observed transitions
-  reserve (TabPFN-3.5)          12,844,223   fit 4.4s  predict 42.9s  [exact]
-  reserve (chain-ladder)         5,277,760   like-for-like, same cells
-  reserve (CAS package)          5,277,760   reference: includes a tail nobody can score
-  distribution              p5=7,180,819  ...  p50=9,758,413  ...  p95=17,226,566
+  reserve (compounded point)     12,844,223   fit 4.4s  predict 39.2s
+  reserve (chain-ladder)          5,277,760   like-for-like, on the same cells
+  reserve (CAS package)           5,277,760   reference: includes a tail nobody can score
+  reserve (sampled mean)         11,909,189   -7.3% vs the point
+  reserve (sampled median)        9,671,798   -24.7% vs the point
+  distribution             p5=7,452,235  p50=9,671,798  p95=20,049,586  p99=34,882,828
+  distribution route          exact quantiles, bar-bins draws, 300 of them
 ```
+
+Three summaries of "the reserve" are printed because they are not equal, and the gap between them is the
+compounding rather than a rounding error — the point figure compounds per-cell predictions, the others
+accumulate sampled paths. Which is which is stated rather than implied.
 
 The figure it writes is the one below; `results/runs/abc-reserve.md` says what the numbers mean and
 `docs/readiness.md` says what is still missing.

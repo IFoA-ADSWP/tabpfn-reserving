@@ -123,8 +123,60 @@ def test_both_arms_are_scored_on_the_same_cells() -> None:
 
 
 # ---------------------------------------------------------------------------------------------
-# No leakage: features may not see anything that was not observable at the anchor.
+# Sampling: the draws must come from the distribution the model actually returned.
 # ---------------------------------------------------------------------------------------------
+
+class StubBarModel:
+    """Returns a bar distribution built by hand, so the sampler can be checked against arithmetic."""
+
+    def __init__(self, borders: np.ndarray, weights: np.ndarray) -> None:
+        self.borders = np.asarray(borders, dtype=float)
+        self.weights = np.asarray(weights, dtype=float)
+
+    def fit(self, X, y):  # noqa: ANN001, ANN201
+        return self
+
+    def predict(self, X, output_type: str = "mean", quantiles=None):  # noqa: ANN001, ANN201
+        n = len(X)
+        if output_type == "full":
+            logits = np.log(np.tile(self.weights, (n, 1)))
+            return {"borders": self.borders, "logits": logits}
+        return np.full(n, float(np.average(self.borders[:-1], weights=self.weights)))
+
+
+def test_draws_from_a_uniform_bar_distribution_are_uniform() -> None:
+    """Twenty equal bins over [0, 20] must sample as a uniform on [0, 20]: mean 10, nothing outside."""
+    borders = np.linspace(0, 20, 21)
+    model = StubBarModel(borders, np.ones(20))
+    X = np.zeros((3, 8))
+    samples, info = arm.draws(model, X, 20_000, np.random.default_rng(0))
+
+    assert info["method"] == "bar-bins"
+    assert info["quantile_route"] == "exact"
+    assert samples.shape == (20_000, 3)
+    assert samples.min() >= 0 and samples.max() <= 20
+    assert np.mean(samples) == pytest.approx(10.0, abs=0.1)
+
+
+def test_draws_from_a_point_mass_stay_in_that_bin() -> None:
+    """All the weight in one bin means every draw lands in that bin -- the sampler's basic contract, and
+    the thing an interpolated 15-level grid cannot do at any resolution."""
+    borders = np.linspace(0, 20, 21)
+    weights = np.zeros(20)
+    weights[5] = 1.0
+    model = StubBarModel(borders, weights)
+    samples, _ = arm.draws(model, np.zeros((2, 8)), 1_000, np.random.default_rng(0))
+
+    assert samples.min() >= borders[5] and samples.max() <= borders[6]
+
+
+def test_the_sampler_reports_when_it_has_to_fall_back_to_the_grid() -> None:
+    """A backend that exposes no borders must say so rather than silently sampling a coarser object."""
+    samples, info = arm.draws(StubModel(), np.zeros((2, 8)), 200, np.random.default_rng(0))
+    assert info["method"] == "quantile-inversion"
+    assert "why" in info
+
+
 
 @pytest.mark.parametrize("mode", ["frozen", "running"])
 def test_features_ignore_the_unknown_region(mode: str) -> None:

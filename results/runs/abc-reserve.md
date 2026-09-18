@@ -63,6 +63,26 @@ next experiment is the fleet-as-context arm rather than more presentation.
 Pre-registered in `docs/method.md`: this arm was expected to carry signal, and it does in the *shape* of the
 uncertainty. It was never registered as competitive on the point estimate, and it is not.
 
+## Note: the distribution numbers were re-generated the same day (#16)
+
+The percentiles in the table above were produced by grid inversion: the draws interpolated a fixed 15-level
+quantile grid, which clamps the tails by construction. #16 replaced that with inverse-CDF sampling straight
+from the bar distribution the model actually returns, and the same command then gave:
+
+| | before (#16) | after (#16) |
+|---|---|---|
+| point reserve | 12,844,223 | **12,844,223** (unchanged to the pound) |
+| sampled mean | — | 11,909,189 (−7.3% vs the point) |
+| sampled median | 9,758,413 | 9,671,798 (−24.7% vs the point) |
+| p5 | 7,180,819 | 7,452,235 |
+| p95 | 17,226,566 | 20,049,586 |
+| **p99** | 21,525,679 | **34,882,828** |
+
+**The p99 was understated by 62%.** That is the whole point of the change: the old figure was an
+interpolation between the two widest levels the grid reported, not the model's tail. The point estimate is
+untouched — the projection path never used the draws — so findings 1 and 3 above stand exactly as written,
+and finding 2 (the interval excluding Chain Ladder) stands and is now stronger.
+
 ## A consequence for E3, which is worth more than the result itself
 
 The spike's coverage figures (55/82/91/91 at 50/75/90/95) came from **backtests**, where each origin is
