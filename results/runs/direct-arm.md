@@ -72,11 +72,24 @@ for the fleet rather than more work here.
 
 ## The distribution, for what it is worth alongside the point estimate
 
-`abc` delta: p5 2,351,587 · p50 5,581,983 · p99 9,950,952, against a point of 5,211,802. The point sits
-*below* the median and the downside reaches less than half the point — the arm's uncertainty is wide and
-skewed low, unlike the recursive arm's upward-compounding tail. Since the target is Chain Ladder-relative,
-a p5 of 2.4m is the model saying "Chain Ladder may be half wrong", which is a claim to test on the fleet,
-not to leave standing on one triangle.
+| triangle (delta) | point | mean | median | p5 | p95 | Chain Ladder |
+|---|---|---|---|---|---|---|
+| `abc` | 5,211,802 | 5,329,680 | 5,581,983 | 2,351,587 | 7,413,958 | 5,277,760 |
+| `genins` | 14,298,765 | 13,631,064 | 15,065,690 | 3,045,318 | 23,625,730 | 18,680,856 |
+
+**The interval now contains the incumbent's answer on both triangles.** On `abc` the recursive arm's p5 was
+7,452,235 — above Chain Ladder's 5,277,760, so it ruled the standard method out entirely, which is a
+distribution making a claim it had no business making. The direct arm's p5 is 2,351,587 and Chain Ladder sits
+comfortably inside. On `genins` it does too (18.68m between p75 18.19m and p90 20.84m).
+
+That is the distributional consequence of deleting the compounding, and it is the more defensible statement
+regardless of the point estimate: an honest interval should *cover* the incumbent where the incumbent is
+plausible, not contradict it by construction.
+
+The shapes differ between the two triangles — `abc`'s point sits below its median with a downside reaching
+less than half the point, `genins` spreads across a factor of nine from p5 to p99 — so on one triangle the arm
+is confidently low and on the other it is simply unsure. Against Chain Ladder-relative targets, both are the
+model saying "Chain Ladder may be wrong here", which is a claim for the fleet, not for one triangle.
 
 
 ## A process note worth keeping
