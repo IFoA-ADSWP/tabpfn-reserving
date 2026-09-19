@@ -1,0 +1,45 @@
+command: /Users/Scott/projects/tabpfn-reserving/.venv/bin/python scripts/depth_bias.py --triangles abc genins --targets delta
+anchor policy: the last 3 anchors below the ultimate, per triangle
+arm: recursive
+
+abc: anchors [7, 8, 9] -- deepest step reachable is depth 2
+     abc delta k=7  rows=28   steps scored=24  mean log error=-0.0094  (x0.9907 per step)
+     abc delta k=8  rows=36   steps scored=18  mean log error=-0.0064  (x0.9936 per step)
+     abc delta k=9  rows=45   steps scored=10  mean log error=+0.0024  (x1.0024 per step)
+genins: anchors [6, 7, 8] -- deepest step reachable is depth 2
+  genins delta k=6  rows=21   steps scored=21  mean log error=+0.0313  (x1.0318 per step)
+  genins delta k=7  rows=28   steps scored=16  mean log error=-0.0349  (x0.9657 per step)
+  genins delta k=8  rows=36   steps scored=9   mean log error=-0.0144  (x0.9857 per step)
+
+=== mean log error by depth (all triangles and anchors pooled) ===
+depth  steps  mean log err   x error       se
+    0     51       -0.0007    0.9993   0.0084
+    1     32       -0.0104    0.9897   0.0089
+    2     15       +0.0013    1.0013   0.0069
+
+=== regressed on depth ===
+  n=98  slope=-0.00143 per step (se 0.00729)  intercept=-0.00264
+  a slope of -0.00143 compounds to x0.9872 over nine steps
+  the measured over-reserve on abc delta production is x1.67 (see results/runs/abc-reserve-delta.md)
+
+=== the same slope, per triangle (delta arm) ===
+       abc  n=52  slope=-0.00179 (se 0.00295)  mean log error=-0.0061
+    genins  n=46  slope=-0.00100 (se 0.01536)  mean log error=-0.0007
+
+=== currency decomposition, delta arm (a reserve is a sum, so weight the steps) ===
+depth  steps        exposure  mean log err   exposure-weighted log err
+    0     51      91,084,111       -0.0007                     +0.0083
+    1     32      64,917,538       -0.0104                     -0.0045
+    2     15      33,582,099       +0.0013                     +0.0048
+
+=== the largest residuals by origin, delta arm (where the money actually is) ===
+    genins k=6  origin=3  steps=3  base= 3,757,447 predicted=   1,994,024 actual=     830,821 residual=  +1,163,203 (+140.0%)
+    genins k=7  origin=7  steps=2  base=   359,480 predicted=   1,617,857 actual=   2,505,018 residual=    -887,161 (-35.4%)
+    genins k=6  origin=4  steps=3  base= 2,128,333 predicted=   2,456,073 actual=   1,744,978 residual=    +711,095 (+40.8%)
+    genins k=6  origin=6  steps=3  base=   440,832 predicted=   3,612,950 actual=   3,042,298 residual=    +570,652 (+18.8%)
+    genins k=6  origin=1  steps=3  base= 4,120,063 predicted=     727,107 actual=   1,219,022 residual=    -491,915 (-40.4%)
+    genins k=6  origin=5  steps=3  base= 1,333,217 predicted=   2,843,987 actual=   2,358,495 residual=    +485,492 (+20.6%)
+    genins k=7  origin=6  steps=2  base= 1,288,463 predicted=   1,710,233 actual=   2,194,667 residual=    -484,434 (-22.1%)
+    genins k=8  origin=7  steps=1  base= 1,421,128 predicted=   1,071,121 actual=   1,443,370 residual=    -372,249 (-25.8%)
+
+wrote results/runs/20260919-201227_depth-bias/depth_bias.json and run.log (98 scored steps)

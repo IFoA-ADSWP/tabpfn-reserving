@@ -345,6 +345,7 @@ interpolate inside ranges it has been shown, and hand the extrapolation to arith
 | widening the intervals | **works, is not a result** | `results/fleet/CALIBRATION.md` — 11.8% → 4.3% mean gap, placebo 5.5% |
 | speed | **falsified** | `results/runs/20260919-pricing/pricing.md` — the classical methods are 25–35× faster |
 | a bounded target (R2) | **falsified, and it does not isolate support** | `results/runs/20260919-bounded-target/FINDINGS.md` — on 75 paired units the share target moves 95% coverage **away** from nominal (88.0% → 70.7%, McNemar p = 0.0023) and **doubles** the upper-tail miss (12.0% → 29.3% of units above the model's own 95% upper bound); the reconstruction is below zero on **72%** of units, because the share of a falling cumulative is negative (48% of training labels), so the run measures a **level** defect as much as a support change |
+| more rows, in-triangle (#25) | **falsified** | `results/runs/20260919-row-expansion/FINDINGS.md` — the fit sees **2.6× the rows** (median 25 → 65) and gains nothing measurable: **+2.2pp** (se 5.3pp, McNemar p = 0.774) against the 2.3pp floor, and the depth-bias slope moves **−0.0005** (se 0.0063) |
 
 **What the measurements leave open, and why these two and not others.**
 
@@ -358,12 +359,22 @@ interpolate inside ranges it has been shown, and hand the extrapolation to arith
    information**. Then the fleet as context (§5.4), the only route to the benchmarks' floor (BeyondArena excludes
    sub-100 rows; TabArena leaves sub-500 for future work; ours are 6–33).
 
-**The stopping rule, because a strategy without one is a wish.** R2 has now been run and failed — it moved the
-tail the wrong way, and its own instrument could not hold the level. If **R1** and then the row-count work do
-not move 90/95 coverage toward nominal **and** the closer-than-Chain-Ladder rate above **38.8% ± 2.3pp**, the
-remaining honest move is the **diagnostic** (**#23**): use the model's own embeddings to flag where its
-distribution is untrustworthy — the one capability it can still contribute, and one the vendor's documentation
-says is absent.
+   **Outcome, ran 2026-09-19 (`results/runs/20260919-row-expansion/FINDINGS.md`).** The in-triangle expansion
+   is **dead**: the fit sees **2.6× the rows of its own triangle** (median 25 → 65, 10–98 in all) and gains
+   nothing measurable — the closer-than-Chain-Ladder rate moves **+2.2pp** (47.8% → 50.0% on a fixed 90-unit
+   screen, 7 fixed / 5 broken, McNemar p = 0.774) against a binomial standard error of 5.3pp, and the
+   depth-bias slope on the arm whose rows did change moves **−0.0005 (0.06421 → 0.06371)** against a standard
+   error of 0.0063. Both legs of the pre-registered falsifier hold, so **row count is not the binding
+   constraint** for this model on this data, and all the weight moves to E2b — rows that carry *different*
+   information rather than merely more of the same.
+
+**The stopping rule, because a strategy without one is a wish.** Two of the three levers have now been run
+and failed: **R2** moved the tail the wrong way and its own instrument could not hold the level, and the
+**row expansion** saw 2.6× the rows of its own triangle and gained nothing measurable (both legs of its
+pre-registered falsifier hold). If **R1** — now the only untested lever — does not move 90/95 coverage toward
+nominal **and** the closer-than-Chain-Ladder rate above **38.8% ± 2.3pp**, the remaining honest move is the
+**diagnostic** (**#23**): use the model's own embeddings to flag where its distribution is untrustworthy — the
+one capability it can still contribute, and one the vendor's documentation says is absent.
 
 **Not viable, on the evidence rather than on taste:** configuration and tuning (measured dead), features alone
 (the column swap had no effect, so it is not case-reserve noise), widening (not a result), a bounded target as

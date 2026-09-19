@@ -27,3 +27,10 @@ tabpfn-reserving = "tabpfn_reserving.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+# Run the tests against *this* checkout's `src`. The venv lives only in the primary checkout and its editable
+# install points there, so without this a `pytest` run inside a worktree imports the other tree's code -- the
+# same failure the scripts' own sys.path bootstraps exist to prevent. Here it silently certifies a diff that
+# was never imported.
+pythonpath = ["src"]

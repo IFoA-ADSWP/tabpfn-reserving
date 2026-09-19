@@ -39,6 +39,17 @@ def checker_module():  # noqa: ANN201 - a dynamically loaded module has no impor
     return module
 
 
+def test_the_checker_scans_a_run_directory() -> None:
+    """A run's FINDINGS.md is a document a reader is handed, and it is where that run's own numbers are
+    quoted. If it were outside the corpus, every run's deliverable would be unchecked while the checker
+    reported a pass -- which is the failure mode this test exists to prevent."""
+    module = checker_module()
+    assert "results/*/*/*.md" in module.RUN_CORPUS, module.RUN_CORPUS
+    matched = [p for pat in module.CORPUS + module.RUN_CORPUS for p in ROOT.glob(pat)]
+    assert any(str(p).endswith("20260918-023600_depth-bias/FINDINGS.md") for p in matched), \
+        "a recorded run's FINDINGS.md is not in the corpus"
+
+
 def test_the_checker_can_fail_and_can_pass() -> None:
     """The control arm. If this fails, the checker is not trustworthy and the test below proves nothing."""
     r = run("--self-test")

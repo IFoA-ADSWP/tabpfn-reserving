@@ -1,0 +1,70 @@
+command: scripts/row_expansion.py --limit 0 --max-units 90 --held-out 3 --out results/runs/20260919-row-expansion
+cells: baseline (intermediate_ages=False) and expanded (intermediate_ages=True); one factor.
+refuses a verdict below 60 paired units, on a failed replication, or on no variation.
+
+units already on disk: 0
+  10 units | 19.2 min | GRNAME / LOB#21 k=8
+  20 units | 25.3 min | GRNAME / LOB#33 k=5
+  30 units | 31.0 min | GRNAME / LOB#63 k=8
+  40 units | 39.1 min | GRNAME / LOB#79 k=8
+  50 units | 48.9 min | GRNAME / LOB#85 k=8
+  60 units | 59.9 min | GRNAME / LOB#111 k=5
+  70 units | 67.0 min | GRNAME / LOB#125 k=6
+  80 units | 74.0 min | GRNAME / LOB#138 k=8
+  90 units | 80.1 min | GRNAME / LOB#147 k=7
+
+skipped, by reason (no unit is dropped silently):
+      241  no scoreable future
+       29  not a proper triangle (sparse or fragmented container)
+scanned 119 triangles, wrote 90 units in 80.1 min
+
+=== 90 units on disk ===
+  scored by both cells : 90
+  scored by baseline : 90
+  scored by expanded : 90
+  scored ONLY by expanded (the row minimum stopped the baseline): 0
+  scored ONLY by baseline : 0
+
+=== rows per fit: the recount, from the code path both cells ran ===
+  baseline: n=  90  min    7  p25   18  median   25  p75   33  max    33
+  expanded: n=  90  min   10  p25   40  median   65  p75   98  max    98
+  expansion factor on the paired units: median x2.60, range x1.43-x2.97
+
+=== replication: this script's baseline cell against results/fleet/clrd-IncurLoss.jsonl ===
+  units also in the recorded file: 90
+  worst relative difference in actual      : 0.000e+00
+  worst relative difference in chainladder : 0.000e+00
+  worst relative difference in direct      : 0.000e+00
+  REPLICATION OK: every shared unit reproduces field by field, so the only difference between
+  the two cells below is the training row set.
+
+=== paired: same units, same anchors, same model, only the row set differs ===
+  cell        median |err|   closer than CL   paired |err| change vs CL (median)
+  baseline          181.2%            47.8%                                18.0pp
+  expanded          176.8%            50.0%                                 4.9pp
+  the null (Chain Ladder) on the same units: median |error| 131.0%
+  binomial sampling error of a rate at n=90: 5.3pp  (the recorded fleet rate is 38.8% +- 2.3pp at n=464)
+
+  the 2x2 against Chain Ladder (fixed = lost -> won, broken = won -> lost):
+    fixed (baseline not closer, expanded closer) : 7
+    broken (baseline closer, expanded not closer): 5
+    both closer: 38      neither closer: 40
+    McNemar exact, two-sided: p = 0.774
+    rate change: +2.2pp  (the pre-registered bar is a rise above 38.8% + 2.3pp = 41.1%)
+
+  by horizon (the held-out diagonal count):
+    horizon  units  baseline  expanded    delta
+          1     35     42.9%     42.9%    +0.0pp
+          2     27     66.7%     59.3%    -7.4pp
+          3     28     35.7%     50.0%   +14.3pp
+
+  by triangle size:
+    n= 9    10 units  baseline  40.0%  expanded  60.0%
+    n=10    75 units  baseline  48.0%  expanded  48.0%
+
+  VERDICT: expanded 50.0% vs baseline 47.8% on 90 paired units.
+  pre-registered expectation was a rise above the 41.1% bar; the screen's own 2-SE band around
+  38.8% is +-10.3pp, so this screen can resolve a
+  move of the size the bar asks for at n=90.
+  (The full-fleet confirmation, if warranted, is a separate run: this is a fixed, pre-declared
+  subset and its binomial error is quoted rather than hidden.)
