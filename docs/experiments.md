@@ -330,8 +330,8 @@ whether the vendor's own documentation predicts our negative.
 # 6. Stage 3 — the consolidated strategy (2026-09-19, after the first stage-2 results)
 
 > Written after E7 (conditions), the target-support measurement, R4 (the paid column), and #22 (the
-> configuration cells) landed. Those four closed three routes by measurement, which is what makes a strategy
-> possible rather than a list.
+> configuration cells) landed, and updated after **R2 (#24), the bounded target, was run and failed**. Those
+> five closed four routes by measurement, which is what makes a strategy possible rather than a list.
 
 **The strategy, in one sentence.** Stop improving the model; change the problem so it is asked only to
 interpolate inside ranges it has been shown, and hand the extrapolation to arithmetic.
@@ -344,32 +344,31 @@ interpolate inside ranges it has been shown, and hand the extrapolation to arith
 | the column | **no effect** | `results/runs/20260919-column-comparison/FINDINGS.md` — paid 36.2% vs incurred 38.2%, paired −1.9% (se 3.3%), inside the 2.3pp floor |
 | widening the intervals | **works, is not a result** | `results/fleet/CALIBRATION.md` — 11.8% → 4.3% mean gap, placebo 5.5% |
 | speed | **falsified** | `results/runs/20260919-pricing/pricing.md` — the classical methods are 25–35× faster |
+| a bounded target (R2) | **falsified, and it does not isolate support** | `results/runs/20260919-bounded-target/FINDINGS.md` — on 75 paired units the share target moves 95% coverage **away** from nominal (88.0% → 70.7%, McNemar p = 0.0023) and **doubles** the upper-tail miss (12.0% → 29.3% of units above the model's own 95% upper bound); the reconstruction is below zero on **72%** of units, because the share of a falling cumulative is negative (48% of training labels), so the run measures a **level** defect as much as a support change |
 
-**What the measurements leave open, and why these three and not others.**
+**What the measurements leave open, and why these two and not others.**
 
-1. **R2 — a bounded target.** Predict the share of the ultimate still to emerge (support in [0,1]) instead of a
-   multiplicative factor. Motivated by the verified mechanism: the distribution is a fixed bucket grid rescaled
-   to the training target's mean and sd, so **what you predict sets the grid's shape** — and the free
-   measurement showed the truth leaves the range of training labels on **21.1% of units** (5.3% of cells),
-   one-sided upward. This is the **only remaining test of the tail**, and its falsifier is pre-registered in
-   `results/remodel/FINDINGS.md` §R2.
-2. **R1 — an exposure-anchored level.** Predict the correction to a Bornhuetter-Ferguson/CapeCod prior rather
+1. **R1 — an exposure-anchored level.** Predict the correction to a Bornhuetter-Ferguson/CapeCod prior rather
    than to Chain Ladder, so the model corrects a level rather than inventing one. Our leak is in the level:
    **+3.2% per step**, compounding to ×1.33 against a measured ×1.67 (`depth-bias/FINDINGS.md`). Its design
    warning is pre-registered too: the paired null must become **BF's own reserve**, or the comparison flatters it.
-3. **More rows, in this order.** First the in-triangle expansion — every intermediate target age, plus the paid
+   R2's failure points the same way without establishing it: the level, not the support, is what broke.
+2. **More rows, in this order.** First the in-triangle expansion — every intermediate target age, plus the paid
    column as a second view — which is free, leakage-clamped, and **isolates row count from cross-triangle
    information**. Then the fleet as context (§5.4), the only route to the benchmarks' floor (BeyondArena excludes
    sub-100 rows; TabArena leaves sub-500 for future work; ours are 6–33).
 
-**The stopping rule, because a strategy without one is a wish.** If R2 and R1 together do not move 90/95
-coverage toward nominal **and** the closer-than-Chain-Ladder rate above **38.8% ± 2.3pp**, the remaining honest
-move is the **diagnostic** (**#23**): use the model's own embeddings to flag where its distribution is
-untrustworthy — the one capability it can still contribute, and one the vendor's documentation says is absent.
+**The stopping rule, because a strategy without one is a wish.** R2 has now been run and failed — it moved the
+tail the wrong way, and its own instrument could not hold the level. If **R1** and then the row-count work do
+not move 90/95 coverage toward nominal **and** the closer-than-Chain-Ladder rate above **38.8% ± 2.3pp**, the
+remaining honest move is the **diagnostic** (**#23**): use the model's own embeddings to flag where its
+distribution is untrustworthy — the one capability it can still contribute, and one the vendor's documentation
+says is absent.
 
 **Not viable, on the evidence rather than on taste:** configuration and tuning (measured dead), features alone
-(the column swap had no effect, so it is not case-reserve noise), widening (not a result), fine-tuning
-(contradicts the entry's claim), and any longer chain of the same formulation (each fails the same way).
+(the column swap had no effect, so it is not case-reserve noise), widening (not a result), a bounded target as
+the sole change (measured: it moves the tail the wrong way), fine-tuning (contradicts the entry's claim), and
+any longer chain of the same formulation (each fails the same way).
 
 **The honest odds.** The depth-bias mechanism is fundamental rather than incidental, so a *competitive point
 estimate* is perhaps a 25–35% proposition. The **distribution** claim has a materially better path — a specific,

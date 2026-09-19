@@ -12,7 +12,8 @@ import pytest
 from tabpfn_reserving import arm
 from tabpfn_reserving.triangle import (
     DIRECT_FEATURES, FEATURES, IDENTIFIER_FEATURES, IDENTIFIER_INDICES, RUNNING_FEATURES, Triangle,
-    chainladder_baseline, direct_training_rows, factor_reserve, features_for, target_ages, training_rows,
+    chainladder_baseline, chainladder_factor, direct_training_rows, factor_reserve, features_for,
+    target_ages, training_rows,
 )
 
 
@@ -443,6 +444,147 @@ def test_direct_arm_with_a_constant_model_is_arithmetic() -> None:
                              target="ratio")
     base = np.array([tri.values[a, tri.n - 1 - a] for a in out["origins"]])
     assert out["reserve"] == pytest.approx(float(np.sum(base * 0.10)))
+
+
+# ---------------------------------------------------------------------------------------------
+# The bounded-support target (#24): predict the share of the ultimate still to emerge
+# ---------------------------------------------------------------------------------------------
+
+class StubClShare:
+    """Predicts Chain Ladder's own share, read off the log-factor feature every row already carries.
+
+    A constant model cannot express this: Chain Ladder's share differs by origin, and the whole point of
+    this stub is the degenerate case -- if the model reproduces CL's share it must reproduce CL's reserve.
+    """
+
+    def fit(self, X, y):  # noqa: ANN001, ANN201
+        return self
+
+    def predict(self, X, output_type: str = "mean", quantiles=None):  # noqa: ANN001, ANN201
+        share = 1.0 - np.exp(-np.asarray(X, dtype=float)[:, -1])
+        if output_type == "quantiles":
+            levels = np.asarray(quantiles, dtype=float)
+            return np.tile(share, (len(levels), 1)) * (1 - 1e-6 * (0.5 - levels))
+        return share
+
+
+def test_the_unrevealed_label_is_the_share_still_to_emerge() -> None:
+    """The label is arithmetic on two observed cells, so it can be recomputed from the triangle.
+
+    No model, no factor selection, no simulation: the share of the ultimate still to emerge is available
+    on real data, which is what makes the target worth trying at all.
+    """
+    tri = Triangle.load("abc")
+    anchor = 6
+    train = [2, 3, 4, 5]
+    _, y = direct_training_rows(tri, train, target="unrevealed", known_until=anchor)
+
+    expected = []
+    for k in train:
+        for a in range(k + 1):
+            age, target_age = k - a, min(tri.n - 1 - a, anchor - a)
+            base, end = tri.values[a, age], tri.values[a, target_age]
+            if not (np.isfinite(base) and np.isfinite(end) and base > 0 and end > 0):
+                continue
+            expected.append(1.0 - base / end)
+
+    assert len(expected) == 18, "the label set changed shape, so this is not the check it claims"
+    assert len(y) == len(expected)
+    assert np.allclose(y, expected)
+    assert np.all(y < 1.0), "a share of the ultimate cannot reach 1 on an observed target cell"
+
+    _, y_delta = direct_training_rows(tri, train, target="delta", known_until=anchor)
+    assert not np.allclose(y, y_delta), "the target change did not change the labels -- vacuous test"
+
+
+def test_the_unrevealed_label_is_bounded_where_a_factor_is_not() -> None:
+    """On a monotone triangle every label is in [0, 1) -- the support claim, on arithmetic alone.
+
+    The delta target on the same rows is a factor with no upper bound, which is the whole reason to prefer a
+    fraction: a multiplicative factor can always be larger, a share of the ultimate cannot.
+    """
+    n = 6
+    values = np.full((n, n), np.nan)
+    for a in range(n):
+        for d in range(n - a):
+            values[a, d] = 10.0 * (a + 1) * (d + 1)
+    tri = Triangle(name="monotone", values=values, columns=["incurred"],
+                   origin=[f"y{a}" for a in range(n)], ages=list(range(n)))
+
+    _, y = direct_training_rows(tri, [2, 3, 4], target="unrevealed", known_until=5)
+    assert len(y) > 0
+    assert y.min() >= 0.0 and y.max() < 1.0, f"share left [0, 1): min {y.min()}, max {y.max()}"
+
+
+def test_a_falling_cumulative_gives_a_negative_share_rather_than_a_clipped_one() -> None:
+    """A share below zero is a real observation of a decreasing cumulative, not an error to hide.
+
+    Clipping the label into [0, 1] would make the target's support look cleaner than the data it is trained
+    on, and would do it silently -- so the label is left alone and the count of negatives is reported.
+    """
+    values = np.array([
+        [100.0, 120.0, 90.0, 80.0],
+        [100.0, 110.0, 100.0, np.nan],
+        [100.0, 95.0, np.nan, np.nan],
+        [100.0, np.nan, np.nan, np.nan],
+    ])
+    tri = Triangle(name="falling", values=values, columns=["incurred"],
+                   origin=list("abcd"), ages=[0, 1, 2, 3])
+    _, y = direct_training_rows(tri, [2], target="unrevealed", known_until=3)
+
+    assert len(y) == 3
+    assert np.all(y < 0), f"expected all three shares negative, got {y}"
+    assert y.min() == pytest.approx(1.0 - 90.0 / 80.0)
+
+
+def test_the_unrevealed_arm_rebuilds_the_reserve_from_the_chain_ladder_ultimate() -> None:
+    """`IBNR = predicted_share x Chain Ladder ultimate`, checked against the arithmetic by hand.
+
+    The level is Chain Ladder's on purpose: with the ultimate held fixed, a movement in the coverage can
+    only come from the change in what is predicted.
+    """
+    tri = Triangle.load("abc")
+    anchor = tri.n - 1
+    tgt = target_ages(tri.n, "production")
+    out = arm.reserve_direct(StubModel(0.25), tri, anchor, 0, np.random.default_rng(0),
+                             target="unrevealed", targets=tgt)
+
+    gf = tri.global_factors(tri.known(anchor))
+    base = np.array([tri.values[a, anchor - a] for a in out["origins"]])
+    cl = np.array([chainladder_factor(gf, anchor - a, tgt[a]) for a in out["origins"]])
+    assert out["reserve"] == pytest.approx(float(np.sum(0.25 * base * cl)))
+
+
+def test_the_unrevealed_arm_reproduces_chain_ladder_when_it_predicts_cl_shares() -> None:
+    """The degenerate point, and it is the same one the delta target has: predicting the baseline *is* the
+    baseline. What is under test here is that the reconstruction really uses Chain Ladder's ultimate."""
+    tri = Triangle.load("abc")
+    anchor = tri.n - 1
+    gf = tri.global_factors(tri.known(anchor))
+    tgt = target_ages(tri.n, "production")
+    out = arm.reserve_direct(StubClShare(), tri, anchor, 0, np.random.default_rng(0),
+                             target="unrevealed", targets=tgt)
+    assert out["reserve"] == pytest.approx(factor_reserve(tri, anchor, gf, targets=tgt))
+
+
+def test_the_unrevealed_draws_and_point_describe_the_same_quantity() -> None:
+    """Both are `share x ultimate` summed over the same origins, so the point and the distribution's mean
+    cannot sit on different scales the way the recursive arm's did."""
+    tri = Triangle.load("abc")
+    out = arm.reserve_direct(StubModel(0.3, spread=0.001), tri, tri.n - 1, 2000,
+                             np.random.default_rng(0), target="unrevealed")
+    assert out["samples"] is not None
+    assert np.mean(out["samples"]) == pytest.approx(out["reserve"], rel=0.005)
+    assert out["shares_over_one"] is not None, "the measured share of draws past 1 was not reported"
+
+
+def test_an_unknown_target_is_refused_rather_than_treated_as_ratio() -> None:
+    """A target string nobody implemented used to fall through to the raw factor, silently."""
+    tri = Triangle.load("abc")
+    with pytest.raises(ValueError, match="unknown target"):
+        direct_training_rows(tri, [3], target="shares")
+    with pytest.raises(ValueError, match="unknown target"):
+        arm.reserve_direct(StubModel(), tri, 3, 0, np.random.default_rng(0), target="shares")
 
 
 

@@ -358,7 +358,22 @@ def direct_training_rows(tri: Triangle, anchors, target: str = "delta", known_un
     predict. Passing `known_until=anchor` clamps every training label to a cell the evaluation anchor could
     already see, and the training horizon becomes the interval between the two valuation dates rather than
     the full run to the ultimate.
+
+    Three targets, and the third is opt-in (#24):
+
+    * `"ratio"` -- the raw development factor `C[a, target_age] / C[a, age]`.
+    * `"delta"` -- that factor divided by Chain Ladder's own, so 1.0 *is* Chain Ladder.
+    * `"unrevealed"` -- the **share of the target level still to emerge**, `1 - C[a, age] / C[a, target_age]`,
+      a number in `[0, 1)` whenever the cumulative has not fallen. Both cells are observed, so it is
+      computable on real data with no simulation. This exists because the model's regression distribution is
+      a bucket grid fixed on the prior and merely *rescaled to the training target's mean and sd*, so what
+      you predict sets the grid's support -- and a multiplicative factor has no upper bound where a share
+      ends at 1 by construction (`results/remodel/FINDINGS.md` §R2). Labels are never clipped to `[0, 1)`:
+      a decreasing cumulative gives a negative share and is reported as such, because clipping a label is a
+      silent alteration of the quantity under test.
     """
+    if target not in ("ratio", "delta", "unrevealed"):
+        raise ValueError(f"unknown target {target!r}: expected 'ratio', 'delta' or 'unrevealed'")
     ceiling = (tri.n - 1) if known_until is None else int(known_until)
     X, y = [], []
     for k in anchors:
@@ -377,9 +392,19 @@ def direct_training_rows(tri: Triangle, anchors, target: str = "delta", known_un
             if target == "delta":
                 if not (cl > 0):
                     continue
-                factor = factor / cl
+                label = factor / cl
+            elif target == "unrevealed":
+                # The share of the target level still to emerge. `end` is observed (the finiteness of both
+                # cells is checked above) and must be positive for the ratio to be a share at all; a negative
+                # or zero cumulative is not a level a fraction can be taken of, so the row is skipped rather
+                # than given an invented label.
+                if not (np.isfinite(end) and end > 0):
+                    continue
+                label = 1.0 - base / end
+            else:
+                label = factor
             X.append(row)
-            y.append(factor)
+            y.append(label)
     return np.asarray(X, dtype=float), np.asarray(y, dtype=float)
 
 

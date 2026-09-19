@@ -1,0 +1,62 @@
+baseline     target=delta          75 rows
+unrevealed   target=unrevealed     75 rows
+
+=== 75 units present in both cells (subset: first 75 of results/fleet/coverage.jsonl) ===
+
+--- the replication cell, row by row against the record ---
+  rows compared against results/fleet/coverage.jsonl : 75
+  fields compared (every field the two files share)  : 23
+  rows with any field outside 1e-9 relative          : 0
+  coverage-flag mismatches at 50/75/90/95            : 0
+   50%: recorded  40.0%   baseline cell  40.0%
+   75%: recorded  62.7%   baseline cell  62.7%
+   90%: recorded  78.7%   baseline cell  78.7%
+   95%: recorded  88.0%   baseline cell  88.0%
+  against #22's recorded baseline cell (results/runs/20260919-config-cells/baseline.jsonl): 75 units shared, 0 with any field outside 1e-9 relative
+
+--- coverage (n=75; binomial SE at the nominal level in brackets) ---
+cell          level  covered  empirical      gap           95% CI      z
+baseline        50%       30      40.0%   -10.0pp [ 28.9, 51.1]  -1.77
+baseline        75%       47      62.7%   -12.3pp [ 51.7, 73.6]  -2.21
+baseline        90%       59      78.7%   -11.3pp [ 69.4, 87.9]  -2.40
+baseline        95%       66      88.0%    -7.0pp [ 80.6, 95.4]  -1.87
+unrevealed      50%       19      25.3%   -24.7pp [ 15.5, 35.2]  -4.91
+unrevealed      75%       33      44.0%   -31.0pp [ 32.8, 55.2]  -5.41
+unrevealed      90%       45      60.0%   -30.0pp [ 48.9, 71.1]  -5.30
+unrevealed      95%       53      70.7%   -24.3pp [ 60.4, 81.0]  -4.63
+
+--- paired against the replication cell, unit by unit (McNemar's exact test) ---
+ level  baseline  unrevealed  difference  fixed  broke        p    bar
+   50%     40.0%       25.3%      -14.7pp      6     17   0.0347  11.3pp
+   75%     62.7%       44.0%      -18.7pp      3     17   0.0026   9.8pp
+   90%     78.7%       60.0%      -18.7pp      4     18   0.0043   6.8pp
+   95%     88.0%       70.7%      -17.3pp      2     15   0.0023   4.9pp
+
+--- the one-sided tail, read directly (nominal 2.5% each side at 95%) ---
+  baseline     90%: above the upper bound   15/75 ( 20.0%), below the lower bound    1/75 ( 1.3%)
+  baseline     95%: above the upper bound    9/75 ( 12.0%), below the lower bound    0/75 ( 0.0%)
+  unrevealed   90%: above the upper bound   29/75 ( 38.7%), below the lower bound    1/75 ( 1.3%)
+  unrevealed   95%: above the upper bound   22/75 ( 29.3%), below the lower bound    0/75 ( 0.0%)
+  the upper-tail miss: baseline 12.0% -> unrevealed 29.3% (+17.3pp; a larger number is worse)
+
+--- the centre, which the pre-registration says should not move much ---
+  baseline     median (point-actual)/actual    -0.34   median (median-actual)/actual    -0.78   median |error|   1.82   point below zero  33.3% of units
+  unrevealed   median (point-actual)/actual    -2.07   median (median-actual)/actual    -1.52   median |error|   2.40   point below zero  72.0% of units
+
+--- the unrevealed cell's own support ---
+  training labels: max over units, median 0.291, largest 0.860 (a share has to end below 1)
+  training labels below zero: 869/1809 (48.04%) from falling cumulative cells -- left as they are, not clipped
+  drawn shares above 1: mean 0.36% of draws across 75 units (max unit 4.9%) -- the model's grid is not bounded by the labels' range
+
+=== the pre-registered falsifier ===
+  n = 75. Binomial SE against the recorded rates: 4.2pp at 95% (84.7% recorded), 4.8pp at 90% (78.0% recorded).
+  expectation bar (1 SE): 95% must exceed 88.9%, 90% must exceed 82.8%
+  falsifier bar (2 SE): an outcome inside [76.4%, 93.0%] at 95% kills the support explanation
+  unrevealed cell: 70.7% at 95% (-14.0pp), 60.0% at 90% (-18.0pp)
+  reading caveat: the two cells do not only differ in support. The reconstructed level is below zero on 72.0% of the unrevealed units against 33.3% of the baseline's, so any coverage difference here is a difference of *level and support together*, not of support alone.
+
+  FALSIFIER NOT MET, expectation NOT met: 95% lies outside 2 SE of the record but not on the
+  side the pre-registration predicted (or not by more than the sampling error). Reported as it is.
+  paired at 95%: fixed 2, broke 15, McNemar exact p = 0.0023;  90%: fixed 4, broke 18, p = 0.0043.
+
+wrote manifest to results/runs/20260919-bounded-target/manifest.json
