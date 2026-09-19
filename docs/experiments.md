@@ -324,3 +324,54 @@ biggest build and the only path to a competitive point estimate, and it is bette
 whether the vendor's own documentation predicts our negative.
 
 **Not part of this:** any spend. Every step runs on the local CPU, on data already in the repository.
+
+---
+
+# 6. Stage 3 — the consolidated strategy (2026-09-19, after the first stage-2 results)
+
+> Written after E7 (conditions), the target-support measurement, R4 (the paid column), and #22 (the
+> configuration cells) landed. Those four closed three routes by measurement, which is what makes a strategy
+> possible rather than a list.
+
+**The strategy, in one sentence.** Stop improving the model; change the problem so it is asked only to
+interpolate inside ranges it has been shown, and hand the extrapolation to arithmetic.
+
+**What the measurements closed.**
+
+| route | verdict | evidence |
+|---|---|---|
+| configuration / tuning | **dead** | `results/runs/20260919-config-cells/FINDINGS.md` — categorical identifiers and the extrapolating transform move the **centre** (50% coverage 40.0% → 49.3%) and **never the tail** (90%: 0.0pp; 95%: −6.7pp on the transform) |
+| the column | **no effect** | `results/runs/20260919-column-comparison/FINDINGS.md` — paid 36.2% vs incurred 38.2%, paired −1.9% (se 3.3%), inside the 2.3pp floor |
+| widening the intervals | **works, is not a result** | `results/fleet/CALIBRATION.md` — 11.8% → 4.3% mean gap, placebo 5.5% |
+| speed | **falsified** | `results/runs/20260919-pricing/pricing.md` — the classical methods are 25–35× faster |
+
+**What the measurements leave open, and why these three and not others.**
+
+1. **R2 — a bounded target.** Predict the share of the ultimate still to emerge (support in [0,1]) instead of a
+   multiplicative factor. Motivated by the verified mechanism: the distribution is a fixed bucket grid rescaled
+   to the training target's mean and sd, so **what you predict sets the grid's shape** — and the free
+   measurement showed the truth leaves the range of training labels on **21.1% of units** (5.3% of cells),
+   one-sided upward. This is the **only remaining test of the tail**, and its falsifier is pre-registered in
+   `results/remodel/FINDINGS.md` §R2.
+2. **R1 — an exposure-anchored level.** Predict the correction to a Bornhuetter-Ferguson/CapeCod prior rather
+   than to Chain Ladder, so the model corrects a level rather than inventing one. Our leak is in the level:
+   **+3.2% per step**, compounding to ×1.33 against a measured ×1.67 (`depth-bias/FINDINGS.md`). Its design
+   warning is pre-registered too: the paired null must become **BF's own reserve**, or the comparison flatters it.
+3. **More rows, in this order.** First the in-triangle expansion — every intermediate target age, plus the paid
+   column as a second view — which is free, leakage-clamped, and **isolates row count from cross-triangle
+   information**. Then the fleet as context (§5.4), the only route to the benchmarks' floor (BeyondArena excludes
+   sub-100 rows; TabArena leaves sub-500 for future work; ours are 6–33).
+
+**The stopping rule, because a strategy without one is a wish.** If R2 and R1 together do not move 90/95
+coverage toward nominal **and** the closer-than-Chain-Ladder rate above **38.8% ± 2.3pp**, the remaining honest
+move is the **diagnostic** (**#23**): use the model's own embeddings to flag where its distribution is
+untrustworthy — the one capability it can still contribute, and one the vendor's documentation says is absent.
+
+**Not viable, on the evidence rather than on taste:** configuration and tuning (measured dead), features alone
+(the column swap had no effect, so it is not case-reserve noise), widening (not a result), fine-tuning
+(contradicts the entry's claim), and any longer chain of the same formulation (each fails the same way).
+
+**The honest odds.** The depth-bias mechanism is fundamental rather than incidental, so a *competitive point
+estimate* is perhaps a 25–35% proposition. The **distribution** claim has a materially better path — a specific,
+addressable defect with a verified mechanism behind it — and it is the claim the entry rests on.
+
