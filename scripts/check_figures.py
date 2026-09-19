@@ -192,9 +192,20 @@ def self_test() -> int:
         # A corpus that would pass if the checker were awake: canonical figures present, superseded marked.
         good = d / "good.md"
         good.write_text(
-            "6–33 rows, median 25\n38.8% closer\n162.6% and 121.3%\n39.2% and 84.7%\n14.7% above\n5,211,802\n"
+            "6–33 rows, median 25\n38.8% closer\n162.6% and 121.3%\n39.2% and 84.7%\n14.7% above\n"
+            "13.8% over all units\n5,211,802\n"
             "This corrects an earlier claim of 40–60 training rows.\n"
         )
+        # Adding a canonical figure without adding it here turns the control arm into a failure that
+        # looks like a product bug -- it happened when 13.8% was added. Check it mechanically instead.
+        missed = [pat for pat, _m, _w in CANONICAL if not re.search(pat, good.read_text())]
+        if missed:
+            print("  SELF-TEST CORPUS IS STALE -- it does not exercise every canonical figure:")
+            for pat in missed:
+                print(f"    /{pat}/")
+            print("  Add each missing figure to the healthy corpus above; a control arm that cannot pass"
+                  "\n  is as useless as one that cannot fail.")
+            return 2
         # A corpus that MUST fail: an unmarked superseded figure.
         bad = d / "bad.md"
         bad.write_text("6–33 rows, median 25\n38.8%\n162.6%\n121.3%\n39.2%\n84.7%\n14.7%\n5,211,802\n"
