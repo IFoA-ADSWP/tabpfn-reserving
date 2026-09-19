@@ -129,6 +129,38 @@ in one command, a clean zero intercept that shows the measurement works, and the
 nearly hid it. The distribution mechanism is the deliverable; the honest accounting of where it fails is the
 contribution.
 
+## Running it on your own triangle
+
+The CLI reads a bundled sample by name or **your own cumulative triangle as a wide CSV** — origins down the
+rows, development ages across the columns, blanks for the cells not yet observed:
+
+```
+origin,12,24,36,48
+2019,100000,150000,175000,180000
+2020,110000,160000,172000,
+2021,120000,158000,,
+2022,130000,,,
+```
+
+Then:
+
+```
+python -m tabpfn_reserving path/to/yours.csv --distribution
+```
+
+The loader is deliberately strict, and the strictness is the useful part: the triangle must be **square** (a
+rectangle has no lower triangle to predict), the values must be **cumulative** (a row that decreases is an
+*incremental* triangle, which its owner must accumulate explicitly rather than the loader silently doing it),
+and the observed cells must form the **staircase** a valuation date produces — origin `i` observed through age
+`n-1-i` and no further. All three are refused with a message naming which, because every one of those repairs
+would be a different model wearing the same name. The staircase check is not pedantry: a file that is one
+square short loads fine and then makes the reserve arithmetic read past the observed cells and return a silent
+`nan`. `NA`, `nan` and `-` are read as blanks, so a spreadsheet export works as it stands.
+
+One caveat before trusting a number from your own file: this model was measured on triangles of **6–33
+origins**, with the **last three diagonals held out**, and it was measured failing on the point estimate. A
+production run on a long triangle is outside the regime the results below describe.
+
 ## Repository map
 
 | path | what |

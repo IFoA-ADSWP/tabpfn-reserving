@@ -700,3 +700,51 @@ def test_the_baseline_is_sliced_to_the_modelled_column(column: str) -> None:
     ours = factor_reserve(tri, anchor, tri.global_factors(tri.known(anchor)))
     theirs = chainladder_baseline(tri, anchor)["chainladder_ibnr"]
     assert ours == pytest.approx(theirs, rel=1e-9), f"{column}: {ours} vs {theirs}"
+
+
+# --- #19: the user's own triangle, which the CLI could not read ------------------------------------------
+
+def _csv(tmp_path, name, text):
+    p = tmp_path / name
+    p.write_text(text)
+    return str(p)
+
+
+def test_a_triangle_can_be_read_from_a_users_own_csv(tmp_path):
+    """The CLI could read only bundled samples, so a judge could not run their own triangle (#19).
+
+    The strictness is the point. A rectangle and an incremental triangle are both *refused*, with a message
+    naming which, rather than repaired into a different model that happens to accept the numbers.
+    """
+    good = _csv(tmp_path, "mine.csv", "origin,1,2,3\n2020,100,150,175\n2021,110,160,\n2022,120,,\n")
+    tri = Triangle.load(good)
+    assert (tri.name, tri.n) == ("mine", 3)
+    assert tri.origin == ["2020", "2021", "2022"] and tri.ages == [1, 2, 3]
+    assert tri.values[0, 2] == 175
+    assert np.isnan(tri.values[2, 1]) and np.isnan(tri.values[1, 2]), "a blank cell is an unobserved cell"
+
+    # A gap written the way a spreadsheet writes it is still a gap, not a zero: a zero is a loss nobody had.
+    spaced = _csv(tmp_path, "spaced.csv", "origin,1,2\n2020,100,150\n2021,110,NA\n")
+    assert np.isnan(Triangle.load(spaced).values[1, 1])
+
+    # A rectangle has no lower triangle to predict.
+    rect = _csv(tmp_path, "rect.csv", "origin,1,2,3\n2020,100,150,\n2021,110,,\n")
+    with pytest.raises(ValueError, match="square"):
+        Triangle.load(rect)
+
+    # An incremental row must be accumulated by its owner, not silently by this loader.
+    incr = _csv(tmp_path, "incr.csv", "origin,1,2\n2020,100,90\n2021,110,\n")
+    with pytest.raises(ValueError, match="decrease"):
+        Triangle.load(incr)
+
+    # A file whose header starts with a number has no origin labels, so no row can be identified.
+    unlabelled = _csv(tmp_path, "nolabel.csv", "1,2\n2020,100,150\n")
+    with pytest.raises(ValueError, match="origin label"):
+        Triangle.load(unlabelled)
+
+    # A ragged file -- a row one square short of its valuation date -- is refused rather than accepted,
+    # because the reserve arithmetic would read past its observed cells and return a silent `nan`.
+    ragged = _csv(tmp_path, "ragged.csv",
+                  "origin,1,2,3,4\n2020,100,150,175,180\n2021,110,160,,\n2022,120,158,,\n2023,130,,,\n")
+    with pytest.raises(ValueError, match="valuation-date triangle"):
+        Triangle.load(ragged)

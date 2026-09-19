@@ -33,6 +33,80 @@ class Triangle:
         return int(self.values.shape[0])
 
     @classmethod
+    def from_csv(cls, path, name: str | None = None) -> "Triangle":
+        """Build a triangle from the user's own wide CSV: origins down the rows, development ages across.
+
+        The first column holds an origin label (a year, a quarter, a line of business); the header row holds
+        each column's development age in periods from the origin; blank cells are unobserved — they *are* the
+        lower triangle the reserve is made of. `NaN`, `NA` and `-` are read as blank too, because a spreadsheet
+        writes a gap in all four ways.
+
+        Two things are refused rather than repaired, and both because the repair would be a different model
+        wearing the same name: a **non-square** file (a rectangle has no lower triangle to predict), and a row
+        that **decreases** along the development ages (that is an *incremental* triangle, which must be
+        accumulated explicitly by its owner, not silently by this loader).
+        """
+        import csv
+        import pathlib
+
+        with open(path, newline="") as fh:
+            rows = [r for r in csv.reader(fh) if any(str(c).strip() for c in r)]
+        if len(rows) < 2:
+            raise ValueError(f"{path}: expected a header row and at least one origin row")
+        header, body = rows[0], rows[1:]
+        try:
+            float(str(header[0]).strip())
+        except ValueError:
+            pass  # a label, which is what the first column should hold
+        else:
+            raise ValueError(
+                f"{path}: the first column must be an origin label, but the header starts with the number "
+                f"{header[0]!r} — a triangle needs its origin row labels"
+            )
+        try:
+            ages = [int(float(c)) for c in header[1:] if str(c).strip()]
+        except ValueError as exc:
+            raise ValueError(f"{path}: every column after the first must be a development age") from exc
+        n = len(body)
+        if len(ages) != n:
+            raise ValueError(
+                f"{path}: {n} origin rows but {len(ages)} age columns — a loss triangle is square, so a "
+                "rectangle cannot be read as one"
+            )
+        values = np.full((n, n), np.nan)
+        origin: list[str] = []
+        for i, row in enumerate(body):
+            origin.append(str(row[0]).strip())
+            for j, cell in enumerate(row[1 : n + 1]):
+                text = str(cell).strip()
+                if text in ("", "nan", "NaN", "NA", "na", "-"):
+                    continue
+                values[i, j] = float(text)
+            seen = values[i][np.isfinite(values[i])]
+            if len(seen) > 1 and np.any(np.diff(seen) < 0):
+                raise ValueError(
+                    f"{path}: origin {origin[-1]!r} decreases along the development ages — this loader reads "
+                    "cumulative losses; accumulate an incremental triangle before passing it"
+                )
+
+        # A valuation-date triangle has a staircase pattern: origin `i` is observed from its first age through
+        # age `n-1-i` and no further. A ragged file is *refused* rather than accepted, because the arithmetic
+        # downstream reads the cell on the current diagonal and would otherwise return a silent `nan` reserve
+        # -- a number that looks like an answer. This catches what a hand-built spreadsheet gets wrong most
+        # often: a row that is one square short.
+        for i in range(n):
+            observed = np.isfinite(values[i])
+            want = n - i
+            if int(observed.sum()) != want or not bool(observed[:want].all()) or bool(observed[want:].any()):
+                raise ValueError(
+                    f"{path}: origin {origin[i]!r} observes {int(observed.sum())} periods, but a "
+                    f"valuation-date triangle gives it {want} (ages 0-{want - 1}, the same valuation date "
+                    "for every origin, no gaps) — check the row against the others"
+                )
+        return cls(name=name or pathlib.Path(path).stem, values=values, columns=["loss"],
+                   origin=origin, ages=ages)
+
+    @classmethod
     def load(cls, name, column=None) -> "Triangle":
         """Load a bundled sample by name, or wrap a chainladder triangle object directly.
 
@@ -46,6 +120,14 @@ class Triangle:
           first column (`incurred`) by the spike script for exactly this reason.
         """
         import chainladder as cl
+
+        # A judge, or anyone else, should be able to run this on their own triangle (#19). A path is
+        # unambiguous -- the bundled names are bare words with no extension -- so the two cannot collide.
+        import pathlib as _pathlib
+
+        _candidate = _pathlib.Path(str(name))
+        if _candidate.suffix.lower() in (".csv", ".tsv") and _candidate.exists():
+            return cls.from_csv(_candidate, name=None)
 
         if not isinstance(name, str):
             tri = name

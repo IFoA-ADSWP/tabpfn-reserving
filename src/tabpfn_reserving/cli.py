@@ -186,7 +186,8 @@ def run_backtest(args, tri: Triangle) -> dict:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="tabpfn_reserving", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("triangle", help="a bundled chainladder sample, e.g. abc, genins, mcl, clrd")
+    ap.add_argument("triangle", help="a bundled sample (abc, genins, mcl, clrd) or a path to your own "
+                                     "triangle CSV — see docs/submission.md for the file format")
     ap.add_argument("--direct", action="store_true",
                     help="#18: one prediction per origin straight to the target age, with the horizon as a "
                          "feature, instead of a recursive chain of per-step ratios. Errors add instead of "
