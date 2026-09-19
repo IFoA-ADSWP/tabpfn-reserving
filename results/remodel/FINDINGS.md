@@ -426,6 +426,30 @@ explanation dies, and R2/R3/R8 lose their stated mechanism — leaving only the 
 extrapolation (R5, R6).** It is deliberately **not run here**: running it would spend the pre-registration it
 exists to provide.
 
+**Outcome — run 2026-09-19 after this report was written, 464 units in 15 seconds**
+(`scripts/target_support_check.py` → `results/runs/20260919-target-support/support.jsonl`):
+
+```
+realised target ABOVE the training-label maximum :  21.1% of units   (pre-registered: >= 14.7%)
+realised target BELOW the training-label minimum :   7.8% of units
+scored cells above the training maximum          :   5.3% of cells
+recorded 95% tail miss (for comparison)          :  15.3% of units
+```
+
+**The expectation is met, and the asymmetry points the same way as the failure**: the truth leaves the range of
+training labels the fit was shown on **one unit in five**, and about **2.7× more often above than below** — the
+same direction as the coverage defect (14.7% above the 95% bound against 0.9% below). So the fixed-grid
+explanation **has support** and R2/R3/R8 keep their stated mechanism.
+
+**Two honest qualifications, because the headline number is a maximum over cells.** First, the per-unit
+statistic counts a unit as "outside" if **any** of its scored cells leaves the range, so it is inflated relative
+to the per-cell rate — and the per-cell rate is **5.3%**, not 21%. The pre-registered per-unit framing is
+reported as agreed, but the cell-level number is the honest measure of how often the truth is outside, and both
+are stored. Second, support is not proof: the grid mechanism is verified in the source and in our installed
+code, but the *correspondence between that grid and our tail miss remains our inference* — this raises its
+plausibility and does not establish it. The discriminating test is R2: change the target's support and see
+whether coverage at 90/95 moves toward nominal **before** any widening.
+
 ---
 
 ## 5. Not worth running, and why (the negative space)
