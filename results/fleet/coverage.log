@@ -7,3 +7,4 @@ coverage: column=IncurLoss held out=3 draws=300 | already done: 0
   120 units | 23.6 min | GRNAME / LOB#211 k=8
   140 units | 28.7 min | GRNAME / LOB#243 k=6
   160 units | 32.7 min | GRNAME / LOB#273 k=8
+  180 units | 38.2 min | GRNAME / LOB#321 k=8

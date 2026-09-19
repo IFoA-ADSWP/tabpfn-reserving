@@ -29,6 +29,15 @@ and TabPFN-3.5 returns **the whole predictive distribution in the same forward p
 no extra inference cost. The standard practice it is compared against obtains the same distribution from a
 thousand simulated refits.
 
+![The reframing: a loss triangle on the left, the same numbers as a supervised prediction problem on the right](results/figures/reframing.png)
+
+Left: the domain object — 66 observed cells and a lower-right half that is the reserve, with the valuation
+date markdown. Right: the same numbers as a prediction task, one row per (valuation date, accident year)
+pair, every feature restricted to what that valuation date knew, and the realised development factor as the
+target. Two valuation dates are shown because the **horizon** — the only feature that says how far the
+prediction reaches — varies *across* valuation dates and not within one, which is why the direct arm trains
+across anchors rather than on a single triangle. Regenerate with `python scripts/make_figures.py`.
+
 That is the claim this repository sets out to measure rather than assert.
 
 ## What it shows
