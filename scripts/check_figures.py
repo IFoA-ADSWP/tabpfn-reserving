@@ -19,8 +19,13 @@ in which it MUST pass, and reports both, so "it passed" is never taken on trust.
 Markers that license a superseded figure to appear (case-insensitive): correct, supersede, was wrong,
 not true, stops being, historical, no longer, earlier claim.
 
+What the corpus is. The checkout this copy of the script belongs to — resolved through git rather than
+through the file's position, so it is right in a kanban worktree too (see `checkout_root`). A worktree run
+scans the worktree's own documents, which are the ones that run is editing; the exclusion in
+`is_other_checkout` keeps a *sibling* worktree's copy of the same documents out of the corpus.
+
 Usage:
-    python scripts/check_figures.py              # scan this repository
+    python scripts/check_figures.py              # scan this checkout
     python scripts/check_figures.py --self-test  # control arm: prove it can fail and can pass
     python scripts/check_figures.py --list       # show what it holds, and where each figure came from
 """
@@ -30,10 +35,36 @@ from __future__ import annotations
 import argparse
 import pathlib
 import re
+import subprocess
 import sys
 import tempfile
 
-ROOT = pathlib.Path(__file__).resolve().parents[1]
+HERE = pathlib.Path(__file__).resolve().parent
+CHECKOUT = HERE.parent
+WORKTREES = ".worktrees"
+
+
+def checkout_root() -> pathlib.Path:
+    """The root of the git checkout this copy of the script belongs to.
+
+    Not `__file__.parents[1]` alone: under the kanban dispatcher the script runs from a linked worktree at
+    `<repo>/.worktrees/<task-id>/scripts/`, where a root derived from the file's position is whatever depth
+    the file happens to sit at. Asking git names the checkout explicitly, and inside a worktree the answer is
+    the worktree — which is the corpus that run is about, the branch the worker is editing. (Resolving
+    instead to the clone that *hosts* the worktree would read another branch's documents and pass the very
+    document edit the check exists to catch.) Falls back to the file's own position when git is missing or
+    this is not a checkout.
+    """
+    try:
+        out = subprocess.run(["git", "-C", str(HERE), "rev-parse", "--show-toplevel"],
+                             capture_output=True, text=True, check=True)
+    except (OSError, subprocess.CalledProcessError):
+        return CHECKOUT
+    top = out.stdout.strip()
+    return pathlib.Path(top) if top and pathlib.Path(top).is_dir() else CHECKOUT
+
+
+ROOT = checkout_root()
 
 # (pattern, minimum occurrences, what it is and where the canonical value lives)
 CANONICAL = [
@@ -72,16 +103,32 @@ CORPUS = ["README.md", "docs/*.md", "results/*.md", "results/**/*.md"]
 def _rel(p: pathlib.Path) -> str:
     try:
         return str(p.relative_to(ROOT))
-    except ValueError:  # a corpus built by the self-test lives outside the repo
+    except ValueError:  # a corpus built by the self-test lives outside the checkout
         return str(p)
 
+
+def is_other_checkout(p: pathlib.Path) -> bool:
+    """True when p is the documents inside *another* checkout of this repository (a sibling worktree).
+
+    Measured relative to ROOT, which is the whole point. From the main clone the corpus patterns are
+    root-relative and never reach into `.worktrees/`, but from inside a worktree *every* matched path has
+    `.worktrees` in its absolute parts, so the exclusion emptied the corpus and the checker reported exit 2
+    — blindness — which the test read as a document regression. Relative to ROOT a worktree's own documents
+    are just `README.md` and `results/…`, so they are read; a nested `.worktrees/…` path, reachable only
+    from the clone that hosts a worktree, is still excluded so the same document is not counted twice.
+    """
+    try:
+        rel = p.relative_to(ROOT)
+    except ValueError:  # a corpus built by the self-test lives outside the checkout
+        return False
+    return WORKTREES in rel.parts
 
 
 def files() -> list[pathlib.Path]:
     seen, out = set(), []
     for pat in CORPUS:
         for p in sorted(ROOT.glob(pat)):
-            if p.is_file() and ".worktrees" not in p.parts and p not in seen:
+            if p.is_file() and not is_other_checkout(p) and p not in seen:
                 seen.add(p)
                 out.append(p)
     return out
@@ -91,9 +138,10 @@ def scan(paths: list[pathlib.Path]) -> tuple[int, list[str]]:
     """Returns (exit_code, report lines)."""
     out: list[str] = []
     if not paths:
-        return 2, ["ERROR: no files matched the corpus — the checker is reading nothing, which is not a pass."]
+        return 2, [f"ERROR: no files matched the corpus under {ROOT} — the checker is reading nothing, "
+                   "which is not a pass."]
 
-    out.append(f"scanned {len(paths)} file(s): " + ", ".join(_rel(p) for p in paths))
+    out.append(f"scanned {len(paths)} file(s) under {ROOT}: " + ", ".join(_rel(p) for p in paths))
 
 
     # Class 2 first: blindness.
@@ -174,6 +222,7 @@ def main() -> int:
     if args.self_test:
         return self_test()
     if args.list:
+        print(f"checkout: {ROOT}")
         print("canonical (must be present):")
         for pattern, minimum, what in CANONICAL:
             print(f"  /{pattern}/  >= {minimum}  {what}")
