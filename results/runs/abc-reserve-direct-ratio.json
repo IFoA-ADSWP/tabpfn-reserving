@@ -1,0 +1,51 @@
+{
+  "mode": "reserve",
+  "triangle": "abc",
+  "fingerprint": {
+    "name": "abc",
+    "shape": [
+      11,
+      11
+    ],
+    "columns": [
+      "values"
+    ],
+    "sha256_16": "bc97a934645b8bb0"
+  },
+  "anchor": 10,
+  "target": "ratio",
+  "features": "direct",
+  "reserve": 2371207.7362730503,
+  "reserve_mean": 2450076.5239222543,
+  "reserve_median": 2007325.7648110418,
+  "draws": 300,
+  "factor_reserve": 5277760.35762586,
+  "chainladder": {
+    "note": "ibnr includes the tail beyond the last diagonal; reference only",
+    "shape": [
+      11,
+      11
+    ],
+    "chainladder_ibnr": 5277760.357625862,
+    "mack_ibnr": 5277760.357625862,
+    "total_mack_std_err": 152712.93319662946
+  },
+  "distribution_route": "exact",
+  "draws_method": "bar-bins",
+  "fit_seconds": 4.185771942138672,
+  "predict_seconds": 5.0381340980529785,
+  "percentiles": {
+    "p5": 1006624.5292898819,
+    "p25": 1634225.6473586005,
+    "p50": 2007325.7648110418,
+    "p75": 2518783.235676126,
+    "p90": 3309387.591277923,
+    "p95": 4248266.3666052325,
+    "p99": 7560682.3213874735
+  },
+  "command": "tabpfn_reserving abc --direct --target ratio --distribution --figure results/figures/abc_reserve_distribution_direct_ratio.png --json results/runs/abc-reserve-direct-ratio.json",
+  "started_at": "2026-09-19T01:40:26",
+  "seed": 0,
+  "finished_at": "2026-09-19T01:40:36",
+  "samples_file": "abc-reserve-direct-ratio-samples.npy"
+}

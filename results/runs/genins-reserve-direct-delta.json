@@ -1,0 +1,51 @@
+{
+  "mode": "reserve",
+  "triangle": "genins",
+  "fingerprint": {
+    "name": "genins",
+    "shape": [
+      10,
+      10
+    ],
+    "columns": [
+      "values"
+    ],
+    "sha256_16": "f5a238fd5403e5a6"
+  },
+  "anchor": 9,
+  "target": "delta",
+  "features": "direct",
+  "reserve": 14298764.992541224,
+  "reserve_mean": 13631063.72746873,
+  "reserve_median": 15065690.28836226,
+  "draws": 300,
+  "factor_reserve": 18680855.611924306,
+  "chainladder": {
+    "note": "ibnr includes the tail beyond the last diagonal; reference only",
+    "shape": [
+      10,
+      10
+    ],
+    "chainladder_ibnr": 18680855.611924313,
+    "mack_ibnr": 18680855.611924313,
+    "total_mack_std_err": 2441364.128054218
+  },
+  "distribution_route": "exact",
+  "draws_method": "bar-bins",
+  "fit_seconds": 5.163834095001221,
+  "predict_seconds": 5.173711776733398,
+  "percentiles": {
+    "p5": 3045318.3510956294,
+    "p25": 11495492.517319601,
+    "p50": 15065690.28836226,
+    "p75": 18192193.708361626,
+    "p90": 20835591.905144043,
+    "p95": 23625729.76701985,
+    "p99": 28020825.799154397
+  },
+  "command": "tabpfn_reserving genins --direct --target delta --json results/runs/genins-reserve-direct-delta.json",
+  "started_at": "2026-09-19T01:40:46",
+  "seed": 0,
+  "finished_at": "2026-09-19T01:40:56",
+  "samples_file": "genins-reserve-direct-delta-samples.npy"
+}

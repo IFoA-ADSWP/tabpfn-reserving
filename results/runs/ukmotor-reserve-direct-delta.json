@@ -1,0 +1,51 @@
+{
+  "mode": "reserve",
+  "triangle": "ukmotor",
+  "fingerprint": {
+    "name": "ukmotor",
+    "shape": [
+      7,
+      7
+    ],
+    "columns": [
+      "values"
+    ],
+    "sha256_16": "f7bfffdaaaf49664"
+  },
+  "anchor": 6,
+  "target": "delta",
+  "features": "direct",
+  "reserve": 19252.885549220373,
+  "reserve_mean": 18725.76376267666,
+  "reserve_median": 21786.9451256198,
+  "draws": 300,
+  "factor_reserve": 28655.772932456373,
+  "chainladder": {
+    "note": "ibnr includes the tail beyond the last diagonal; reference only",
+    "shape": [
+      7,
+      7
+    ],
+    "chainladder_ibnr": 28655.772932456384,
+    "mack_ibnr": 28655.772932456384,
+    "total_mack_std_err": 1424.5315427334247
+  },
+  "distribution_route": "exact",
+  "draws_method": "bar-bins",
+  "fit_seconds": 4.271209239959717,
+  "predict_seconds": 2.5965678691864014,
+  "percentiles": {
+    "p5": 4643.219510783507,
+    "p25": 17854.18379898429,
+    "p50": 21786.9451256198,
+    "p75": 25197.25026775447,
+    "p90": 27547.034791518625,
+    "p95": 29111.829655569658,
+    "p99": 31868.958208608186
+  },
+  "command": "tabpfn_reserving ukmotor --direct --target delta --json results/runs/ukmotor-reserve-direct-delta.json",
+  "started_at": "2026-09-19T01:45:02",
+  "seed": 0,
+  "finished_at": "2026-09-19T01:45:09",
+  "samples_file": "ukmotor-reserve-direct-delta-samples.npy"
+}

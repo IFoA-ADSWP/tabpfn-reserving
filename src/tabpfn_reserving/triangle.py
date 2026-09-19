@@ -235,6 +235,83 @@ def training_rows(tri: Triangle, anchor: int, gf: np.ndarray, target: str = "rat
     return X, y
 
 
+# ---------------------------------------------------------------------------------------------
+# The direct arm: one prediction per origin, no recursion (#18)
+# ---------------------------------------------------------------------------------------------
+
+DIRECT_FEATURES = FEATURES + ["horizon", "log_chainladder_factor"]
+
+
+def chainladder_factor(gf: np.ndarray, from_age: int, to_age: int) -> float:
+    """Chain Ladder's implied development factor between two ages, from the anchor's own factors.
+
+    Mechanical, uses nothing but the anchor's triangle, and is handed to the model as a prior to correct --
+    the same role it plays in the delta arm.
+    """
+    factor = 1.0
+    for j in range(from_age, to_age):
+        factor *= float(gf[j]) if j < len(gf) and np.isfinite(gf[j]) else 1.0
+    return factor
+
+
+def direct_features(tri: Triangle, a: int, anchor: int, gf: np.ndarray, target_age: int) -> list:
+    """Features for the *whole remaining development* of one origin, from the anchor to `target_age`.
+
+    The origin's state is described exactly as the recursive arm describes the next cell it is about to
+    predict -- the features are computed at `anchor - a + 1`, the cell that would come next -- and the only
+    thing that distinguishes this prediction from that one is `horizon`: how many development steps away the
+    target sits. One row, one prediction, one error.
+    """
+    age = anchor - a
+    row = features_for(tri, a, age + 1, anchor, gf, tri.values)
+    horizon = max(target_age - age, 0)
+    cl = chainladder_factor(gf, age, target_age)
+    return row + [horizon, float(np.log(cl)) if cl > 0 else np.nan]
+
+
+def direct_training_rows(tri: Triangle, anchors, target: str = "delta"):
+    """Rows for the direct arm: one per (anchor, origin) pair across every training anchor.
+
+    The horizon is what varies here, and it only varies *across* anchors -- at a fixed anchor every origin
+    develops to its own last observed age, so every row from that anchor shares a horizon. Training across
+    anchors is therefore the only way the model sees a range of horizons at all, which is what makes it able
+    to answer for a horizon production asks about.
+    """
+    X, y = [], []
+    for k in anchors:
+        gf = tri.global_factors(tri.known(k))
+        for a in range(k + 1):
+            age = k - a
+            target_age = tri.n - 1 - a
+            if target_age <= age:
+                continue
+            base, end = tri.values[a, age], tri.values[a, target_age]
+            if not (np.isfinite(base) and np.isfinite(end) and base > 0):
+                continue
+            factor = end / base
+            row = direct_features(tri, a, k, gf, target_age)
+            cl = np.exp(row[-1]) if np.isfinite(row[-1]) else 1.0
+            if target == "delta":
+                if not (cl > 0):
+                    continue
+                factor = factor / cl
+            X.append(row)
+            y.append(factor)
+    return np.asarray(X, dtype=float), np.asarray(y, dtype=float)
+
+
+def direct_predict_rows(tri: Triangle, anchor: int, gf: np.ndarray, targets) -> tuple[np.ndarray, list]:
+    """The origins to predict at the anchor, and their feature rows."""
+    rows, origins = [], []
+    for a in range(anchor + 1):
+        age = anchor - a
+        if targets[a] <= age:
+            continue
+        rows.append(direct_features(tri, a, anchor, gf, targets[a]))
+        origins.append(a)
+    return np.asarray(rows, dtype=float), origins
+
+
 def target_ages(n: int, mode: str) -> list[int]:
     """The development age each origin is projected to, in ONE place, because two copies can disagree.
 

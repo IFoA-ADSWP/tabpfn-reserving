@@ -19,8 +19,9 @@ import warnings
 
 import numpy as np
 
-from .arm import QUANTILE_LEVELS, make_model, reserve
-from .triangle import Triangle, chainladder_baseline, factor_reserve, training_rows
+from .arm import QUANTILE_LEVELS, make_model, reserve, reserve_direct
+from .triangle import (Triangle, chainladder_baseline, direct_training_rows, factor_reserve,
+                       training_rows)
 
 warnings.filterwarnings("ignore")
 
@@ -84,24 +85,38 @@ def figure(samples: np.ndarray, point: float, path: pathlib.Path, title: str) ->
 def run_reserve(args, tri: Triangle) -> dict:
     """The production case: everything observed, project to the longest development age seen."""
     anchor = tri.n - 1
-    X, y = training_rows(tri, anchor, tri.global_factors(tri.known(anchor)), target=args.target,
-                         mode=args.features)
-    print(f"{tri.name}: {tri.n}x{tri.n}  anchor = last diagonal (age {tri.ages[-1]})  "
-          f"{len(y)} observed transitions")
-    print(f"  projecting every origin to age {tri.ages[-1]} -- the longest development in the\n  triangle. The tail beyond it needs a tail factor and is out of scope.")
+    rng = np.random.default_rng(args.seed)
+    if args.direct:
+        train_anchors = list(range(2, tri.n - 1))
+        X, y = direct_training_rows(tri, train_anchors, target=args.target)
+        horizons = sorted({tri.n - 1 - k for k in train_anchors})
+        print(f"{tri.name}: {tri.n}x{tri.n}  anchor = last diagonal (age {tri.ages[-1]})  "
+              f"direct arm: {len(y)} rows from anchors {train_anchors[0]}-{train_anchors[-1]}")
+        print(f"  one prediction per origin, straight to age {tri.ages[-1]} -- no recursion, nothing fed back")
+        print(f"  horizons in training {horizons[0]}-{horizons[-1]}  |  horizons required 0-{anchor}")
+    else:
+        X, y = training_rows(tri, anchor, tri.global_factors(tri.known(anchor)), target=args.target,
+                             mode=args.features)
+        print(f"{tri.name}: {tri.n}x{tri.n}  anchor = last diagonal (age {tri.ages[-1]})  "
+              f"{len(y)} observed transitions")
+        print(f"  projecting every origin to age {tri.ages[-1]} -- the longest development in the\n  triangle. The tail beyond it needs a tail factor and is out of scope.")
     model = make_model(args.backend)
     t0 = time.time()
     model.fit(X, y)
     fit_s = time.time() - t0
     t0 = time.time()
-    out = reserve(model, tri, anchor, args.draws, np.random.default_rng(args.seed),
-                  target=args.target, targets=[tri.n - 1] * tri.n, mode=args.features)
+    if args.direct:
+        out = reserve_direct(model, tri, anchor, args.draws, rng, target=args.target)
+    else:
+        out = reserve(model, tri, anchor, args.draws, rng,
+                      target=args.target, targets=[tri.n - 1] * tri.n, mode=args.features)
     pred_s = time.time() - t0
 
     cl = chainladder_baseline(tri, anchor)
     factor = factor_reserve(tri, anchor, tri.global_factors(tri.known(anchor)),
                             targets=[tri.n - 1] * tri.n)
-    print(f"  reserve (compounded point)  {out['reserve']:>13,.0f}   fit {fit_s:.1f}s  predict {pred_s:.1f}s")
+    point_label = "point (direct)" if args.direct else "compounded point"
+    print(f"  reserve ({point_label:<16}) {out['reserve']:>13,.0f}   fit {fit_s:.1f}s  predict {pred_s:.1f}s")
     print(f"  reserve (chain-ladder)      {factor:>13,.0f}   like-for-like, on the same cells")
     if "chainladder_ibnr" in cl:
         print(f"  reserve (CAS package)       {cl['chainladder_ibnr']:>13,.0f}   reference: includes a tail "
@@ -109,7 +124,7 @@ def run_reserve(args, tri: Triangle) -> dict:
     if "mack_total_mack_std_err" in cl:
         print(f"  Mack standard error         {cl['mack_total_mack_std_err']:>13,.0f}")
     result = {"mode": "reserve", "triangle": tri.name, "fingerprint": tri.fingerprint(),
-              "anchor": anchor, "target": args.target, "features": args.features,
+              "anchor": anchor, "target": args.target, "features": out.get("features", args.features),
               "reserve": out["reserve"], "reserve_mean": out["reserve_mean"],
               "reserve_median": out["reserve_median"], "draws": args.draws,
               "factor_reserve": factor, "chainladder": cl,
@@ -172,6 +187,10 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="tabpfn_reserving", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("triangle", help="a bundled chainladder sample, e.g. abc, genins, mcl, clrd")
+    ap.add_argument("--direct", action="store_true",
+                    help="#18: one prediction per origin straight to the target age, with the horizon as a "
+                         "feature, instead of a recursive chain of per-step ratios. Errors add instead of "
+                         "multiplying, and the point estimate and the distribution cannot disagree")
     ap.add_argument("--features", choices=["frozen", "running"], default="frozen",
                     help="frozen: the cell is described by the origin's position at the anchor, the same "
                          "for every step of the recursion. running: also describe where the projection has "
@@ -197,7 +216,6 @@ def main(argv: list[str] | None = None) -> int:
     result, samples = (run_backtest(args, tri) if args.backtest else run_reserve(args, tri))
     result |= {"command": " ".join(["tabpfn_reserving"] + (argv or sys.argv[1:])),
                "started_at": started, "seed": args.seed, "draws": args.draws,
-               "features": args.features,
                "finished_at": time.strftime("%Y-%m-%dT%H:%M:%S")}
     if args.figure and samples is not None:
         title = (f"{tri.name}: reserve distribution, TabPFN-3.5 ({args.target} arm, "

@@ -11,16 +11,22 @@ import pytest
 
 from tabpfn_reserving import arm
 from tabpfn_reserving.triangle import (
-    FEATURES, RUNNING_FEATURES, Triangle, chainladder_baseline, factor_reserve, features_for,
-    target_ages, training_rows,
+    DIRECT_FEATURES, FEATURES, RUNNING_FEATURES, Triangle, chainladder_baseline, direct_training_rows,
+    factor_reserve, features_for, target_ages, training_rows,
 )
 
 
 class StubModel:
-    """Predicts a constant ratio. Tests the projection, the sampling and the scaling -- not the skill."""
+    """Predicts a constant ratio. Tests the projection, the sampling and the scaling -- not the skill.
 
-    def __init__(self, value: float = 1.05) -> None:
+    `spread` controls how wide the predictive distribution is, which matters when comparing a point
+    estimate against the mean of its own draws: with a wide spread the Monte Carlo error is large enough to
+    swamp the structural property being tested, so the tests that care about structure use a tight one.
+    """
+
+    def __init__(self, value: float = 1.05, spread: float = 0.2) -> None:
         self.value = value
+        self.spread = spread
 
     def fit(self, X, y):  # noqa: ANN001, ANN201
         return self
@@ -29,8 +35,9 @@ class StubModel:
         n = len(X)
         if output_type == "quantiles":
             levels = np.asarray(quantiles, dtype=float)
-            # a symmetric spread around the constant, so the mean of the draws equals the point
-            return np.tile(self.value * (0.9 + 0.2 * levels), (n, 1)).T
+            # symmetric around the constant, so the mean of the draws equals the point
+            half = self.spread / 2
+            return np.tile(self.value * (1 - half + self.spread * levels), (n, 1)).T
         return np.full(n, self.value)
 
 
@@ -250,8 +257,69 @@ def test_frozen_features_are_blind_to_the_projection_and_running_ones_are_not() 
 
 
 # ---------------------------------------------------------------------------------------------
-# A collection is not a triangle.
+# The direct arm (#18): one prediction per origin, no recursion
 # ---------------------------------------------------------------------------------------------
+
+def test_direct_arm_covers_a_range_of_horizons_and_the_recursive_one_cannot() -> None:
+    """The horizon only varies *across* anchors -- at one anchor every origin develops to its own last
+    observed age. Training across anchors is therefore what gives the model horizons to learn from."""
+    tri = Triangle.load("abc")
+    X, y = direct_training_rows(tri, list(range(2, tri.n - 1)), target="delta")
+    assert len(X) == len(y) > 20
+    assert X.shape[1] == len(DIRECT_FEATURES)
+    horizons = sorted(set(X[:, -2]))
+    assert len(horizons) > 3, "only one horizon seen -- the arm has nothing to learn the horizon from"
+
+
+def test_direct_features_do_not_see_the_future_it_is_predicting() -> None:
+    """The *labels* legitimately come from the future -- that is what supervised learning is. The
+    *features* must not, and the check is worth making non-vacuous: the corruption has to actually reach
+    the labels, or the test proves nothing about the features."""
+    tri = Triangle.load("abc")
+    anchor = 6
+    known = tri.known(anchor)
+    X_clean, y_clean = direct_training_rows(tri, [anchor], target="ratio")
+
+    corrupted = tri.values.copy()
+    corrupted[~known] = 9.9e9
+    doctored = Triangle(name=tri.name, values=corrupted, columns=tri.columns,
+                        origin=tri.origin, ages=tri.ages)
+    X_dirty, y_dirty = direct_training_rows(doctored, [anchor], target="ratio")
+
+    assert np.array_equal(X_clean, X_dirty, equal_nan=True), "features saw the future"
+    assert not np.allclose(y_clean, y_dirty), "the corruption never reached the labels -- vacuous test"
+
+
+def test_direct_point_and_distribution_cannot_disagree() -> None:
+    """Both are the same sum of the same per-origin factors, so the gap the recursive arm shows between its
+    point estimate and its own distribution is gone by construction, not by tuning.
+
+    A tight predictive spread is used deliberately: this is a claim about structure, and a wide spread's
+    Monte Carlo error would swamp it at 400 draws (it very nearly did -- see the first version of this
+    test, which failed at a 12% gap that was entirely sampling noise on a reserve that is 5% of the base).
+    """
+    tri = Triangle.load("abc")
+    out = arm.reserve_direct(StubModel(1.05, spread=0.001), tri, tri.n - 1, 2000,
+                             np.random.default_rng(0), target="ratio")
+    # At the production anchor every origin but the oldest has something left to develop, and each one's
+    # horizon is simply its accident-year index.
+    assert out["origins"] == list(range(1, tri.n))
+    assert out["horizons"] == list(range(1, tri.n))
+    assert out["samples"] is not None
+    assert np.mean(out["samples"]) == pytest.approx(out["reserve"], rel=0.005), (
+        f"point {out['reserve']:,.0f} vs distribution mean {np.mean(out['samples']):,.0f}")
+
+
+def test_direct_arm_with_a_constant_model_is_arithmetic() -> None:
+    """With a model that predicts a constant factor, the reserve is a sum that can be checked by hand --
+    which is how the plumbing gets tested without TabPFN."""
+    tri = Triangle.load("abc")
+    out = arm.reserve_direct(StubModel(1.10), tri, tri.n - 1, 0, np.random.default_rng(0),
+                             target="ratio")
+    base = np.array([tri.values[a, tri.n - 1 - a] for a in out["origins"]])
+    assert out["reserve"] == pytest.approx(float(np.sum(base * 0.10)))
+
+
 
 def test_a_single_triangle_still_loads() -> None:
     """The guard against collections must not reject the actual triangles -- it very nearly did."""

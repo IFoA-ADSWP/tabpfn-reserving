@@ -16,7 +16,7 @@ from __future__ import annotations
 import numpy as np
 from tabpfn import TabPFNRegressor
 
-from .triangle import Triangle, features_for, gf_used, target_ages
+from .triangle import (Triangle, direct_predict_rows, features_for, gf_used, target_ages)
 
 QUANTILE_LEVELS = [0.01, 0.025, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.975, 0.99]
 
@@ -135,6 +135,82 @@ def draws(model, X: np.ndarray, n: int, rng: np.random.Generator) -> tuple[np.nd
     for r in range(X.shape[0]):
         out[:, r] = np.interp(u, levels, q[r])   # invert the quantile function
     return out, {"method": "quantile-inversion", "quantile_route": route, "why": failure}
+
+
+def reserve_direct(
+    model,
+    tri: Triangle,
+    anchor: int,
+    n_draws: int,
+    rng: np.random.Generator,
+    target: str = "delta",
+    targets: list[int] | None = None,
+) -> dict:
+    """One prediction per origin, straight to the target age. No recursion, nothing fed back (#18).
+
+    The recursive arm's failure mode is structural, not incidental: every intermediate level it feeds the
+    model *is the model's own guess*, so chaining them multiplies the error nine deep and there is no
+    observed information in the loop to correct against. This predicts each origin's whole remaining
+    development in one row, with the horizon as a feature, so the errors add instead of multiplying.
+
+    Two consequences worth naming:
+
+    * **The point estimate is the mean of the same sum as the distribution.** The 32% gap the recursive arm
+      showed between its point and its own distribution came from compounding per-cell predictions while the
+      draws compounded per-cell samples; here both are the same sum of the same per-origin factors, so that
+      gap cannot arise. What is left is skew and sampling error, and its size is measured rather than
+      asserted.
+    * **Within-origin correlation is preserved.** One draw per origin rather than one per cell means a bad
+      accident year is bad across its whole remaining development, which is closer to how triangles behave
+      than independent per-cell draws (#15).
+
+    One caveat that matters for interpretation, and is why the ratio target is also run: with
+    `target="delta"` the label is *the factor relative to Chain Ladder's own projection*, so an arm that
+    predicts a correction of 1.0 everywhere reproduces Chain Ladder exactly. A near-tie with Chain Ladder is
+    therefore partly by construction, and the honest question is not whether this arm agrees with Chain
+    Ladder but whether it deviates usefully where Chain Ladder is wrong.
+    """
+    n = tri.n
+    tgt = targets if targets is not None else target_ages(n, "production")
+    gf = tri.global_factors(tri.known(anchor))
+    X, origins = direct_predict_rows(tri, anchor, gf, tgt)
+    empty = {"triangle": tri.name, "anchor": int(anchor), "target": target, "features": "direct",
+             "reserve": 0.0, "reserve_mean": 0.0, "reserve_median": 0.0, "samples": None,
+             "distribution_route": "none", "draws_method": "none",
+             "targets": [int(t) for t in tgt[: anchor + 1]], "origins": []}
+    if len(origins) == 0:
+        return empty
+
+    cl = np.where(np.isfinite(X[:, -1]), np.exp(X[:, -1]), 1.0)
+    base = np.array([tri.values[a, anchor - a] for a in origins], dtype=float)
+    point = np.atleast_1d(np.asarray(model.predict(X), dtype=float))
+    factors = point * (cl if target == "delta" else 1.0)
+    reserve = float(np.sum(base * (factors - 1.0)))
+
+    samples, route, method = None, "none", "none"
+    if n_draws:
+        d_draws, info = draws(model, X, n_draws, rng)
+        route = str(info.get("quantile_route", "unknown"))
+        method = str(info.get("method", "unknown"))
+        if d_draws is not None:
+            factors_draw = d_draws * (cl[None, :] if target == "delta" else 1.0)
+            samples = np.sum(factors_draw * base[None, :], axis=1) - float(np.sum(base))
+
+    return {
+        "triangle": tri.name,
+        "anchor": int(anchor),
+        "target": target,
+        "features": "direct",
+        "reserve": reserve,
+        "reserve_mean": float(np.mean(samples)) if samples is not None else None,
+        "reserve_median": float(np.median(samples)) if samples is not None else None,
+        "samples": samples,
+        "distribution_route": route,
+        "draws_method": method,
+        "targets": [int(t) for t in tgt[: anchor + 1]],
+        "origins": [int(a) for a in origins],
+        "horizons": [int(tgt[a] - (anchor - a)) for a in origins],
+    }
 
 
 def reserve(
