@@ -385,6 +385,82 @@ def test_training_labels_cannot_come_from_beyond_the_evaluation_anchor() -> None
 
 
 
+# ---------------------------------------------------------------------------------------------
+# Row expansion (#25): every intermediate target age, opt-in, and still inside the clamp
+# ---------------------------------------------------------------------------------------------
+
+def _keys(X: np.ndarray) -> list[tuple[int, int, int]]:
+    """(training anchor, origin, horizon) for a direct-arm feature matrix.
+
+    `cal_idx` is `origin + development` of the cell the prediction is *about to* fill, which for the direct
+    arm is always `anchor + 1` -- so the anchor is recoverable from the row and the expansion can be checked
+    per (anchor, origin) rather than only in total.
+    """
+    return [(int(row[2]) - 1, int(row[0]), int(row[-2])) for row in X]
+
+
+def test_row_expansion_is_opt_in_and_contains_the_unexpanded_rows() -> None:
+    """Off, nothing moves -- every recorded fleet number came from the unexpanded builder. On, the row set is
+    a *superset*: the ceiling row is still emitted, so a difference between two fits is attributable to the
+    rows that were added rather than to a different estimand."""
+    tri = Triangle.load("abc")
+    anchor = 6
+    train = list(range(2, anchor))
+    Xb, yb = direct_training_rows(tri, train, target="delta", known_until=anchor)
+    Xe, ye = direct_training_rows(tri, train, target="delta", known_until=anchor, intermediate_ages=True)
+
+    assert len(ye) > len(yb), "the expansion added no rows at all"
+    rows_b = {key: (row, t) for key, row, t in zip(_keys(Xb), Xb, yb)}
+    rows_e = {key: (row, t) for key, row, t in zip(_keys(Xe), Xe, ye)}
+    assert set(rows_b) <= set(rows_e), "the expanded set does not contain the unexpanded rows"
+    for key, (row, t) in rows_b.items():
+        assert np.array_equal(row, rows_e[key][0], equal_nan=True), f"feature row changed for {key}"
+        assert t == pytest.approx(rows_e[key][1], rel=0, abs=0), f"label changed for {key}"
+
+
+def test_row_expansion_emits_every_age_up_to_the_ceiling() -> None:
+    """The factor under test is *more rows per fit*, so the added rows have to be the intermediate ones --
+    one per target age between the anchor and the ceiling, and nothing beyond it."""
+    tri = Triangle.load("abc")
+    anchor = 6
+    train = list(range(2, anchor))
+    X, _ = direct_training_rows(tri, train, target="delta", known_until=anchor, intermediate_ages=True)
+    by_pair: dict[tuple[int, int], list[int]] = {}
+    for k, a, h in _keys(X):
+        by_pair.setdefault((k, a), []).append(h)
+
+    assert by_pair, "no rows at all"
+    for (k, a), horizons in by_pair.items():
+        assert sorted(horizons) == list(range(1, max(horizons) + 1)), (k, a, sorted(horizons))
+        assert max(horizons) == min(tri.n - 1 - a, anchor - a) - (k - a), (k, a)
+
+
+def test_row_expansion_still_never_labels_beyond_the_evaluation_anchor() -> None:
+    """The clamp is the whole reason this arm is legitimate, and the expansion multiplies the number of labels
+    it has to hold for. The check is made non-vacuous: corrupting the cells the evaluation anchor cannot see
+    must leave every expanded label untouched."""
+    tri = Triangle.load("abc")
+    anchor = 6
+    train = list(range(2, anchor))
+    known = tri.known(anchor)
+    X, y = direct_training_rows(tri, train, target="ratio", known_until=anchor, intermediate_ages=True)
+
+    # cal_idx - 1 is the anchor, horizon the number of steps forward, so their sum is the label's own
+    # calendar index -- the cell the label was read from.
+    labels_at = X[:, 2].astype(int) - 1 + X[:, -2].astype(int)
+    assert (labels_at <= anchor).all(), "an expanded label comes from beyond the evaluation anchor"
+
+    corrupted = tri.values.copy()
+    corrupted[~known] = 9.9e9
+    doctored = Triangle(name=tri.name, values=corrupted, columns=tri.columns,
+                        origin=tri.origin, ages=tri.ages)
+    _, y_dirty = direct_training_rows(doctored, train, target="ratio", known_until=anchor,
+                                      intermediate_ages=True)
+    assert np.array_equal(y, y_dirty), "labels read past the evaluation anchor"
+    assert len(y) > len(direct_training_rows(tri, train, target="ratio", known_until=anchor)[1]), \
+        "the expansion is not active -- the test would pass on the unexpanded builder"
+
+
 def test_direct_arm_covers_a_range_of_horizons_and_the_recursive_one_cannot() -> None:
     """The horizon only varies *across* anchors -- at one anchor every origin develops to its own last
     observed age. Training across anchors is therefore what gives the model horizons to learn from."""

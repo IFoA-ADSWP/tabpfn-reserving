@@ -1,0 +1,47 @@
+command: /Users/Scott/projects/tabpfn-reserving/.venv/bin/python scripts/depth_bias.py --arm direct --intermediate-ages --anchors-from 3 --triangles abc genins --targets delta
+anchor policy: the last 3 anchors below the ultimate, per triangle; every anchor from 3 up to the last but one
+arm: direct | intermediate_ages=True
+
+abc: anchors [3, 4, 5, 6, 7, 8, 9] -- deepest step reachable is depth 6
+     abc delta k=3  rows=3    steps scored=28  mean log error=+0.1897  (per prediction, across steps)
+     abc delta k=4  rows=10   steps scored=30  mean log error=-0.0186  (per prediction, across steps)
+     abc delta k=5  rows=22   steps scored=30  mean log error=-0.0444  (per prediction, across steps)
+     abc delta k=6  rows=40   steps scored=28  mean log error=-0.0121  (per prediction, across steps)
+     abc delta k=7  rows=65   steps scored=24  mean log error=-0.0315  (per prediction, across steps)
+     abc delta k=8  rows=98   steps scored=18  mean log error=-0.0134  (per prediction, across steps)
+     abc delta k=9  rows=140  steps scored=10  mean log error=+0.0133  (per prediction, across steps)
+genins: anchors [3, 4, 5, 6, 7, 8] -- deepest step reachable is depth 5
+  genins delta k=3  rows=3    steps scored=24  mean log error=+0.1783  (per prediction, across steps)
+  genins delta k=4  rows=10   steps scored=25  mean log error=+0.3528  (per prediction, across steps)
+  genins delta k=5  rows=22   steps scored=24  mean log error=+0.0543  (per prediction, across steps)
+  genins delta k=6  rows=40   steps scored=21  mean log error=+0.0287  (per prediction, across steps)
+  genins delta k=7  rows=65   steps scored=16  mean log error=-0.0453  (per prediction, across steps)
+  genins delta k=8  rows=98   steps scored=9   mean log error=-0.0269  (per prediction, across steps)
+
+=== mean log error by depth (all triangles and anchors pooled) ===  <-- depth = steps spanned by ONE prediction
+depth  steps  mean log err   x error       se  log err/step
+    1     88       -0.0047    0.9953   0.0103            -0.0047
+    2     69       -0.0067    0.9934   0.0139            -0.0033
+    3     52       +0.0211    1.0213   0.0221            +0.0070
+    4     37       +0.1045    1.1101   0.0339            +0.0261
+    5     24       +0.2277    1.2557   0.0556            +0.0455
+    6     13       +0.3446    1.4114   0.0729            +0.0574
+    7      4       +0.5567    1.7448   0.0829            +0.0795
+
+=== regressed on depth ===
+  n=287  slope=+0.06371 per step (se 0.00630)  intercept=-0.11118
+  the same rows normalised per step: mean log error per step = +0.00991 (x1.0100 per step)
+  this is the *direct* arm's regression, whose depth is the length of the whole prediction;
+  the recursive table's depth is a single cell's distance beyond the training range. Two
+  different regressions, so the recorded +0.0317 is reproduced separately, not compared here.
+
+=== the same slope, per triangle (delta arm) ===
+       abc  n=168 slope=+0.04678 (se 0.00536)  mean log error=+0.0132
+    genins  n=119 slope=+0.10557 (se 0.01214)  mean log error=+0.1180
+
+=== currency decomposition and by-origin residuals: recursive arm only ===
+  the direct arm predicts each run whole, so the per-step replay those sections are built on does
+  not exist for it. The recursive ones are in
+  results/runs/20260918-023600_depth-bias/FINDINGS.md.
+
+wrote results/runs/20260919-203642_depth-bias-direct/depth_bias.json and run.log (287 scored steps)

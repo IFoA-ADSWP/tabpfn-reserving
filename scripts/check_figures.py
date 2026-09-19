@@ -22,7 +22,9 @@ not true, stops being, historical, no longer, earlier claim.
 What the corpus is. The checkout this copy of the script belongs to — resolved through git rather than
 through the file's position, so it is right in a kanban worktree too (see `checkout_root`). A worktree run
 scans the worktree's own documents, which are the ones that run is editing; the exclusion in
-`is_other_checkout` keeps a *sibling* worktree's copy of the same documents out of the corpus.
+`is_other_checkout` keeps a *sibling* worktree's copy of the same documents out of the corpus. **A run
+directory counts**: `results/runs/<run-id>/FINDINGS.md` is one of the documents a reader is handed, so a
+superseded figure quoted there is exactly the thing this check exists to catch.
 
 Usage:
     python scripts/check_figures.py              # scan this checkout
@@ -98,6 +100,10 @@ MARKER = re.compile(r"(?i)correct|supersede|was wrong|not true|stops being|stop 
 WINDOW = 2
 
 CORPUS = ["README.md", "docs/*.md", "results/*.md", "results/**/*.md"]
+# A run keeps its deliverable with its evidence, and the deliverable is a document. `*/*.md` would collide
+# with the patterns above (glob would read a file twice), so the depth is fixed by the shape the run
+# directories actually have -- `results/runs/<run-id>/FINDINGS.md` and friends.
+RUN_CORPUS = ["results/*/*/*.md"]
 
 
 def _rel(p: pathlib.Path) -> str:
@@ -126,7 +132,7 @@ def is_other_checkout(p: pathlib.Path) -> bool:
 
 def files() -> list[pathlib.Path]:
     seen, out = set(), []
-    for pat in CORPUS:
+    for pat in CORPUS + RUN_CORPUS:
         for p in sorted(ROOT.glob(pat)):
             if p.is_file() and not is_other_checkout(p) and p not in seen:
                 seen.add(p)
@@ -201,6 +207,8 @@ def self_test() -> int:
         empty = d / "empty.md"
         empty.write_text("nothing that matches any pattern\n")
 
+        # A run directory counts too: its FINDINGS.md is a document a reader is handed, and it is where the
+        # run's own numbers are quoted (and where a superseded one was free to hide before this).
         cases = [("healthy corpus", [good], 0), ("unmarked superseded figure", [bad], 1),
                  ("blind checker (no canonical figures)", [empty], 2), ("no files at all", [], 2)]
         for label, paths, expected in cases:
@@ -209,6 +217,18 @@ def self_test() -> int:
             if code != expected:
                 ok = False
             print(f"  {label:<38} exit {code}  {verdict}")
+
+        # The corpus patterns themselves: a run directory's documents must be inside the corpus the checker
+        # walks, or the deliverable of every run is unchecked while the check reports a pass.
+        run_md = d / "results" / "runs" / "20260101-000000_run" / "FINDINGS.md"
+        run_md.parent.mkdir(parents=True)
+        run_md.write_text("nothing that matches any pattern\n")
+        matched = [str(p.relative_to(d)) for pat in CORPUS + RUN_CORPUS for p in sorted(d.glob(pat))]
+        inside = str(run_md.relative_to(d)) in matched
+        if not inside:
+            ok = False
+        print(f"  {'a run directory is in the corpus':<38} {'yes' if inside else 'NO — unchecked'}  "
+              f"{'ok' if inside else 'WRONG'}")
     print(f"\nself-test: {'PASS — the checker can fail and can pass' if ok else 'FAIL — the checker is not trustworthy'}")
     return 0 if ok else 2
 

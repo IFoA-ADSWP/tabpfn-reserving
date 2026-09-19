@@ -344,7 +344,8 @@ def direct_features(tri: Triangle, a: int, anchor: int, gf: np.ndarray, target_a
     return row + [horizon, float(np.log(cl)) if cl > 0 else np.nan]
 
 
-def direct_training_rows(tri: Triangle, anchors, target: str = "delta", known_until: int | None = None):
+def direct_training_rows(tri: Triangle, anchors, target: str = "delta", known_until: int | None = None,
+                         intermediate_ages: bool = False):
     """Rows for the direct arm: one per (anchor, origin) pair across every training anchor.
 
     The horizon is what varies here, and it only varies *across* anchors -- at a fixed anchor every origin
@@ -358,6 +359,21 @@ def direct_training_rows(tri: Triangle, anchors, target: str = "delta", known_un
     predict. Passing `known_until=anchor` clamps every training label to a cell the evaluation anchor could
     already see, and the training horizon becomes the interval between the two valuation dates rather than
     the full run to the ultimate.
+
+    `intermediate_ages` is opt-in and **off by default, so no recorded number moves** (#25). Set, it emits a
+    row for *every* target age reachable inside the observed window rather than only the ceiling: for anchor
+    `k` and origin `a`, ages `age = k - a` and every `target_age` with `age < target_age <= top`, where `top`
+    is the ceiling the unexpanded builder uses (`min(n-1-a, known_until-a)`). The label is still a cell the
+    evaluation anchor could already see, because `top` is clamped by `known_until` exactly as before.
+
+    Two properties worth stating rather than leaving to the reader:
+
+    * **The expanded set contains the unexpanded one.** The ceiling row is still emitted, so the two row sets
+      are nested and a difference between two fits is attributable to the *added* rows rather than to a
+      different representation.
+    * **The factor is measured from the same base as before.** Every row for `(k, a)` is the factor
+      `C[a, target_age] / C[a, k-a]` from the anchor cell, so the added rows are shorter versions of the same
+      run, not a different estimand.
     """
     ceiling = (tri.n - 1) if known_until is None else int(known_until)
     X, y = [], []
@@ -365,21 +381,26 @@ def direct_training_rows(tri: Triangle, anchors, target: str = "delta", known_un
         gf = tri.global_factors(tri.known(k))
         for a in range(k + 1):
             age = k - a
-            target_age = min(tri.n - 1 - a, ceiling - a)
-            if target_age <= age:
+            top = min(tri.n - 1 - a, ceiling - a)
+            if top <= age:
                 continue
-            base, end = tri.values[a, age], tri.values[a, target_age]
-            if not (np.isfinite(base) and np.isfinite(end) and base > 0):
+            base = tri.values[a, age]
+            if not (np.isfinite(base) and base > 0):
                 continue
-            factor = end / base
-            row = direct_features(tri, a, k, gf, target_age)
-            cl = np.exp(row[-1]) if np.isfinite(row[-1]) else 1.0
-            if target == "delta":
-                if not (cl > 0):
+            targets = range(age + 1, top + 1) if intermediate_ages else (top,)
+            for target_age in targets:
+                end = tri.values[a, target_age]
+                if not np.isfinite(end):
                     continue
-                factor = factor / cl
-            X.append(row)
-            y.append(factor)
+                factor = end / base
+                row = direct_features(tri, a, k, gf, target_age)
+                cl = np.exp(row[-1]) if np.isfinite(row[-1]) else 1.0
+                if target == "delta":
+                    if not (cl > 0):
+                        continue
+                    factor = factor / cl
+                X.append(row)
+                y.append(factor)
     return np.asarray(X, dtype=float), np.asarray(y, dtype=float)
 
 

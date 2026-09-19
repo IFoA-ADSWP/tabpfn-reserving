@@ -1,0 +1,40 @@
+command: /Users/Scott/projects/tabpfn-reserving/.venv/bin/python scripts/replicate_depth_bias.py --out results/runs/20260919-depth-bias-replication
+anchor policy: every anchor from --anchors-from up to the last but one (the recorded run's window)
+
+abc: anchors [3, 4, 5, 6, 7, 8, 9] -- deepest step reachable is depth 6
+     abc delta k=3  steps scored=28  mean log error=+0.0941  (x1.0987 per step)
+     abc delta k=4  steps scored=30  mean log error=+0.0399  (x1.0407 per step)
+     abc delta k=5  steps scored=30  mean log error=+0.0149  (x1.0150 per step)
+     abc delta k=6  steps scored=28  mean log error=+0.0026  (x1.0026 per step)
+     abc delta k=7  steps scored=24  mean log error=-0.0094  (x0.9907 per step)
+     abc delta k=8  steps scored=18  mean log error=-0.0064  (x0.9936 per step)
+     abc delta k=9  steps scored=10  mean log error=+0.0024  (x1.0024 per step)
+genins: anchors [3, 4, 5, 6, 7, 8] -- deepest step reachable is depth 5
+  genins delta k=3  steps scored=24  mean log error=+0.2390  (x1.2700 per step)
+  genins delta k=4  steps scored=25  mean log error=+0.1540  (x1.1665 per step)
+  genins delta k=5  steps scored=24  mean log error=+0.0542  (x1.0557 per step)
+  genins delta k=6  steps scored=21  mean log error=+0.0313  (x1.0318 per step)
+  genins delta k=7  steps scored=16  mean log error=-0.0349  (x0.9657 per step)
+  genins delta k=8  steps scored=9   mean log error=-0.0144  (x0.9857 per step)
+
+=== mean log error by depth (all triangles and anchors pooled) ===
+depth  steps  mean log err   x error       se
+    0     88       +0.0102    1.0103   0.0092
+    1     69       +0.0209    1.0211   0.0087
+    2     52       +0.0501    1.0514   0.0117
+    3     37       +0.0979    1.1028   0.0205
+    4     24       +0.1374    1.1473   0.0246
+    5     13       +0.1881    1.2069   0.0442
+    6      4       +0.1446    1.1555   0.0047
+
+=== regressed on depth ===
+  n=287  slope=+0.03168 per step (se 0.00363)  intercept=+0.00011
+
+=== the same slope, per triangle (delta arm) ===
+       abc  n=168 slope=+0.01903 (se 0.00161)  mean log error=+0.0240
+    genins  n=119 slope=+0.06170 (se 0.00785)  mean log error=+0.0912
+
+=== against the recorded run (results/runs/20260918-023600_depth-bias) ===
+  recorded: n=287 slope=+0.03168 (se 0.00363) intercept=+0.00011
+  this run: n=287 slope=+0.03168 (se 0.00363) intercept=+0.00011
+  REPLICATION OK -- same harness

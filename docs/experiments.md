@@ -362,6 +362,15 @@ interpolate inside ranges it has been shown, and hand the extrapolation to arith
    information**. Then the fleet as context (§5.4), the only route to the benchmarks' floor (BeyondArena excludes
    sub-100 rows; TabArena leaves sub-500 for future work; ours are 6–33).
 
+   **Outcome, ran 2026-09-19 (`results/runs/20260919-row-expansion/FINDINGS.md`).** The in-triangle expansion
+   is **dead**: the fit sees **2.6× the rows of its own triangle** (median 25 → 65, 10–98 in all) and gains
+   nothing measurable — the closer-than-Chain-Ladder rate moves **+2.2pp** (47.8% → 50.0% on a fixed 90-unit
+   screen, 7 fixed / 5 broken, McNemar p = 0.774) against a binomial standard error of 5.3pp, and the
+   depth-bias slope on the arm whose rows did change moves **−0.0005 (0.06421 → 0.06371)** against a standard
+   error of 0.0063. Both legs of the pre-registered falsifier hold, so **row count is not the binding
+   constraint** for this model on this data, and all the weight moves to E2b — rows that carry *different*
+   information rather than merely more of the same.
+
 **The stopping rule, because a strategy without one is a wish.** If R2 and R1 together do not move 90/95
 coverage toward nominal **and** the closer-than-Chain-Ladder rate above **38.8% ± 2.3pp**, the remaining honest
 move is the **diagnostic** (**#23**): use the model's own embeddings to flag where its distribution is
