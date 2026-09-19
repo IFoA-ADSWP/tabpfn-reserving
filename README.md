@@ -16,6 +16,34 @@ harness*.
 > The bars were pre-registered in [`docs/method.md`](docs/method.md) before any of these numbers existed, and
 > live status is in [`docs/readiness.md`](docs/readiness.md).
 
+## In plain terms
+
+An insurer collects premiums now and pays claims later, sometimes years later. It has to hold money aside
+against claims that have happened but are not yet settled — the **reserve** — and for a large insurer that is
+billions. The future being unknown, the number is an estimate, and *how wrong it can be* matters as much as the
+estimate itself: the capital a company must hold is a percentile of that range, not a single figure.
+
+The raw material is a **loss triangle**: a table of how much has been paid for each year's claims as those
+years develop. The bottom-right corner of that table hasn't happened yet. Filling it in *is* the reserve, and
+since the 1930s it has been filled in with one specific piece of arithmetic — average how much each year
+develops, project it forward — with the range around it bolted on afterwards.
+
+We asked a different question: what if you simply handed the table to a general-purpose prediction model
+(TabPFN-3.5) and asked it to fill in the missing part, with no actuarial arithmetic at all?
+
+**What happened.** It works, and it returns the whole range of outcomes from a single pass on a laptop — but
+the central number it produces is worse than the arithmetic it replaced on 61% of 464 real triangles, and its
+range is too optimistic. So this is not a tool to use, and it does not claim to be. What it *is* — and why it
+is worth ten minutes — is a **measured answer to a question nobody had answered**: where does this class of
+model stop being trustworthy, and what hides that from you? The answer is in [What the model gets
+wrong](#what-the-model-gets-wrong-measured) below, and one part of it — a validation window that quietly makes
+the problem invisible — applies to any model of this kind, not just this one.
+
+**If you are not a modeller**, the two things worth taking away are that the honest result of this entry is a
+failure, and that the failure is *characterised* rather than merely reported: we can say exactly where the model
+is reliable, where it drifts, and why a reasonable person running the obvious test would have concluded the
+opposite.
+
 ## The idea
 
 A loss triangle is the actuarial object that nobody treats as tabular. Accident periods down the side,
@@ -46,9 +74,9 @@ That is the claim this repository sets out to measure rather than assert.
 |---|---|---|
 | 1 | **The reframing** | The same numbers twice: as a shaded triangle, then as a table of cells. A domain object, turned into a prediction task, in twenty lines |
 | 2 | **The reserve, zero-shot** | TabPFN-3.5 against Chain Ladder on the same triangle — no tuning, no feature engineering, raw values straight in |
-| 3 | **The distribution** | The reserve as a distribution: percentiles beside Mack's and the bootstrap's, with the wall-clock for each. A risk margin, an IFRS 17 risk adjustment and a Solvency II capital figure are quantiles, not standard errors |
-| 4 | **Coverage** | Do the 90% intervals contain the truth 90% of the time — for all three methods, over hundreds of real triangles |
-| 5 | **Speed** | Reserve a whole book, not one triangle: per-triangle wall-clock, including the Fast checkpoint |
+| 3 | **The distribution** | The reserve as a distribution, drawn from the model's own bar distribution, with Chain Ladder's point estimate and Mack's standard error reported beside it in the same run. A percentile-by-percentile comparison against Mack and the ODP bootstrap is **not** built: [#20](https://github.com/IFoA-ADSWP/tabpfn-reserving/issues/20) |
+| 4 | **Coverage** | Do the intervals contain the truth as often as they claim — measured for **this** method over 464 real triangles (they do not, at any level). The same measurement for Mack and the ODP bootstrap is **not** done: [#20](https://github.com/IFoA-ADSWP/tabpfn-reserving/issues/20) |
+| 5 | **Scale** | 464 real triangles reserved in one unattended run (the fleet evaluation). Per-triangle wall-clock is deliberately **not** quoted — every timing taken so far is contaminated by other work on the same machine ([#9](https://github.com/IFoA-ADSWP/tabpfn-reserving/issues/9)) |
 | 6 | **Where it does not win** | The triangles and cells where Chain Ladder is closer, stated in the open |
 
 ## What the model gets wrong, measured
