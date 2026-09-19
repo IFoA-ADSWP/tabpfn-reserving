@@ -50,7 +50,7 @@ restricted to what was known at the valuation date, so the future cannot leak in
 | A full reserve distribution from one forward pass | The distribution figure and the wall-clock bar beside it | Quantiles that miss badly, or a cost that is not lower |
 | The point estimate is competitive with Chain Ladder | Per-triangle error across the fleet, and the direction of any bias | Systematic bias across the fleet, not noise on one triangle |
 | Intervals more honest than Mack's | The coverage curve for all three methods on the same triangles | Coverage no closer to nominal than Mack's |
-| Fleet-scale in minutes | Per-triangle timing, same machine, both methods | The bootstrap finishing faster |
+| Fleet-scale in minutes | Per-triangle timing, same machine, both methods | **FALSIFIED 2026-09-19** — the bootstrap finishes faster: Mack 0.13 s and the ODP bootstrap 0.38 s per triangle against the model's ~13.4 s, i.e. ~25–35× the other way (`results/runs/20260919-pricing/pricing.md`). The bar asked for a speed win and there is none; what the model offers instead is the distribution without a simulation to design. Recorded as a missed bar, not re-scoped |
 | Zero-shot: no tuning, nothing fitted per triangle | The code above | A per-triangle hyperparameter |
 
 ## The bars, fixed before the runs

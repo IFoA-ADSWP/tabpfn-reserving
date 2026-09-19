@@ -57,6 +57,13 @@ and TabPFN-3.5 returns **the whole predictive distribution in the same forward p
 no extra inference cost. The standard practice it is compared against obtains the same distribution from a
 thousand simulated refits.
 
+**And that is not a speed argument, because it is not a speed win.** Measured: the bootstrap's thousand refits
+cost **0.38 s** per triangle, Mack **0.13 s**, and the model's forward pass **~13.4 s** — the classical methods
+are roughly 25–35× *faster*, because each refit is Chain Ladder arithmetic on a 10×10 table. What the model
+offers is convenience and fewer assumptions — no simulation scheme to design, no process distribution to
+assume, CPU, no API calls — not throughput. A pre-registered bar in `docs/method.md` asked for the speed win
+and is recorded as **falsified**.
+
 ![The reframing: a loss triangle on the left, the same numbers as a supervised prediction problem on the right](results/figures/reframing.png)
 
 Left: the domain object — 66 observed cells and a lower-right half that is the reserve, with the valuation
