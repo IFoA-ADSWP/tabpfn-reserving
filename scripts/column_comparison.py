@@ -5,14 +5,21 @@ column-specific.** On the units scoreable in both columns the paid arm's closer-
 *not better than* 38.8% + 2.3pp, i.e. the column choice should not move the result.
 
 **Falsifier, and it is a result in its own right:** *if paid and incurred differ by more than the noise floor in
-either metric, then the column choice is a research result* — and the entry's fleet finding must be reported per
+either metric, then the column choice is a research result* -- and the entry's fleet finding must be reported per
 column, not as one number.
 
-Paired on `(triangle, anchor)` rather than compared as two independent rates, because the two runs score the
-same triangles at the same anchors; units whose paid column is not scoreable simply drop out of the
-intersection, and the count of those is reported rather than silently absorbed.
+**Errors are recomputed from primitives, never read from the stored fields.** `clrd-IncurLoss.jsonl` carries
+`error_chainladder_pct = 0.0` on all 464 rows -- the null-defect this repository found once already, fixed in
+the *summary* (fleet_eval.py:198, "everything is recomputed from primitives") but never rewritten in that file.
+Reading it produced "closer than Chain Ladder: 0.0%", i.e. a fresh verdict from a known-broken column. This
+script recomputes from `actual` / `direct` / `chainladder`, and refuses to run at all if those primitives are
+missing.
 
-    python scripts/column_comparison.py            # after the CumPaidLoss run completes
+Paired on `(triangle, anchor)` rather than compared as two independent rates, because both runs score the same
+triangles at the same anchors. Units scoreable in only one column drop out of the intersection and are counted,
+not silently absorbed.
+
+    python scripts/column_comparison.py
 """
 from __future__ import annotations
 
@@ -23,8 +30,9 @@ import numpy as np
 
 INC = pathlib.Path("results/fleet/clrd-IncurLoss.jsonl")
 PAID = pathlib.Path("results/fleet/clrd-CumPaidLoss.jsonl")
-NOISE_PP = 2.3  # the paired-rate noise floor, docs/experiments.md §5.4 (38.8% ± 2.3pp at n=464)
+NOISE_PP = 2.3   # the paired-rate noise floor, docs/experiments.md §5.4 (38.8% ± 2.3pp at n=464)
 MIN_UNITS = 100  # below this the comparison has no power and must not be adjudicated
+PRIMITIVES = ("actual", "direct", "chainladder")
 
 
 def key(r: dict) -> tuple[str, int]:
@@ -38,64 +46,70 @@ def load(path: pathlib.Path) -> dict[tuple[str, int], dict]:
     for line in path.read_text().splitlines():
         if line.strip():
             r = json.loads(line)
+            missing = [k for k in PRIMITIVES if k not in r]
+            if missing:
+                raise SystemExit(f"{path} lacks the primitives {missing}; nothing here may be trusted")
             out[key(r)] = r
     return out
 
 
-def closer_than_cl(r: dict) -> bool:
-    e_model = abs(r["error_direct_pct"])
-    e_cl = abs(r["error_chainladder_pct"])
-    return e_model < e_cl
+def errs(r: dict) -> tuple[float, float]:
+    """(model, chainladder) signed percentage errors, recomputed from primitives."""
+    a = float(r["actual"])
+    if not np.isfinite(a) or a == 0:
+        return (np.nan, np.nan)
+    return (100 * (float(r["direct"]) - a) / a, 100 * (float(r["chainladder"]) - a) / a)
+
+
+def stale_field(path: pathlib.Path) -> bool:
+    """True when the STORED chainladder error is degenerate -- the condition that produced the false 0.0%."""
+    vals = [json.loads(l)["error_chainladder_pct"] for l in path.read_text().splitlines() if l.strip()]
+    return bool(vals) and all(v == 0.0 for v in vals)
 
 
 def main() -> int:
     inc, paid = load(INC), load(PAID)
+    for path in (INC, PAID):
+        if stale_field(path):
+            print(f"note: {path.name} stores error_chainladder_pct = 0.0 on every row (the known null defect).")
+            print("      Recomputed from primitives below; the stored field is not used anywhere here.")
     common = sorted(set(inc) & set(paid))
-    print(f"incurred units {len(inc)} | paid units {len(paid)} | intersection {len(common)}")
-    print(f"  paid-only {len(set(paid) - set(inc))}, incurred-only {len(set(inc) - set(paid))} "
-          "(-- scored futures are observed on 460/464 for paid per the recount)")
-    if not common:
-        print("no overlap yet -- has the paid run finished?")
-        return 1
+    print(f"\nincurred units {len(inc)} | paid units {len(paid)} | intersection {len(common)}")
+    print(f"  paid-only {len(set(paid) - set(inc))}, incurred-only {len(set(inc) - set(paid))}")
+    if len(common) < MIN_UNITS:
+        print(f"\n  CANNOT ADJUDICATE -- {len(common)} units, need >= {MIN_UNITS}.")
+        return 2
 
     rows = [(inc[k], paid[k]) for k in common]
-    a = np.array([abs(i["error_direct_pct"]) for i, _ in rows])
-    b = np.array([abs(p["error_direct_pct"]) for _, p in rows])
-    ca = np.mean([closer_than_cl(i) for i, _ in rows])
-    cb = np.mean([closer_than_cl(p) for _, p in rows])
-    diff = np.array([closer_than_cl(p) - closer_than_cl(i) for i, p in rows])
-    se = diff.std(ddof=1) / np.sqrt(diff.size)
-    se_rate = np.sqrt(ca * (1 - ca) / len(rows))
+    mi, ci = zip(*(errs(i) for i, _ in rows))
+    mp, cp = zip(*(errs(p) for _, p in rows))
+    mi, ci, mp, cp = map(lambda v: np.asarray(v, dtype=float), (mi, ci, mp, cp))
+    keep = np.isfinite(mi) & np.isfinite(ci) & np.isfinite(mp) & np.isfinite(cp)
+    mi, ci, mp, cp = mi[keep], ci[keep], mp[keep], cp[keep]
+    n = int(keep.sum())
 
-    print(f"\n{'metric':<34} {'incurred':>12} {'paid':>12}")
-    print(f"{'median |error| %':<34} {np.median(a):>12.1f} {np.median(b):>12.1f}")
-    print(f"{'closer than Chain Ladder':<34} {ca:>11.1%} {cb:>11.1%}")
-    print(f"{'  noise floor (+/-)':<34} {NOISE_PP:>10.1f}pp {NOISE_PP:>10.1f}pp")
-    print(f"\npaired difference (paid - incurred), closer-than-CL: {diff.mean():+.1%} "
-          f"(se {se:.1%}, n={diff.size})")
-    print(f"  paired |error| median change: {np.median(b) - np.median(a):+.1f}pp")
+    rate_i = float(np.mean(np.abs(mi) < np.abs(ci)))
+    rate_p = float(np.mean(np.abs(mp) < np.abs(cp)))
+    print(f"\n{'metric (n=%d)' % n:<38} {'incurred':>12} {'paid':>12}")
+    print(f"{'median |model error| %':<38} {np.median(np.abs(mi)):>12.1f} {np.median(np.abs(mp)):>12.1f}")
+    print(f"{'median |Chain Ladder error| %':<38} {np.median(np.abs(ci)):>12.1f} {np.median(np.abs(cp)):>12.1f}")
+    print(f"{'closer than Chain Ladder':<38} {rate_i:>11.1%} {rate_p:>11.1%}  (noise floor {NOISE_PP:.1f}pp)")
+
+    dd = (np.abs(mp) < np.abs(cp)).astype(float) - (np.abs(mi) < np.abs(ci)).astype(float)
+    se = dd.std(ddof=1) / np.sqrt(n)
+    print(f"\npaired difference (paid - incurred) in closer-than-CL: {dd.mean():+.1%} (se {se:.1%}, n={n})")
+    print(f"paired |model error| median change: {np.median(np.abs(mp)) - np.median(np.abs(mi)):+.1f}pp")
 
     print("\n=== pre-registered verdict ===")
-    # Guard: a verdict is only issued where there is power to issue it. Caught live -- on an
-    # intersection of 3 units with both rates at 0.0% this printed "EXPECTATION MET", which is not a
-    # weaker version of a result, it is the absence of one. Third occurrence of this shape in one
-    # session; hence an explicit guard rather than care.
-    if len(common) < MIN_UNITS or (ca == 0.0 and cb == 0.0):
-        print(f"  CANNOT ADJUDICATE -- {len(common)} units in the intersection (need >= {MIN_UNITS}), "
-              f"rates {ca:.1%} vs {cb:.1%}.")
-        print("  A verdict here would be a statement about the sample size, not about the columns.")
-        print("  Wait for the run to finish; do not read this line as the expectation being met.")
-        return 2
-    moved = abs(cb - ca) > NOISE_PP / 100
-    if not moved:
-        print(f"  The paid arm's rate ({cb:.1%}) is within the noise floor of the incurred arm's ({ca:.1%}).")
-        print("  EXPECTATION MET: the failure is not column-specific, and the fleet result stands as one number.")
+    if abs(rate_p - rate_i) > NOISE_PP / 100:
+        print(f"  The rates differ by {abs(rate_p - rate_i):.1%}, beyond the {NOISE_PP:.1f}pp noise floor.")
+        print("  FALSIFIER FIRED: the column choice is a research result in its own right, and the entry's fleet")
+        print("  finding must be reported per column rather than as one number.")
     else:
-        print(f"  The rates differ by {abs(cb - ca):.1%}, beyond the {NOISE_PP:.1f}pp noise floor.")
-        print("  FALSIFIER FIRED: the column choice is a research result in its own right. The entry's fleet")
-        print("  finding must be reported per column, not as one number, and the paid/incurred gap becomes a")
-        print("  candidate explanation for the incurred arm's case-reserve noise.")
-    print(f"\n  (rates: incurred {ca:.1%}, paid {cb:.1%}; incurred's own se {se_rate:.1%} on this intersection)")
+        print(f"  Paid ({rate_p:.1%}) is within the noise floor of incurred ({rate_i:.1%}).")
+        print("  EXPECTATION MET: the failure is not column-specific, and the fleet result stands as one number.")
+    print(f"\n  Both columns recomputed from primitives; the paid run also scores {len(paid)} units against")
+    print(f"  incurred's {len(inc)}, which is a data availability fact worth reporting separately.")
     return 0
 
 

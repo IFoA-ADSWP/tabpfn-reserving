@@ -1,5 +1,14 @@
 # The fleet: does the correction earn its place? (#8) — **No**
 
+> **Caution for anyone reading `clrd-IncurLoss.jsonl`.** Its stored **`error_chainladder_pct` is `0.0` on all
+> 464 rows** — the null defect found and fixed once already *in the summary* (`scripts/fleet_eval.py:198`,
+> "everything is recomputed from primitives") but never rewritten in that file. Reading the field gives
+> "closer than Chain Ladder on 0.0%", which is impossible: the recorded rate below is **38.8%**. Recompute from
+> the primitives each row carries (`actual`, `direct`, `chainladder`); `scripts/column_comparison.py` does
+> exactly that and reports the condition when it meets it. The numbers in this document are the canonical ones
+> and were produced by the recomputation.
+
+
 The single-triangle work could not answer this. With a Chain Ladder-relative target, an arm predicting a
 correction of 1.0 *is* Chain Ladder, so "close to Chain Ladder" is partly by construction — and on `abc` the
 direct arm was −1.2% against it, which is not a win. The question that survives is whether the model's

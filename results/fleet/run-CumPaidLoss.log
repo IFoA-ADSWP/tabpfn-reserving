@@ -1,0 +1,78 @@
+fleet: column=CumPaidLoss held out=3 diagonals | already done: 0
+       loaded 775 triangles from clrd
+  25 rows | 8.1 min | last GRNAME / LOB#16 k=7
+  50 rows | 15.2 min | last GRNAME / LOB#31 k=6
+  75 rows | 21.9 min | last GRNAME / LOB#47 k=8
+  100 rows | 28.4 min | last GRNAME / LOB#63 k=8
+  125 rows | 33.9 min | last GRNAME / LOB#82 k=7
+  150 rows | 40.2 min | last GRNAME / LOB#91 k=6
+  175 rows | 46.2 min | last GRNAME / LOB#105 k=6
+  200 rows | 52.9 min | last GRNAME / LOB#126 k=7
+  225 rows | 59.5 min | last GRNAME / LOB#137 k=4
+  250 rows | 64.4 min | last GRNAME / LOB#149 k=6
+  275 rows | 69.2 min | last GRNAME / LOB#175 k=7
+  300 rows | 73.4 min | last GRNAME / LOB#190 k=6
+  325 rows | 77.0 min | last GRNAME / LOB#209 k=6
+  350 rows | 80.9 min | last GRNAME / LOB#224 k=8
+  375 rows | 84.0 min | last GRNAME / LOB#233 k=7
+  400 rows | 89.9 min | last GRNAME / LOB#242 k=4
+  425 rows | 95.0 min | last GRNAME / LOB#253 k=6
+  450 rows | 100.6 min | last GRNAME / LOB#263 k=4
+  475 rows | 105.8 min | last GRNAME / LOB#277 k=6
+  500 rows | 108.8 min | last GRNAME / LOB#301 k=6
+  525 rows | 111.3 min | last GRNAME / LOB#314 k=6
+  550 rows | 114.7 min | last GRNAME / LOB#329 k=8
+  575 rows | 117.4 min | last GRNAME / LOB#342 k=7
+  600 rows | 120.5 min | last GRNAME / LOB#359 k=6
+  625 rows | 122.9 min | last GRNAME / LOB#377 k=6
+  650 rows | 125.7 min | last GRNAME / LOB#392 k=8
+  675 rows | 128.0 min | last GRNAME / LOB#405 k=5
+  700 rows | 131.0 min | last GRNAME / LOB#420 k=8
+  725 rows | 134.0 min | last GRNAME / LOB#443 k=7
+  750 rows | 136.7 min | last GRNAME / LOB#459 k=6
+  775 rows | 139.6 min | last GRNAME / LOB#474 k=7
+  800 rows | 140.9 min | last GRNAME / LOB#484 k=7
+  825 rows | 142.1 min | last GRNAME / LOB#499 k=6
+  850 rows | 143.2 min | last GRNAME / LOB#513 k=6
+  875 rows | 144.4 min | last GRNAME / LOB#537 k=6
+  900 rows | 145.8 min | last GRNAME / LOB#552 k=7
+  925 rows | 147.1 min | last GRNAME / LOB#577 k=8
+  950 rows | 148.2 min | last GRNAME / LOB#587 k=8
+  975 rows | 149.5 min | last GRNAME / LOB#600 k=6
+  1000 rows | 150.6 min | last GRNAME / LOB#618 k=8
+  1025 rows | 151.7 min | last GRNAME / LOB#632 k=6
+  1050 rows | 152.7 min | last GRNAME / LOB#642 k=7
+  1075 rows | 153.9 min | last GRNAME / LOB#651 k=6
+  1100 rows | 155.1 min | last GRNAME / LOB#671 k=6
+  1125 rows | 156.2 min | last GRNAME / LOB#681 k=6
+  1150 rows | 157.4 min | last GRNAME / LOB#692 k=6
+  1175 rows | 158.6 min | last GRNAME / LOB#703 k=8
+  1200 rows | 159.8 min | last GRNAME / LOB#726 k=8
+  1225 rows | 160.9 min | last GRNAME / LOB#741 k=4
+  1250 rows | 162.1 min | last GRNAME / LOB#752 k=7
+  1275 rows | 163.3 min | last GRNAME / LOB#763 k=6
+
+wrote 1299 rows to results/fleet/clrd-CumPaidLoss.jsonl in 164.4 min
+skipped, by reason (no unit is dropped silently):
+      339  too few training rows (direct)
+      199  not a proper triangle (sparse or fragmented container)
+       90  no scoreable future
+
+=== fleet summary: 1299 evaluations ===
+    effective triangle sizes: {6: 26, 7: 31, 8: 92, 9: 74, 10: 1076}
+    horizons: {1: 453, 2: 429, 3: 417}
+
+  --- direct arm, 1299 paired evaluations against the null ---
+    the null is the Chain Ladder arm on the same cells and the same actual future; it is
+    wrong on most of these triangles, which is what makes it a comparison rather than a
+    tautology. (The first version of this harness stored its error as 0.0 by construction.)
+    |error| median   arm      33.3%   Chain Ladder      25.1%
+    closer than Chain Ladder on  37.0% of triangles, worse on  63.0%
+    paired |error| change: median      +9.4 percentage points, mean    +574.8
+    the model moves off Chain Ladder by a median of 28.2% of the reserve (so how much correction it is actually applying)
+    restricted to the larger half of triangles (|actual| >= 1,654): median |error| arm     23.0%  Chain Ladder     16.9%
+    currency-weighted aggregate: arm   2364.2%  Chain Ladder   2110.2%
+    by horizon:
+      horizon 1: n= 453  median |error| arm     33.3%  CL     23.2%  closer on  37.3%
+      horizon 2: n= 429  median |error| arm     27.4%  CL     23.4%  closer on  42.0%
+      horizon 3: n= 417  median |error| arm     40.5%  CL     27.8%  closer on  31.7%
