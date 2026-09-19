@@ -189,7 +189,8 @@ scope and named in §5.5.
 ## 5.1 E7 — the conditions check: is our negative inside the vendor's own envelope?
 
 **Cheapest step, first, because it can change what the entry claims rather than merely adding to it.** Our
-negative so far has been explained by our own hypothesis (40–60 training rows is too few). But a negative is
+negative so far has been explained by our own hypothesis (40–60 training rows as then quoted — recounted to
+6–33 since, `results/conditions/rows_per_fit.log`). But a negative is
 only informative once it is checked against the conditions the *source* documents: if Prior Labs' own guidance
 says the model does not extrapolate, or states a row count it needs, then our failure is **predicted by the
 documentation** — and the entry's claim changes from "we tried a model and it did not work" to "we reproduced
