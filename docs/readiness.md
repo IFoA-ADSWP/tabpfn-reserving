@@ -153,7 +153,14 @@ comparison that would turn "this model is miscalibrated" into "better or worse t
 **Parked deliberately:** **#10** the fleet-as-context arm (biggest build, most uncertain payoff — and now the
 direct test of the leading explanation for the failure, so it is worth more than it was), **#11** the regime map,
 **#15** the correlation structure (worth doing properly or stating as a limitation, not half-doing), **#9** clean
-timings (parked in kanban as `t_22989d51`, waiting for an idle machine), **#19** the CLI for a user's own triangle.
+timings (parked in kanban as `t_22989d51`, waiting for an idle machine).
+
+**Landed since, because a judge would hit it (#19):** the CLI now reads **a user's own triangle** from a wide CSV
+as well as a bundled sample, so the reproduction path does not stop at our data. It refuses three things rather
+than repairing them — a rectangle, an incremental triangle, and a ragged observation pattern — and the third was
+found by testing rather than assumed: a file one square short loads happily and then yields a **silent `nan`
+reserve**. Verified end to end through the CLI on a hand-written triangle outside the repo (1,883 compounded
+point against 2,314 like-for-like Chain Ladder).
 
 **Stage 2 is planned and pre-registered** in `docs/experiments.md` §5: the conditions check against the vendor's
 own documented envelope, three-method coverage on identical units (**#20**), the diagnostic arm (can the model
