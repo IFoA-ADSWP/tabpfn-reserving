@@ -31,3 +31,7 @@ dist/
 # Secrets
 .env
 *.key
+
+# Kanban workers create their worktrees inside the project folder; they are their own repos and must
+# never be staged here (a blanket `git add -A` once staged one as an embedded git repo).
+.worktrees/
