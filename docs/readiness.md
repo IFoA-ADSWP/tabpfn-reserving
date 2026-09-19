@@ -89,10 +89,14 @@ with a deadline that no further work can move.
    Over 464 fleet evaluations the intervals under-cover at **every** nominal level: 39.2% at 50, 59.9% at 75,
    78.0% at 90, 84.7% at 95 (z −4.8 to −6.6). They are *wide* — the median 90% interval is 4.55× the point
    estimate — and the truth sits above the sampled median in **67.7%** of units, so the misfit is **centring,
-   not width**, which is the same failure the point-estimate result shows from the other side. What is *not*
-   established: whether Mack or the ODP bootstrap do better on these units — that comparison has not been run,
-   so the claim is "this model is miscalibrated", never "worse than the standard method" (**#20**).
-   → `results/fleet/COVERAGE.md`.
+   not width**, which is the same failure the point-estimate result shows from the other side.
+   **Settled since — this was the entry's largest open question, and the answer is the reverse of what it feared:**
+   Mack and the ODP bootstrap were measured on the **identical** 464 units, and all three under-cover. At the
+   levels a risk margin is actually read, **Mack's is the worst of the three** — 74.6% at nominal 90% and 79.3%
+   at nominal 95%, against this model's 78.0% and 84.7% — with the bootstrap best (87.1% / 90.9%) while still
+   outside 2 SE at three of four levels. The failures are shared rather than distinctive. So the honest
+   comparative claim is that this model is miscalibrated *like the standard method*, and less so where it matters.
+   → `results/fleet/COVERAGE.md`, `results/runs/20260919-three-method-coverage/FINDINGS.md`.
 3. **The independent-draws limitation is stated but not fixed** (**#15**): per-cell draws are independent, so
    the p99 — the number a risk margin actually uses — has no correlation structure. Cheap to fix, not yet done.
 4. **Timings are contaminated** (**#9**); a clean E5 run is needed before any speed claim.
@@ -178,6 +182,22 @@ shown on **21.1% of units** (5.3% of cells), one-sided upward. The **consolidate
 §6**, with a stopping rule; **R2 (bounded target, #24)** and the **row expansion (#25)** are dispatched against
 it. Cost: the classical methods are 25–35× *faster* than the model, so a pre-registered speed bar is recorded as
 falsified.
+
+**The comparative run landed (#20), and it is the entry's strongest result.** Mack and the ODP bootstrap were
+measured on the identical 464 units: **all three methods under-cover**, and at 90/95 **Mack's is the worst**
+(74.6% / 79.3% against this model's 78.0% / 84.7%), with the bootstrap best but still outside 2 SE at three of
+four levels. The failures are *shared* — the model "misses in the same weather" as the standard method, not in
+its own. That converts the entry from a negative about our method into a finding about practice.
+
+**The novelty check landed (E11, `results/prior-art/FINDINGS.md`)** and narrows the claims honestly: no reserving
+study measures interval coverage of a learning method's intervals, and no source evaluates a foundation model on
+a loss triangle — so three firsts survive (first interval-coverage measurement on reserving triangles, first to
+locate the failure in projection depth, first to compare against the classical intervals on identical units) —
+while the bucket-grid mechanism and the general small-n calibration behaviour must be **attributed**, not claimed.
+
+**Two arms were still running at the freeze**: R2 (the bounded target, #24) and the row expansion (#25). Both
+carry pre-registered falsifiers and are decisive either way; §6's stopping rule governs what happens if they
+land after the freeze — record the outcome, do not re-open the programme.
 
 ## 6. The one thing that is not mine to do
 
