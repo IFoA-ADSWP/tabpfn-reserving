@@ -204,6 +204,46 @@ the documented envelope limit on a new domain", which is a stronger and more use
 | Claim if we stop here | "Our negative on this domain is / is not explained by the method's own documented conditions, at a scale those conditions do / do not cover" |
 | Stop rule | If the source documents a row-count floor above ours, or excludes extrapolation, then E2b is **promoted**: it becomes the test of the vendor's stated fix rather than a speculative arm |
 
+**Outcome — ran 2026-09-19, `results/conditions/FINDINGS.md`, 23 minutes, reading only.** **Neither trigger
+fired.** No source states a training-row floor above ours and none excludes extrapolation, so the stop rule did
+**not** promote E2b: it remains a test of *our* hypothesis, not of a documented remedy. Where our profile lands,
+3 / 3 / 2 / 3 across the four buckets:
+
+- **fits (3)** — the **split type**: on temporal and grouped splits tuned conventional models retain the highest
+  performance and TabPFN-3.5 only matches them at non-large scale; on small datasets a different foundation
+  model leads; and the docs warn that for inputs outside the training range the *distribution itself* is not to
+  be trusted and the model will not flag it — which is the one condition that names our one-sided tail failure.
+- **predicts the opposite (3)** — the vendor names *claim amounts* as a target it improved distributions for;
+  it documents **extrapolation** as a capability; and it publishes a cluster of guidance for exactly our regime
+  that we did not follow (column typing, the extrapolating quantile transform, Thinking mode for time-ordered
+  rows, calibration checking on skewed targets).
+- **ruled out (2)** — the size ceilings (~1M rows) cannot bear on us; the headline ranks belong to a
+  configuration we did not run.
+- **outside the evidence (3)** — the decisive one: the vendor's non-i.i.d. evidence base spans **100–1M rows**
+  and declares sub-100-row prediction *out of scope*. Our 6–33-row fits are **unreached** by it.
+
+**Two corrections it forced on the entry**, both applied: the entry had been quoting **"40–60 training rows per
+fit"** (a single-triangle figure — the fleet ran **6–33, median 25**), and **"no feature engineering"** stops
+being a free claim, since the docs call column typing *"the cheapest change and often the largest gain"* and
+warn specifically against passing an identifier as a number.
+
+## 5.1b E8 — the configuration arms (added by the conditions check)
+
+**The sources name two changes for our regime that we did not make, and both run on units already on disk** —
+so each is **paired** against the result we already have: no new design, no new sampling, the existing noise
+floor applies, and neither costs tokens. This is the cheapest substantive arm in the programme, which is why it
+now sits here.
+
+| | |
+|---|---|
+| Arms | **(a)** declare `origin_idx` / `dev_idx` / `cal_idx` **categorical** rather than leaving them as floats in a NumPy array — the docs' cheapest-and-largest-gain lever, and they warn specifically against replacing an identifier with a number; **(b)** give the delta target the **`quantile_uni_extrapolate`** transform, since the default *clips* values outside the training range and our entire failure mode is extrapolation beyond it |
+| Isolation | One factor per cell: baseline (current features) · +categorical · +extrapolating transform · both. Same 464 units, same anchors, same scoring as `results/fleet/FINDINGS.md` |
+| Pre-registered expectation, **written from the sources before the run** | If the one-sided upper-tail miss (14.7% above the 95% bound against a 0.9% miss below) is a fixed-support artefact of clipped targets, coverage at 90/95 should move **toward nominal before any widening is applied**. If it does **not** move, the out-of-distribution-support explanation is dead and the miscalibration is something else — which is a usable result either way |
+| Replication cell | The baseline cell must reproduce the recorded direct-arm numbers on the units it covers. If it does not, the harness changed and **no** cell in the run is interpretable |
+| Cost | Minutes, local, no tokens |
+| Claim if it moves | The failure becomes *configuration-specific*: the OSS base checkpoint at defaults loses, and a documented two-line change recovers part of the gap |
+| Claim if it does not move | The failure survives the vendor's own recommended settings for our regime — a materially stronger negative, and one that closes the most obvious review question ("did you try what the docs say?") |
+
 ## 5.2 E3a — three-method coverage on identical units (#20)
 
 E3 already names this arm. It is now the hinge: every claim the entry currently makes is *about our model*,
@@ -270,7 +310,8 @@ forced by the fleet results:**
 
 | Stop after | The claim, stated as a sentence a stranger can check |
 |---|---|
-| 5.1 | Our negative is (or is not) explained by the method's own documented conditions, at a scale those conditions do (or do not) cover |
+| 5.1 | Our negative is (or is not) explained by the method's own documented conditions, at a scale those conditions do (or do not) cover — **answered: it is not, and our regime is unreached by their evidence base** |
+| 5.1b | The failure survives — or does not survive — the vendor's own recommended configuration for our regime (categorical identifiers, the extrapolating transform), which closes the "did you try what the docs say?" question |
 | 5.2 | This method's intervals fail to cover at every level; the standard method's do / do not, measured on the same units — and the failure is a too-short upper tail |
 | 5.3 | The model's disagreement with Chain Ladder flags where Mack's intervals are unreliable (only if the control is flat) |
 | 5.4 | Cross-triangle context does / does not make the deviation learnable — the last arm the diagnosis implies |

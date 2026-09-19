@@ -138,11 +138,21 @@ distribution is drawn from the model's own bar distribution with the arithmetic 
 package **to the pound**; the pipeline is deterministic (the same command twice gives the same reserve, and the
 point estimate does not depend on the seed); and the mechanism behind the failure is measured, not guessed.
 
-**Why it failed, as best we can tell — a hypothesis, not a measurement.** The model gets **40–60 training rows
-per fit**. That is too few to learn development patterns, so it falls back on its prior, and where that prior
-pushes it off Chain Ladder it is wrong more often than right. That is consistent with everything measured: it is
-unbiased where it has training examples and drifts by +3.2% per step where it extrapolates. The experiment that
-would test the explanation directly is giving it more examples — [#10](https://github.com/IFoA-ADSWP/tabpfn-reserving/issues/10).
+**Why it failed, as best we can tell — a hypothesis, not a measurement.** Each fit sees **6–33 training rows,
+median 25** — recounted from the fleet's own records (`results/conditions/rows_per_fit.log`), and no unit ever
+saw more than 33. *(This corrects an earlier claim of "40–60 rows per fit", which came from single-triangle
+runs.)* That is too few to learn development patterns, so the model falls back on its prior, and where that
+prior pushes it off Chain Ladder it is wrong more often than right. That is consistent with everything measured:
+it is unbiased where it has training examples and drifts by +3.2% per step where it extrapolates. The
+experiment that would test the explanation directly is giving it more examples —
+[#10](https://github.com/IFoA-ADSWP/tabpfn-reserving/issues/10).
+
+**And that explanation is ours, not the vendor's.** Checked against Prior Labs' own technical report and
+documentation (`results/conditions/FINDINGS.md`): they state **no** training-row floor, they do **not** exclude
+extrapolation, and their small-data claim is explicitly about *i.i.d.* data — their non-i.i.d. evidence base
+starts at 100 rows and declares sub-100-row prediction out of scope, so our regime is **unreached** by their
+evidence base rather than excluded by it. What their documentation *does* predict is the split: on temporal and
+grouped data, tuned conventional models retain the highest performance and TabPFN-3.5 only matches them.
 
 **Two things this does *not* mean.** It is **not** evidence that the model is worse than Mack's method or the
 ODP bootstrap — that comparison has not been run on the same units, so the honest claim is "this model is
