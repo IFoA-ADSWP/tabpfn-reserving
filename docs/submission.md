@@ -61,13 +61,13 @@ must reproduce the incumbent before any comparison means anything.
   step is two development periods and that bias reads **−0.0018 (se 0.0030)** — flat, and the effect looks
   absent. Anchored nine years back, the same triangle reads **+0.0190 (se 0.0016)**. A backtest that ends near
   the ultimate cannot see what production does, and it reports a flat line while doing so.
-- **Calibration is poor.** On the fleet, the model's intervals under-cover at every nominal level, and this is
-  *not* because they are too narrow (the median 90% interval is 4.7 times the point estimate). It is because
-  the distribution is centred in the wrong place. The coverage measurement is the one piece of this repository
-  that was **still in flight when this description was written** — the numbers, their unit count and their
-  binomial intervals are in `results/fleet/coverage.jsonl` and its summary rather than asserted here, and the
-  first 111 units under-cover by 8–14 percentage points with the three largest gaps wider than their sampling
-  error.
+- **Calibration is poor, and it is measured rather than assumed.** Over 464 fleet evaluations the intervals
+  under-cover at **every** nominal level — 39.2% at 50, 59.9% at 75, 78.0% at 90, 84.7% at 95, at z between
+  −4.8 and −6.6 — and not because they are narrow (the median 90% interval is 4.55 times the point estimate).
+  The actual future exceeds the sampled median in **67.7%** of cases, so this is a systematic low centring, the
+  same failure the point estimate shows from the other side. `results/fleet/COVERAGE.md`. **Not** established:
+  whether Mack's or the ODP bootstrap's intervals do better on the same units — that comparison has not been
+  run, so the honest claim is that this model is miscalibrated, not that it is worse than the standard method.
 - **Determinism and noise are stated.** The same command twice gives the same reserve to the pound; the point
   estimate does not depend on the seed; the draw noise floor is ~1.6% on the median at 300 draws.
 

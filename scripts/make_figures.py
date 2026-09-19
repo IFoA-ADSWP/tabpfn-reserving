@@ -19,6 +19,9 @@ from tabpfn_reserving.triangle import (Triangle, direct_features, features_for, 
 
 OUT = pathlib.Path("results/figures")
 
+# The nominal levels the coverage run records, kept in step with scripts/fleet_coverage.py.
+LEVELS = [0.50, 0.75, 0.90, 0.95]
+
 
 def reframing(triangle: str = "abc") -> pathlib.Path:
     """Left: the domain object. Right: the same numbers as a supervised problem.
@@ -121,6 +124,60 @@ def reframing(triangle: str = "abc") -> pathlib.Path:
     return OUT / "reframing.png"
 
 
+def coverage_curve(path: pathlib.Path | str = "results/fleet/coverage.jsonl") -> pathlib.Path:
+    """Empirical coverage against nominal, with binomial bars, over the fleet.
+
+    The distribution claim is the deliverable, so this is the figure that tests it: if the model's intervals
+    are calibrated, the points sit on the diagonal. They do not, and the gap is drawn with its sampling error
+    rather than asserted, because a calibration plot without error bars invites reading noise as structure.
+    """
+    import json
+
+    rows = []
+    for line in pathlib.Path(path).read_text().splitlines():
+        try:
+            r = json.loads(line)
+        except Exception:  # noqa: BLE001
+            continue
+        if all(f"covered_{int(lv * 100)}" in r for lv in LEVELS):
+            rows.append(r)
+    if not rows:
+        raise SystemExit(f"no coverage rows in {path}")
+
+    n = len(rows)
+    nominal = np.array(LEVELS)
+    empirical = np.array([np.mean([bool(r[f"covered_{int(lv * 100)}"]) for r in rows]) for lv in LEVELS])
+    se = np.sqrt(empirical * (1 - empirical) / n)
+
+    fig, ax = plt.subplots(figsize=(6.4, 5.4))
+    ax.plot([0, 1], [0, 1], color="#999999", linewidth=1.0, linestyle="--",
+            label="perfect calibration")
+    ax.errorbar(nominal, empirical, yerr=1.96 * se, fmt="o", color="#C44E52", markersize=7,
+                capsize=4, linewidth=1.4, label=f"TabPFN-3.5, {n} fleet evaluations")
+    for lv, emp in zip(nominal, empirical):
+        ax.annotate(f"{100 * (emp - lv):+.0f}pp", (lv, emp), textcoords="offset points",
+                    xytext=(6, -12), fontsize=8, color="#7a2f32")
+    ax.set_xlabel("nominal coverage")
+    ax.set_ylabel("empirical coverage")
+    ax.set_title("Do the intervals contain the truth as often as they claim?\n"
+                 f"{n} fleet evaluations, held-out diagonals, 95% binomial bars", fontsize=10)
+    ax.set_xlim(0.4, 1.02)
+    ax.set_ylim(0.3, 1.02)
+    ax.grid(alpha=0.25, linewidth=0.5)
+    ax.legend(frameon=False, fontsize=8, loc="upper left")
+    fig.tight_layout()
+    OUT.mkdir(parents=True, exist_ok=True)
+    for ext in ("png", "pdf"):
+        fig.savefig(OUT / f"coverage_curve.{ext}", dpi=150)
+    plt.close(fig)
+    return OUT / "coverage_curve.png"
+
+
 if __name__ == "__main__":
     p = reframing()
     print(f"wrote {p} and {p.with_suffix('.pdf')}")
+    try:
+        c = coverage_curve()
+        print(f"wrote {c} and {c.with_suffix('.pdf')}")
+    except SystemExit as exc:
+        print(f"coverage curve skipped: {exc}")

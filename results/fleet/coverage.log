@@ -9,3 +9,37 @@ coverage: column=IncurLoss held out=3 draws=300 | already done: 0
   160 units | 32.7 min | GRNAME / LOB#273 k=8
   180 units | 38.2 min | GRNAME / LOB#321 k=8
   200 units | 42.7 min | GRNAME / LOB#350 k=4
+  220 units | 46.9 min | GRNAME / LOB#388 k=7
+  240 units | 51.1 min | GRNAME / LOB#416 k=7
+  260 units | 54.9 min | GRNAME / LOB#460 k=4
+  280 units | 59.8 min | GRNAME / LOB#494 k=7
+  300 units | 64.8 min | GRNAME / LOB#517 k=7
+  320 units | 68.5 min | GRNAME / LOB#546 k=8
+  340 units | 73.0 min | GRNAME / LOB#588 k=8
+  360 units | 79.0 min | GRNAME / LOB#616 k=6
+  380 units | 82.3 min | GRNAME / LOB#644 k=8
+  400 units | 88.1 min | GRNAME / LOB#658 k=8
+  420 units | 93.4 min | GRNAME / LOB#691 k=7
+  440 units | 98.0 min | GRNAME / LOB#737 k=6
+  460 units | 103.2 min | GRNAME / LOB#762 k=6
+
+wrote 464 coverage units to results/fleet/coverage.jsonl in 104.2 min
+skipped, by reason (nothing dropped silently):
+     1288  no scoreable future
+      165  too few training rows
+      136  not a usable triangle (ValueError)
+
+=== coverage: 464 units, horizons [1, 2, 3] ===
+ nominal  units   covered  empirical      gap   median width / point
+     50%    464       182      39.2%   -10.8pp                  1.48
+     75%    464       278      59.9%   -15.1pp                  2.80
+     90%    464       362      78.0%   -12.0pp                  4.55
+     95%    464       393      84.7%   -10.3pp                  6.38
+
+  by horizon:
+    horizon 1 (n= 177):  50%: 41%  75%: 64%  90%: 78%  95%: 84%
+    horizon 2 (n= 148):  50%: 40%  75%: 59%  90%: 85%  95%: 89%
+    horizon 3 (n= 139):  50%: 36%  75%: 56%  90%: 71%  95%: 81%
+
+  centre check: the sampled median is inside the truth's own scale in 54.7% of units (sign agreement)
+  a perfectly calibrated 50% interval would cover 50%; see the gap column for the rest.
