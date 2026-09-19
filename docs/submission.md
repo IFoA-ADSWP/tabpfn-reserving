@@ -29,7 +29,7 @@ export TABPFN_TOKEN=...                        # a Prior Labs token; the first r
 python -m tabpfn_reserving abc --distribution   # reserve + its distribution + a figure + a run record
 python -m tabpfn_reserving abc --direct         # the same, without the recursion (see below)
 python -m tabpfn_reserving abc --backtest       # scored against what actually developed
-pytest -q tests/                                # 32 tests, ~8 seconds, no token, no model fit
+pytest -q tests/                                # 40 tests, ~10-30 s, no token and no model fit needed
 ```
 
 Data ships inside the pinned `chainladder` package — the CAS Loss Reserve Database is 775 real triangles, so
@@ -68,6 +68,27 @@ must reproduce the incumbent before any comparison means anything.
   same failure the point estimate shows from the other side. `results/fleet/COVERAGE.md`. **Not** established:
   whether Mack's or the ODP bootstrap's intervals do better on the same units — that comparison has not been
   run, so the honest claim is that this model is miscalibrated, not that it is worse than the standard method.
+- **The failure is one-sided, and we know the mechanism.** **14.7%** of units have their truth above the model's
+  own 95% upper bound against a nominal 2.5%, while only **0.9%** fall below. The mechanism is documented *and*
+  verified in the installed code: the regression distribution is a bucket grid **fixed on the pretraining prior**,
+  rescaled at inference to the training target's mean and standard deviation — so what you predict sets the grid's
+  shape. A free arithmetic check confirms the direction: the truth leaves the range of training labels the fit was
+  shown on **21.1% of units** (5.3% of cells), one-sided upward. `results/fleet/CALIBRATION.md`,
+  `results/runs/20260919-target-support/`.
+- **Three explanations were tested and closed, not argued away.** It is not the **column** (paid 36.2% against
+  incurred 38.2%, paired −1.9% inside a 2.3pp floor), not the **configuration** (the vendor's two documented
+  changes move the *centre* and never the tail), and not the **target's unit** (amounts, ratios, a
+  Chain-Ladder-relative delta and recursive stepping all fail). `results/runs/20260919-column-comparison/`,
+  `results/runs/20260919-config-cells/`.
+- **Where this regime sits relative to the evidence.** A fit sees **6–33 training rows** (median 25) — below the
+  floor of *both* benchmarks the vendor's claims rest on: BeyondArena excludes sub-100 rows and TabArena leaves
+  sub-500 for future work — and the vendor's documentation states **no row floor**. So this is a regime their
+  evidence does not reach rather than one their evidence refutes; and their own report expects *parity with tuned
+  conventional models* on temporal and grouped splits, which is the shape we measured.
+  `results/conditions/FINDINGS.md`.
+- **No speed claim.** The classical methods are faster: Mack **0.13 s** and the ODP bootstrap **0.38 s** per
+  triangle against the model's ~13 s, i.e. 25–35× the other way. A pre-registered bar asked for the speed win and
+  is recorded as **falsified** rather than re-scoped. `results/runs/20260919-pricing/pricing.md`.
 - **Determinism and noise are stated.** The same command twice gives the same reserve to the pound; the point
   estimate does not depend on the seed; the draw noise floor is ~1.6% on the median at 300 draws.
 
@@ -101,4 +122,11 @@ contribution.
 | `results/fleet/FINDINGS.md` | 464 paired fleet evaluations and the negative verdict |
 | `results/runs/20260918-023600_depth-bias/FINDINGS.md` | the depth-bias measurement |
 | `results/runs/direct-arm.md` | the arm that removed the compounding, and its own limits |
-| `tests/` | 32 tests: the CAS contract, the reserve conventions, leakage, the sampler, the fleet guards |
+| `results/conditions/FINDINGS.md` | the conditions check: where our regime sits against the vendor's own documented envelope |
+| `results/remodel/FINDINGS.md` | the reformulation pass: what to change about the problem, ranked, with pre-registered expectations |
+| `results/runs/20260919-column-comparison/FINDINGS.md` | R4: the failure is not column-specific (paid vs incurred, paired) |
+| `results/runs/20260919-config-cells/FINDINGS.md` | #22: the vendor's two documented configuration changes move the centre, never the tail |
+| `results/runs/20260919-pricing/pricing.md` | the classical methods are faster; a pre-registered speed bar, falsified |
+| `docs/experiments.md` §5–§6 | the stage-2 programme and the consolidated strategy, each with decision and stop rules |
+| `scripts/check_figures.py` | a mechanical check that no superseded figure appears unmarked in these documents, with its own control arm |
+| `tests/` | 40 tests: the CAS contract, the reserve conventions, leakage, the sampler, the fleet guards, the document figures |

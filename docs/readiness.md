@@ -169,6 +169,16 @@ the single-triangle "40–60") and **"no feature engineering"**, which was not t
 the machine is busy, on battery, or when the test suite has drifted from its baseline, and names what is in the
 way. The measurement itself still waits (`t_22989d51`, blocked with a kind, commented with why).
 
+**Stage 2 outcomes so far.** Three explanations were tested and **closed**: the **column** (R4 — paid 36.2% vs
+incurred 38.2%, paired −1.9% inside the 2.3pp floor; `results/runs/20260919-column-comparison/`), the
+**configuration** (#22 — the vendor's documented changes move the centre and never the tail; the 95% level gets
+*−6.7pp* on the extrapolating transform; `results/runs/20260919-config-cells/`), and widening (not a result).
+A free arithmetic measurement supports the mechanism: the truth leaves the range of training labels the fit was
+shown on **21.1% of units** (5.3% of cells), one-sided upward. The **consolidated strategy is `docs/experiments.md`
+§6**, with a stopping rule; **R2 (bounded target, #24)** and the **row expansion (#25)** are dispatched against
+it. Cost: the classical methods are 25–35× *faster* than the model, so a pre-registered speed bar is recorded as
+falsified.
+
 ## 6. The one thing that is not mine to do
 
 **Joining the hackathon and submitting (#1)** — about thirty minutes of the entrant's time. Until it happens
