@@ -148,6 +148,11 @@ accumulate sampled paths. Which is which is stated rather than implied.
 The figure it writes is the one below; `results/runs/abc-reserve.md` says what the numbers mean and
 `docs/readiness.md` says what is still missing.
 
+**Prefer a notebook?** [`notebooks/quickstart.ipynb`](notebooks/quickstart.ipynb) does the same thing end to
+end — the triangle, the CAS agreement, the reserve distribution, the figure — **with its outputs stored**, so
+it can be read without running anything, and it runs in Colab. A notebook committed with empty outputs is code
+that claims to work; this one was executed before it landed, and re-executing it reproduces the same numbers.
+
 ![The reserve as a distribution: abc, TabPFN-3.5, 300 draws](results/figures/abc_reserve_distribution.png)
 
 Current state, honestly: [`docs/readiness.md`](docs/readiness.md).
