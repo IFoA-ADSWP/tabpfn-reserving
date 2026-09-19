@@ -209,8 +209,10 @@ that this arm was unlikely to be a repair.
 
 The manifests record `dirty: true`, which is accurate provenance rather than an oversight: the run used this
 branch's working tree, because `target="unrevealed"` and the reconstruction were not committed when it
-started. The commit that carries them is the one this document is committed in, and the two cell files'
-`sha256` are recorded above so a re-run can be checked against them byte for byte.
+started. The commit that carries them is **`624d897`**, on top of the integration line `d36f85e`, and the two
+cell files' `sha256` are recorded above. Re-running one unit of the `unrevealed` cell from that committed
+revision reproduced the recorded row **byte for byte**, so the code under test is the code in the
+repository and not only the working tree that happened to be on disk.
 
 ## Reproduce
 
