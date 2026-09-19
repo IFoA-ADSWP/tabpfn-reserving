@@ -11,8 +11,8 @@ import pytest
 
 from tabpfn_reserving import arm
 from tabpfn_reserving.triangle import (
-    DIRECT_FEATURES, FEATURES, RUNNING_FEATURES, Triangle, chainladder_baseline, direct_training_rows,
-    factor_reserve, features_for, target_ages, training_rows,
+    DIRECT_FEATURES, FEATURES, IDENTIFIER_FEATURES, IDENTIFIER_INDICES, RUNNING_FEATURES, Triangle,
+    chainladder_baseline, direct_training_rows, factor_reserve, features_for, target_ages, training_rows,
 )
 
 
@@ -42,6 +42,71 @@ class StubModel:
 
 
 TRIANGLES = ["abc", "genins", "ukmotor"]
+
+
+# ---------------------------------------------------------------------------------------------
+# The construction contract: the recorded configuration is the default, and the options are opt-in (#22)
+# ---------------------------------------------------------------------------------------------
+
+def test_the_default_construction_is_the_recorded_configuration() -> None:
+    """Every number in `results/` came from `make_model()` with no arguments.
+
+    The two configuration options are meant to be an *addition* to the recorded runs -- four cells, one factor
+    each -- so if the defaults drift the baseline cell stops being a replication and every recorded result
+    silently starts describing code that no longer exists. Nothing here fits a model, so the check is free.
+    """
+    from tabpfn import TabPFNRegressor
+
+    model = arm.make_model("local")
+    params = model.get_params()
+    assert isinstance(model, TabPFNRegressor)
+    assert params["device"] == "cpu"
+    assert params["categorical_features_indices"] is None, "identifiers are being declared categorical"
+    assert params["inference_config"] is None, "the target transform stack is no longer the default"
+
+
+def test_each_configuration_option_moves_exactly_one_parameter() -> None:
+    """One factor per cell. An option that moved a second parameter would break the 2x2 and leave the
+    paired differences with two explanations."""
+    baseline = arm.make_model("local").get_params()
+    categorical = arm.make_model("local", categorical_identifiers=True).get_params()
+    transform = arm.make_model("local", extrapolating_target=True).get_params()
+    both = arm.make_model("local", categorical_identifiers=True, extrapolating_target=True).get_params()
+
+    moved = {key for key in baseline if baseline[key] != categorical[key]}
+    assert moved == {"categorical_features_indices"}, moved
+    assert categorical["categorical_features_indices"] == IDENTIFIER_INDICES
+
+    moved = {key for key in baseline if baseline[key] != transform[key]}
+    assert moved == {"inference_config"}, moved
+    assert transform["inference_config"] == {
+        "REGRESSION_Y_PREPROCESS_TRANSFORMS": arm.EXTRAPOLATING_TRANSFORMS}
+
+    assert both["categorical_features_indices"] == IDENTIFIER_INDICES
+    assert both["inference_config"] == transform["inference_config"]
+
+
+def test_the_declared_categorical_columns_really_are_the_identifiers() -> None:
+    """Positions, not names, reach TabPFN -- so the positions have to be checked against the columns they are
+    supposed to name, and against the matrix the direct arm is actually fitted on (it appends to FEATURES)."""
+    tri = Triangle.load("abc")
+    X, _ = direct_training_rows(tri, [6], target="delta")
+    identifiers = X[:, IDENTIFIER_INDICES]
+
+    assert IDENTIFIER_INDICES == [FEATURES.index(name) for name in IDENTIFIER_FEATURES]
+    assert X.shape[1] > IDENTIFIER_INDICES[-1], "the direct arm does not carry the identifier columns"
+    assert np.array_equal(identifiers, np.round(identifiers)), "an identifier column is not a whole number"
+    assert identifiers[:, 0].min() >= 0 and identifiers[:, 1].min() >= 1
+    assert identifiers[:, 2].max() <= 2 * (tri.n - 1), "calendar index outside the triangle's own range"
+
+
+def test_the_client_backend_refuses_the_configuration_options() -> None:
+    """The options are `TabPFNRegressor` parameters. Dropping them quietly on the client would report an
+    unconfigured cell as a configured one -- which is the failure mode this whole run is built to avoid."""
+    with pytest.raises(ValueError, match="client"):
+        arm.make_model("client", categorical_identifiers=True)
+    with pytest.raises(ValueError, match="client"):
+        arm.make_model("client", extrapolating_target=True)
 
 
 # ---------------------------------------------------------------------------------------------

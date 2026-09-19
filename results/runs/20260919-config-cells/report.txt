@@ -1,0 +1,53 @@
+baseline       75 units
+categorical    75 units
+transform      75 units
+both           75 units
+
+=== config cells: 75 units present in all four cells (of 75 in the subset) ===
+
+cell          level  covered  empirical      gap           95% CI      z
+baseline        50%       30      40.0%   -10.0pp [ 28.9, 51.1]  -1.77
+baseline        75%       47      62.7%   -12.3pp [ 51.7, 73.6]  -2.21
+baseline        90%       59      78.7%   -11.3pp [ 69.4, 87.9]  -2.40
+baseline        95%       66      88.0%    -7.0pp [ 80.6, 95.4]  -1.87
+categorical     50%       34      45.3%    -4.7pp [ 34.1, 56.6]  -0.81
+categorical     75%       47      62.7%   -12.3pp [ 51.7, 73.6]  -2.21
+categorical     90%       59      78.7%   -11.3pp [ 69.4, 87.9]  -2.40
+categorical     95%       68      90.7%    -4.3pp [ 84.1, 97.3]  -1.29
+transform       50%       35      46.7%    -3.3pp [ 35.4, 58.0]  -0.58
+transform       75%       47      62.7%   -12.3pp [ 51.7, 73.6]  -2.21
+transform       90%       59      78.7%   -11.3pp [ 69.4, 87.9]  -2.40
+transform       95%       61      81.3%   -13.7pp [ 72.5, 90.2]  -3.04
+both            50%       37      49.3%    -0.7pp [ 38.0, 60.6]  -0.12
+both            75%       47      62.7%   -12.3pp [ 51.7, 73.6]  -2.21
+both            90%       60      80.0%   -10.0pp [ 70.9, 89.1]  -2.17
+both            95%       63      84.0%   -11.0pp [ 75.7, 92.3]  -2.60
+
+=== the replication cell against the record (the same 75 units) ===
+  rows compared: 75
+  coverage-flag mismatches against coverage.jsonl: 0
+   50%: recorded 40.0% vs baseline cell 40.0%
+   75%: recorded 62.7% vs baseline cell 62.7%
+   90%: recorded 78.7% vs baseline cell 78.7%
+   95%: recorded 88.0% vs baseline cell 88.0%
+
+=== paired against the baseline cell (units the baseline missed, and vice versa) ===
+cell          level    base    cell    diff  fixed  broke  McNemar p     gap
+categorical     50%   40.0%   45.3%   +5.3pp      8      4     0.3877   -4.7pp
+categorical     75%   62.7%   62.7%   +0.0pp      5      5     1.0000  -12.3pp
+categorical     90%   78.7%   78.7%   +0.0pp      3      3     1.0000  -11.3pp
+categorical     95%   88.0%   90.7%   +2.7pp      3      1     0.6250   -4.3pp
+transform       50%   40.0%   46.7%   +6.7pp      7      2     0.1797   -3.3pp
+transform       75%   62.7%   62.7%   +0.0pp      6      6     1.0000  -12.3pp
+transform       90%   78.7%   78.7%   +0.0pp      3      3     1.0000  -11.3pp
+transform       95%   88.0%   81.3%   -6.7pp      1      6     0.1250  -13.7pp
+both            50%   40.0%   49.3%   +9.3pp      9      2     0.0654   -0.7pp
+both            75%   62.7%   62.7%   +0.0pp      6      6     1.0000  -12.3pp
+both            90%   78.7%   80.0%   +1.3pp      5      4     1.0000  -10.0pp
+both            95%   88.0%   84.0%   -4.0pp      2      5     0.4531  -11.0pp
+
+=== the pre-registered falsifier ===
+  n = 75. The bar is the binomial sampling error at this n: 11.3pp at the worst case (p=0.5), 6.8pp at the 90% level, 4.9pp at 95%. The task quotes ~7pp for the pre-registered n=150 (8.0pp worst case, 4.8pp at 90%).
+  no cell moves 90/95 coverage toward nominal beyond its bar -- the configuration explanation is dead on this subset
+
+wrote manifest to results/runs/20260919-config-cells/manifest.json

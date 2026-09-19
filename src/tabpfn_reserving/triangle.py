@@ -214,6 +214,13 @@ class Triangle:
 FEATURES = ["origin_idx", "dev_idx", "cal_idx", "latest_cum", "log_latest_cum",
             "own_last_ratio", "global_factor_prev", "global_factor_available"]
 
+# The three columns of FEATURES that are *identifiers* rather than measurements: accident period, development
+# period and calendar period. Positions are derived from the names rather than written down, so reordering
+# FEATURES cannot silently point the model's column typing at the wrong column. `arm.make_model` declares
+# these categorical when asked (#22); `direct_features` appends to FEATURES, so the positions carry over.
+IDENTIFIER_FEATURES = ["origin_idx", "dev_idx", "cal_idx"]
+IDENTIFIER_INDICES = [FEATURES.index(name) for name in IDENTIFIER_FEATURES]
+
 # Appended only when the arm is allowed to see where it has already pushed the origin. Kept as *extra*
 # columns rather than replacing the frozen ones, so the two arms are nested and an improvement (or its
 # absence) can be attributed to the information rather than to a change of representation.

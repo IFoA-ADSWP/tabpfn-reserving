@@ -1,0 +1,24 @@
+cell transform: options={'categorical_identifiers': False, 'extrapolating_target': True} | units 150 (first 150 of results/fleet/coverage.jsonl) | done 0 | todo 150 | draws 300 | seed 0
+/opt/anaconda3/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+Traceback (most recent call last):
+  File "/Users/Scott/projects/tabpfn-reserving/.worktrees/t_9f441703/scripts/config_cells.py", line 423, in <module>
+    "draws": args.draws, "seed": SEED, "n_shared": n}
+     ^^^^^^
+  File "/Users/Scott/projects/tabpfn-reserving/.worktrees/t_9f441703/scripts/config_cells.py", line 419, in main
+    if args.report_out:
+           ^^^^^^^^^^^^^
+  File "/Users/Scott/projects/tabpfn-reserving/.worktrees/t_9f441703/scripts/config_cells.py", line 132, in run_cell
+    raise SystemExit(f"{out_path} is being written by pid {other}; refusing to be a second writer")
+                    ^^
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+cell transform: options={'categorical_identifiers': False, 'extrapolating_target': True} | units 75 (first 75 of results/fleet/coverage.jsonl) | done 0 | todo 75 | draws 300 | seed 0
+  10/75 | 1.8 min | 10.7 s/unit | eta 12 min | GRNAME / LOB#21 k=8
+  20/75 | 3.8 min | 11.3 s/unit | eta 10 min | GRNAME / LOB#33 k=5
+  30/75 | 5.5 min | 11.0 s/unit | eta 8 min | GRNAME / LOB#63 k=8
+  40/75 | 7.5 min | 11.2 s/unit | eta 7 min | GRNAME / LOB#79 k=8
+  50/75 | 8.9 min | 10.7 s/unit | eta 4 min | GRNAME / LOB#85 k=8
+  60/75 | 10.7 min | 10.7 s/unit | eta 3 min | GRNAME / LOB#111 k=5
+  70/75 | 12.4 min | 10.6 s/unit | eta 1 min | GRNAME / LOB#125 k=6
+
+cell transform: wrote 75 rows to results/runs/20260919-config-cells/transform.jsonl in 13.4 min
