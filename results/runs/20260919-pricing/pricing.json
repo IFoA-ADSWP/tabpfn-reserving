@@ -1,0 +1,42 @@
+{
+  "run_id": "20260919-pricing",
+  "date": "2026-09-19",
+  "purpose": "E3a pricing (issue #20): cost per unit for Mack and the ODP bootstrap before designing the 464-unit coverage comparison",
+  "environment": {
+    "chainladder": "0.10.1",
+    "triangle": "abc",
+    "note": "single runs on a machine under load from another agent -> timings are upper bounds"
+  },
+  "mack": {
+    "seconds_per_unit": 0.13,
+    "minutes_for_464": 1.4,
+    "attributes": {
+      "total_mack_std_err_": 152712.93,
+      "total_parameter_risk_": 95912.86,
+      "total_process_risk_": 118835.87
+    },
+    "warning": "full_std_err_ has an all-zero projection column; do NOT build per-cell future intervals from it"
+  },
+  "odp_bootstrap": {
+    "n_sims": 1000,
+    "seconds_per_unit_including_cl_refit": 0.38,
+    "minutes_for_464": 3.0,
+    "draws": 1000,
+    "mean": 5286238,
+    "sd": 165413,
+    "p50": 5277629,
+    "p99_5": 5759989,
+    "chainladder_point": 5277760,
+    "mean_over_point": 1.002,
+    "verification": "1000 finite draws and a mean within 0.2% of the Chain Ladder point, which is what ODP targets; an earlier attempt that summed with .sum() returned 1000 NaNs and was withdrawn"
+  },
+  "tabpfn": {
+    "units": 464,
+    "minutes": 104,
+    "seconds_per_unit": 13.4
+  },
+  "verdict": {
+    "gate": "cleared - the three-method comparison costs minutes",
+    "finding": "the classical methods are ~25-35x FASTER than the model for the same object; the entry's 'one forward pass vs a thousand simulated refits' framing implies otherwise and must be corrected"
+  }
+}
