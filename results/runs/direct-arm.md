@@ -50,6 +50,35 @@ That reframes the only question worth asking next: not "how close is it to Chain
 that), but **"does it deviate usefully where Chain Ladder is wrong?"** Which needs a fleet, and a control:
 the pure Chain Ladder arm is the null, and its error is 0 by definition.
 
+## The caveat the CLI itself prints, and what it costs
+
+The run prints its own coverage check, and it does not pass:
+
+```
+horizons in training 1-8  |  horizons required 0-10
+```
+
+Training rows come from anchors 2…9, so the deepest horizon the model ever sees is 8. Production asks for
+**0–10**: the two youngest accident years are extrapolated beyond *every* example in the training set — the
+same class of defect as the anchoring trap in the depth-bias work (a measurement whose range does not cover
+the claim), caught this time before it became a conclusion rather than after.
+
+It is small in currency terms because the two youngest origins carry the smallest bases, and horizon 0 is
+degenerate (nothing left to develop, so the reserve contribution is zero by construction). But it is not
+nothing, and it means the −1.2% on `abc` is achieved with the deepest two origins guessing beyond the range
+the model has examples for. Widening the training anchors to k=1 would push the deepest training horizon to
+9 and cost one more row per anchor; going further is impossible on a single triangle, which is the argument
+for the fleet rather than more work here.
+
+## The distribution, for what it is worth alongside the point estimate
+
+`abc` delta: p5 2,351,587 · p50 5,581,983 · p99 9,950,952, against a point of 5,211,802. The point sits
+*below* the median and the downside reaches less than half the point — the arm's uncertainty is wide and
+skewed low, unlike the recursive arm's upward-compounding tail. Since the target is Chain Ladder-relative,
+a p5 of 2.4m is the model saying "Chain Ladder may be half wrong", which is a claim to test on the fleet,
+not to leave standing on one triangle.
+
+
 ## A process note worth keeping
 
 The first run of this appeared to produce `8,801,618` — the *recursive* arm's number, to the pound, on
