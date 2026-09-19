@@ -195,9 +195,14 @@ a loss triangle — so three firsts survive (first interval-coverage measurement
 locate the failure in projection depth, first to compare against the classical intervals on identical units) —
 while the bucket-grid mechanism and the general small-n calibration behaviour must be **attributed**, not claimed.
 
-**Two arms were still running at the freeze**: R2 (the bounded target, #24) and the row expansion (#25). Both
-carry pre-registered falsifiers and are decisive either way; §6's stopping rule governs what happens if they
-land after the freeze — record the outcome, do not re-open the programme.
+**Both remaining arms landed, and both falsifiers fired as pre-registered.** R2 (the bounded target, #24) *moved
+the tail the wrong way* and its own instrument could not hold the level, so the route is closed and it does **not**
+decide the support question; the row expansion (#25) saw **2.6× the rows** of its own triangle (median 25 → 65)
+and gained nothing measurable — **+2.2pp** on the closer-than-CL rate (se 5.3pp, McNemar p = 0.774) against the
+2.3pp floor, with the depth-bias slope moving −0.0005 (se 0.0063). Both legs of its falsifier hold, so **row count
+is not the binding constraint**, and the weight moves to rows that carry *different* information rather than
+merely more of the same (§5.4, E2b). **R1 — an exposure-anchored level — is now the only untested lever** the
+stopping rule still covers. Route-by-route record: `docs/experiments.md` §6.
 
 ## 6. The one thing that is not mine to do
 

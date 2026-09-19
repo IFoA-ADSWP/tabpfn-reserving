@@ -83,6 +83,23 @@ across anchors rather than on a single triangle. Regenerate with `python scripts
 
 That is the claim this repository sets out to measure rather than assert.
 
+## What we tried to fix it, and what it cost
+
+A negative is only worth something if the diagnosis is pushed to the point of falsification. Each repair below
+was designed with its expectation written down **before** the run, so that the run could take it away:
+
+| route | what it assumed | outcome |
+|---|---|---|
+| configuration / tuning | the model was misconfigured — the vendor documents categorical identifiers and an extrapolating quantile transform, both of which we had not used | the **centre** moves (50% coverage 40.0% → 49.3%); the **tail does not** — 90% moves exactly 0.0pp, 95% −6.7pp |
+| the paid column | incurred loss is the noisy choice and paid might behave better | paid 36.2% vs incurred 38.2% over 414 paired units, inside the 2.3pp noise floor → not the column |
+| wider intervals | the intervals are simply too narrow | mean gap 11.8% → 4.3% — but a **placebo matched to the same mean width scores 5.5%**, so widening is a repair anyone could apply to any method |
+| a bounded target | the distribution's support is the problem; predict a share in [0,1) instead of an unbounded factor | **falsified, and it does not isolate support** — it moves the tail the wrong way and cannot hold the level |
+| more rows, same triangle | 6–33 training rows is below every benchmark's floor, so rows are the binding constraint | 2.6× the rows (median 25 → 65) gains **+2.2pp** (se 5.3pp, McNemar p = 0.774) against the 2.3pp floor → **row count is not the binding constraint** |
+| it will be faster | one forward pass replaces a thousand refits | the classical methods are **25–35× faster** (0.38 s and 0.13 s against 13.4 s) |
+
+Route by route with the numbers and their standard errors, and the stopping rule that governs what is left:
+[`docs/experiments.md`](docs/experiments.md) §6.
+
 ## What it shows
 
 | # | Beat | What it demonstrates |
