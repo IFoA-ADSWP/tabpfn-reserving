@@ -74,18 +74,27 @@ with a deadline that no further work can move.
 
 ## 3. Scientific — the honest ones
 
-1. **The point estimate explains itself, and the fix is queued.** It over-reserves (abc delta, +63.3% at best,
-   against Chain Ladder) and the cause is now measured rather than guessed: **per-step bias is zero where the
-   model has training rows and grows +3.2% per step as it extrapolates** (287 scored steps, t≈8.7,
-   intercept +0.0001), compounding to ×1.33 over the nine steps production asks for, against a measured ×1.67.
-   → `results/runs/20260918-023600_depth-bias/FINDINGS.md`, **#17 answered, #18 to build**.
-2. **n = 11.** The coverage result (55/82/91/91) is *indicative, not a result*, and E3 must be run at the
-   horizon the tool is used at — a backtest-based version would flatter us. **The largest gap (#8).**
+1. **The point estimate is not competitive, and this is now an answer rather than a hope.** 464 paired
+   evaluations over 639 real triangles: closer than Chain Ladder on **38.8%**, median |error| 162.6% against
+   the incumbent's 121.3%, moving the reserve by a median of 142% of Chain Ladder's, and losing at every
+   horizon. The *mechanism* was worth finding — per-step bias is zero where the model has training rows and
+   grows **+3.2% per step** as it extrapolates (287 scored steps, intercept +0.0001), and deleting the
+   recursion took `abc` from +66.8% to −1.2% — but the fix did not make the estimate usable.
+   → `results/fleet/FINDINGS.md`, `results/runs/20260918-023600_depth-bias/FINDINGS.md`.
+2. **Calibration is poor, and it is the finding that matters most — because the distribution is the claim.**
+   On the fleet the intervals under-cover at every nominal level (first 111 units: 40.0% at 50, 60.9% at 75,
+   79.1% at 90, 87.3% at 95), with the three largest gaps wider than their sampling error — while the intervals
+   are *wide* (the median 90% interval is 4.7× the point estimate). So the misfit is **centring, not width**,
+   which is exactly what the 464-evaluation point-estimate result implies. The full run was still in flight
+   when this page was updated; the numbers live in `results/fleet/coverage.jsonl` and will be finalised there
+   (**#8**).
 3. **The independent-draws limitation is stated but not fixed** (**#15**): per-cell draws are independent, so
    the p99 — the number a risk margin actually uses — has no correlation structure. Cheap to fix, not yet done.
 4. **Timings are contaminated** (**#9**); a clean E5 run is needed before any speed claim.
 5. **E4's regime map is unrun** (**#11**), so there is no "use it when…" rule.
-6. `requirements.txt` is unpinned (**#12**) — a five-minute job for the packaging pass.
+6. ~~`requirements.txt` is unpinned.~~ **Closed (#12).** Pinned to the environment that produced `results/`,
+   with `pyproject.toml` pinning the two packages that determine the science and leaving lower bounds on the
+   rest so an install still works across platforms.
 
 ### 3.1 The finding, in one paragraph
 
@@ -117,13 +126,15 @@ report a flat line while doing so. This is the intellectual centrepiece of the e
 Measured throughput, not optimism: this session completed three substantial increments (a feature mode and its
 controlled A/B; the sampling overhaul; the depth-bias diagnostic). Today is **Friday 18 September**.
 
-| item | estimate |
+| item | state |
 |---|---|
-| **#18** direct horizon prediction — delete the recursion, remove the compounding | 1.0–1.5 d |
-| **#8** E3 coverage over one `clrd` line of business, at the production horizon | 1.5–2.0 d |
-| packaging: **#5** notebook, **#6** unlocks page, **#7** README table, **#12** pins | 1.0–1.5 d |
-| **#2** submission description + final read-through | 0.5–1.0 d |
-| **to a submittable entry** | **4.0–6.0 d** |
+| **#18** direct horizon prediction — delete the recursion | **done** — the compounding went, the accuracy did not |
+| **#8** the fleet: does the correction earn its place, and is the distribution calibrated | **verdict in**: the point estimate loses (38.8% closer); coverage under-covers at every level and the run to completion is in flight |
+| **#6** unlocks page, **#7** README table, **#12** pins | **done** |
+| **#2** submission description | **drafted**, one coverage placeholder to replace |
+| **#5** notebook — the last judge-facing item | 0.5 d |
+| **#1** join and submit | yours, ~30 min |
+| **to a submittable entry** | **~1 day** |
 
 That lands **Thursday 24 – Tuesday 29 September**: on the brief's own 25 September target, with 5 working days
 of slack to 2 October and 12 to the hard close on 6 October. The variance is not build time — compute is cheap
