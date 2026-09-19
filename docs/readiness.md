@@ -17,12 +17,16 @@ Written so that a reader with **none** of the previous session's context can pic
 claims) → this page (where it stands and what is next) → [`../results/runs/20260918-023600_depth-bias/FINDINGS.md`](../results/runs/20260918-023600_depth-bias/FINDINGS.md)
 (the finding the entry leans on) → `gh issue list --repo IFoA-ADSWP/tabpfn-reserving` (the worklist).
 
-**Confirm the environment before believing anything else.** The rules are three: nothing is true until
-reproduced, the same command twice must give the same number, and the baseline must reproduce the incumbent.
+**Confirm the environment before believing anything else.** The rules are four: nothing is true until
+reproduced, the same command twice must give the same number, the baseline must reproduce the incumbent, and
+**no script issues a verdict it has no power to support** — anything that prints a conclusion must refuse below
+a stated sample threshold and when the outcome has no variation. The fourth is not theoretical: three times in
+one session a script reported a confident verdict on three units, zero misses, and a rate of 0.0%.
 
 ```bash
 cd ~/projects/tabpfn-reserving            # canonical clone; .venv is Python 3.12.7 with tabpfn 9.0.0
-.venv/bin/python -m pytest -q tests/      # 25 tests, ~7s, NO token and NO model fit needed
+.venv/bin/python -m pytest -q tests/      # 36 tests, ~15-30s, NO token and NO model fit needed
+.venv/bin/python scripts/check_figures.py # no superseded figure appears unmarked in the documents
 ```
 
 Then one real run and one reproduction of the finding. The first run of the day downloads the 3.5 weights
