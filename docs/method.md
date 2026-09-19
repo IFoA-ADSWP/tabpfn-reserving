@@ -51,7 +51,7 @@ restricted to what was known at the valuation date, so the future cannot leak in
 | The point estimate is competitive with Chain Ladder | Per-triangle error across the fleet, and the direction of any bias | Systematic bias across the fleet, not noise on one triangle |
 | Intervals more honest than Mack's | The coverage curve for all three methods on the same triangles | Coverage no closer to nominal than Mack's |
 | Fleet-scale in minutes | Per-triangle timing, same machine, both methods | The bootstrap finishing faster |
-| Zero-shot: no tuning, no feature engineering | The code above | A per-triangle hyperparameter |
+| Zero-shot: no tuning, nothing fitted per triangle | The code above | A per-triangle hyperparameter |
 
 ## The bars, fixed before the runs
 
