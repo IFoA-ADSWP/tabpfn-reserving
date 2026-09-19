@@ -1,15 +1,21 @@
-# Dependencies are deliberately unpinned until the first results land: the pins that matter are the
-# environment that produced results/, and they will be committed alongside it.
+# The environment that produced results/ — pinned, because a result is only reproducible against the
+# versions it ran on. Regenerate with:
+#     pip freeze | grep -E '^(tabpfn|chainladder|numpy|pandas|matplotlib|scikit-learn|torch|pytest)=='
 #
 # Built with TabPFN-3.5: the `tabpfn` 9.0.0 release (2026-09-15) ships the 3.5 family
-# (Base, Plus, Thinking, and Fast in alpha).
-tabpfn>=9.0.0
+# (Base, Plus, Thinking, and Fast in alpha). This is the release the hackathon asks for, and it runs
+# locally on CPU — no API calls are needed for any result in this repository.
+tabpfn==9.0.0
 
-# The baseline side: the Casualty Actuarial Society's own reserving package —
-# Chain Ladder, Mack's method, and the ODP bootstrap used for the uncertainty comparison.
-chainladder
+# The baseline side: the Casualty Actuarial Society's own reserving package — Chain Ladder, Mack's
+# method, and the ODP bootstrap — plus the CAS Loss Reserve Database (`clrd`, 775 triangles), which
+# ships inside it. Nothing is downloaded and nothing is vendored: the package is pinned, and every run
+# records a fingerprint of the matrices it actually used.
+chainladder==0.10.1
 
-pandas
-numpy
-matplotlib
-jupyter
+numpy==2.5.3
+pandas==2.3.3
+matplotlib==3.11.2
+
+# Only needed for tests/ — 32 tests, ~8 seconds, no token and no model fit.
+pytest==9.1.1

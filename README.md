@@ -63,6 +63,25 @@ projections are at most two steps long, the deepest measurable depth is 2, and t
 reports a flat line while doing so. Full write-up:
 [`results/runs/20260918-023600_depth-bias/FINDINGS.md`](results/runs/20260918-023600_depth-bias/FINDINGS.md).
 
+## What we measured
+
+Every row here is a real result stored in `results/`, reproducible with the commands in this repository.
+The point estimate is not competitive and the table says so rather than leading with the parts that flatter.
+
+| measurement | result |
+|---|---|
+| **Chain Ladder arithmetic** vs the CAS package's own | exact — ratio 1.000 on `abc`, `genins`, `ukmotor`, and per column on a two-column sample. Pinned by tests, because every comparison depends on it |
+| **The reserve distribution**, drawn from the model's own bar distribution | the earlier 15-level grid clamped the tail: the `abc` p99 was understated by 62% (21.5m → 34.9m) |
+| **Point estimate, one triangle** (`abc`, delta arm, direct) | −1.2% against Chain Ladder, where the recursive arm was **+66.8%** |
+| **Point estimate, the fleet** — 464 paired evaluations over 639 triangles | closer than Chain Ladder on **38.8%**; median \|error\| 162.6% against the incumbent's 121.3%; it moves the reserve by a median of 142% of Chain Ladder's and is wrong more often than right |
+| **Coverage** | see `results/fleet/coverage.jsonl` — the distribution claim is measured separately from the centre, because a wrong centre says nothing about a spread |
+| **Where the model fails, and why** | per-step bias is zero where the model has training rows and **+3.2% per step** (se 0.36%) where it extrapolates — `results/runs/20260918-023600_depth-bias/FINDINGS.md` |
+| **Determinism** | the same command twice gives the same reserve to the pound; the point estimate is seed-independent; the draw noise floor is ~1.6% on the median at 300 draws |
+| **Tests** | 32, in ~8 seconds, with no token and no model fit required |
+
+The honest summary: **the distribution is the deliverable; the point estimate is not.** That was a
+pre-registered possible outcome, and `results/fleet/FINDINGS.md` is where it is documented at fleet scale.
+
 ## Why a triangle is a different problem from claims modelling
 
 Prior work on tabular foundation models in insurance has mostly tested flat, claim-level regression at scale
