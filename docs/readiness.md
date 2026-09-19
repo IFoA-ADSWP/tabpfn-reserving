@@ -9,6 +9,47 @@
 > Every gap is filed as an issue in this repository (**#1–#18**) — this page is the ledger, the issues are the
 > worklist. Labels: `submission-blocker`, `human-only`, `judge-facing`, `experiment`, `packaging`, `redesign`.
 
+## 0. Resuming this project
+
+Written so that a reader with **none** of the previous session's context can pick it up. Do these in order.
+
+**Read, in this order:** the top of [`../README.md`](../README.md) (what the project is and what it currently
+claims) → this page (where it stands and what is next) → [`../results/runs/20260918-023600_depth-bias/FINDINGS.md`](../results/runs/20260918-023600_depth-bias/FINDINGS.md)
+(the finding the entry leans on) → `gh issue list --repo IFoA-ADSWP/tabpfn-reserving` (the worklist).
+
+**Confirm the environment before believing anything else.** The rules are three: nothing is true until
+reproduced, the same command twice must give the same number, and the baseline must reproduce the incumbent.
+
+```bash
+cd ~/projects/tabpfn-reserving            # canonical clone; .venv is Python 3.12.7 with tabpfn 9.0.0
+.venv/bin/python -m pytest -q tests/      # 25 tests, ~7s, NO token and NO model fit needed
+```
+
+Then one real run and one reproduction of the finding. The first run of the day downloads the 3.5 weights
+(~30s) and needs `TABPFN_TOKEN`; the CLI reads it from `~/.config/tfm/keys.env` itself, so a stale shell
+export cannot poison a run.
+
+```bash
+.venv/bin/python -m tabpfn_reserving abc --distribution
+#   expect: compounded point 12,844,223 | chain-ladder 5,277,760 | route "bar-bins"
+
+.venv/bin/python scripts/depth_bias.py --triangles abc genins --targets delta --anchors-from 3
+#   expect: slope +0.0317 per step (se 0.0036), intercept ~+0.0001, 287 scored steps
+```
+
+If those three agree, the state described below is real and you can start. If they don't, the numbers have
+drifted and this page is what needs fixing first.
+
+**Pitfalls that cost time here, all of them paid for already:** a production run is ~1–2 minutes of CPU (the
+fit is ~5s, the recursion's predictions dominate); `clrd` is 775 triangles and `mcl` carries incurred *and*
+paid, so **both must be named explicitly** or the loader refuses them — that refusal is deliberate, it is not
+a bug to work around; and a backtest anchored near the ultimate cannot see the long-horizon steps, so it will
+report a flat line while telling you nothing (see the trap in the depth-bias FINDINGS).
+
+**Then start at #18** — delete the recursion and predict the horizon directly, capped at one implementation,
+one measurement, one decision. **#1 (joining and submitting) is not the machine's to do** and is the only item
+with a deadline that no further work can move.
+
 ## 1. Compliance — the terms, clause by clause
 
 | Clause | Requirement | State |
