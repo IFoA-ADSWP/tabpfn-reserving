@@ -196,20 +196,21 @@ def self_test() -> int:
             "13.8% over all units\n5,211,802\n"
             "This corrects an earlier claim of 40–60 training rows.\n"
         )
-        # Adding a canonical figure without adding it here turns the control arm into a failure that
-        # looks like a product bug -- it happened when 13.8% was added. Check it mechanically instead.
-        missed = [pat for pat, _m, _w in CANONICAL if not re.search(pat, good.read_text())]
-        if missed:
-            print("  SELF-TEST CORPUS IS STALE -- it does not exercise every canonical figure:")
-            for pat in missed:
-                print(f"    /{pat}/")
-            print("  Add each missing figure to the healthy corpus above; a control arm that cannot pass"
-                  "\n  is as useless as one that cannot fail.")
-            return 2
-        # A corpus that MUST fail: an unmarked superseded figure.
+        # A corpus that MUST fail: otherwise healthy -- every canonical figure present -- with ONE unmarked
+        # superseded figure. It has to be otherwise healthy, or its exit code means "the checker is blind"
+        # rather than "the checker caught the regression", and the control tests nothing.
         bad = d / "bad.md"
-        bad.write_text("6–33 rows, median 25\n38.8%\n162.6%\n121.3%\n39.2%\n84.7%\n14.7%\n5,211,802\n"
+        bad.write_text("6–33 rows, median 25\n38.8%\n162.6%\n121.3%\n39.2%\n84.7%\n14.7%\n13.8%\n5,211,802\n"
                        "The model gets 40–60 training rows per fit and needs no feature engineering.\n")
+        for label, corpus in (("healthy", good), ("must-fail", bad)):
+            missing = [pat for pat, _m, _w in CANONICAL if not re.search(pat, corpus.read_text())]
+            if missing:
+                print(f"  SELF-TEST CORPUS IS STALE -- the {label} corpus does not exercise every canonical figure:")
+                for pat in missing:
+                    print(f"    /{pat}/")
+                print("  Add each missing figure to that corpus above; a control arm that cannot pass is as"
+                      "\n  useless as one that cannot fail, and the two look identical from outside.")
+                return 2
         # A corpus that MUST read as the checker being blind: canonical figures absent.
         empty = d / "empty.md"
         empty.write_text("nothing that matches any pattern\n")
