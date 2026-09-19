@@ -1,0 +1,34 @@
+{
+  "run_id": "20260919-three-method-coverage",
+  "units_file": "results/fleet/coverage.jsonl",
+  "units_file_sha256": "48ced99e64455752",
+  "n_units_available": 464,
+  "n_units_requested": 80,
+  "per_unit_jsonl": "results/runs/20260919-three-method-coverage/screen.jsonl",
+  "n_sims": 1000,
+  "seed": 20260919,
+  "chainladder": "0.10.1",
+  "column": "IncurLoss",
+  "levels": [
+    0.5,
+    0.75,
+    0.9,
+    0.95
+  ],
+  "min_units_for_verdict": 200,
+  "carry_forward_convention": "Triangle.global_factors: the last estimated age-to-age factor, for the point and the standard error alike",
+  "git": {
+    "revision": "c9c8bc8abecbd6f6b93b79c6e10d43de161e0772",
+    "branch": "wt/20-three-method-coverage",
+    "dirty": true
+  },
+  "python": "3.12.7",
+  "host": "MacBook-Air-2.local",
+  "screen": true,
+  "seconds": 61.469001054763794,
+  "counts": {
+    "written": 80,
+    "carried_steps": 251,
+    "nonfinite_sims": 0
+  }
+}
