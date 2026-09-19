@@ -2,7 +2,7 @@
   "run_id": "20260919-row-expansion",
   "command": ".venv/bin/python scripts/row_expansion.py --limit 0 --max-units 90 --held-out 3",
   "date": "2026-09-19T20:11:38",
-  "git_revision": "79846bc49b0032ba73bed55f4857b5beb2d5ce15",
+  "git_revision": "af443f4d42478311ccf735249b1f33dc6a2375c8",
   "dirty": true,
   "cells": {
     "baseline": {
@@ -15,5 +15,7 @@
   "scoring": "direct arm, delta target, known_until=anchor, backtest targets, no draws",
   "min_common": 60,
   "units": 90,
-  "model": "arm.make_model('local') = TabPFNRegressor(device='cpu')"
+  "model": "arm.make_model('local') = TabPFNRegressor(device='cpu')",
+  "git_revision_run": "79846bc49b0032ba73bed55f4857b5beb2d5ce15",
+  "dirty_note": "The run was executed against the uncommitted working tree at 79846bc; that tree's code is committed as af443f4 on wt/25-row-expansion with no functional change afterwards. Recorded honestly rather than rewritten: the numbers in units.jsonl came from the uncommitted tree."
 }
