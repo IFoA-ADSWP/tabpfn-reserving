@@ -68,14 +68,17 @@ must reproduce the incumbent before any comparison means anything.
   same failure the point estimate shows from the other side. `results/fleet/COVERAGE.md`. **Not** established:
   whether Mack's or the ODP bootstrap's intervals do better on the same units — that comparison has not been
   run, so the honest claim is that this model is miscalibrated, not that it is worse than the standard method.
-  **Attributed, in `results/prior-art/FINDINGS.md`:** the neural-reserving literature scores distributions with
-  quantile and log scores but does not measure interval *coverage* (the mixture-density line's metrics are
-  pinball and log score), and no source we could find evaluates a foundation model on loss triangles — so this
-  measurement is the entry's own. What is **not** ours is the mechanism behind the one-sided miss (the bucket
-  grid fixed on the pretraining prior and rescaled to the training target's mean and sd is the vendor's own
-  documented behaviour) or the general result that a tabular foundation model's distribution is well calibrated
-  at small n and drifts at larger n, which has been published for i.i.d. tabular regression from n = 50 upward
-  (`arXiv:2603.26611`).
+  **Attributed, in `results/prior-art/FINDINGS.md`:** the neural-reserving literature scores distributions but
+  does not measure their interval *coverage*. The mixture-density line's own metrics are the quantile (pinball)
+  score at 75% and 95% and a log score, and its risk margins are compared against the simulator's empirical
+  margins by eye, not against realised outcomes, so no coverage rate is reported in it; the working party's own
+  uncertainty paper estimates error components as coefficients of variation and reports no coverage either
+  (`results/prior-art/FINDINGS.md` §1.2a). No source we could find evaluates a foundation model on loss
+  triangles — so this measurement is the entry's own. What is **not** ours is the mechanism behind the one-sided
+  miss (the bucket grid fixed on the pretraining prior and rescaled to the training target's mean and sd is the
+  vendor's own documented behaviour) or the general result that a tabular foundation model's distribution is
+  well calibrated at small n and drifts at larger n, which has been published for i.i.d. tabular regression from
+  n = 50 upward (`arXiv:2603.26611`).
 - **The failure is one-sided, and we know the mechanism.** Over all **464** units, **13.8%** have their truth above
   the model's own 95% upper bound against a nominal 2.5%, while only **1.5%** fall below. The mechanism is
   documented *and* verified in the installed code: the regression distribution is a bucket grid **fixed on the

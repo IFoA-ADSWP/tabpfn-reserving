@@ -10,7 +10,8 @@
 > **The one-sentence answer.** The prior art does **not** contain a reserving study that measures the
 > calibration or coverage of a learning method's intervals — the neural-reserving line measures *point
 > accuracy*, and where it does reach the distribution it scores it with a pinball/log score and never asks
-> whether the stated 90% interval covers 90% — and it contains **no evaluation of a foundation model on loss
+> whether the stated 90% interval covers 90% (**§1.2a reads the two nearest candidates for this at source and
+> returns the same answer**) — and it contains **no evaluation of a foundation model on loss
 > triangles at all**, so both entry claims survive in a narrowed form; but the *general* result that a tabular
 > foundation model's predictive distribution is well calibrated at n≈50 and drifts at larger n **has now been
 > measured elsewhere** (`2603.26611`, at n = 50–20,000), and the mechanism behind our one-sided upper tail is
@@ -44,7 +45,7 @@
 | # | Source | What it is | Tag |
 |---|---|---|---|
 | **P1** | Kuo (2019), *DeepTriangle: A Deep Learning Approach to Loss Reserving*, Risks 7(3):97 — `arXiv:1804.09253v4` | the canonical deep-learning reserving paper | **verified** (PDF text read; §4.1–§4.3 and §5 read in full) |
-| **P2** | Al-Mudafer, Avanzi, Taylor & Wong, *Stochastic loss reserving with mixture density neural networks* — `arXiv:2108.07924`; published *Insurance: Mathematics and Economics* 2022 (`10.1016/j.insmatheco.2022.03.010`) | the neural-reserving paper whose subject *is* the distribution | **verified** (preprint PDF read; abstract, §1.2, §3.3, §4.4–§5.2.4) |
+| **P2** | Al-Mudafer, Avanzi, Taylor & Wong, *Stochastic loss reserving with mixture density neural networks* — `arXiv:2108.07924`; published *Insurance: Mathematics and Economics* 2022 (`10.1016/j.insmatheco.2022.03.010`) | the neural-reserving paper whose subject *is* the distribution | **verified** (preprint PDF read in full; §1.2a re-read it, swept it and quotes it) — the **published version is not reached** (§1.2a records the routes tried and what that miss costs) |
 | **P3** | Balona & Richman (2020), *The Actuary and IBNR Techniques: A Machine Learning Approach* — SSRN 3697256 / IFoA document library | ML as a *selector* over classical reserving techniques | **verified** (PDF text read: abstract + §1–§2.2) |
 | **P4** | Deprez, Verbeke & Verdonck (2026), *Is TabPFN the Silver Bullet for Insurance Pricing?* — `arXiv:2605.22892v2` | the nearest published foundation-model application in insurance | **verified** (PDF text read in full) |
 | **P5** | *Benchmarking Tabular Foundation Models for Conditional Density Estimation in Regression* (2026) — `arXiv:2603.26611v1` | the benchmark that measures TFM density calibration and 90% coverage, n = 50–20,000 | **verified** (HTML text read; abstract, metrics, calibration sections) |
@@ -52,8 +53,8 @@
 | **P7** | Prior Labs Team, *TabPFN-3: Technical Report* — `arXiv:2605.13986v2` | the "cell-budget frontier" wording | **verified** (HTML text read) |
 | **P8** | Prior Labs Team, *TabPFN-2.5* — `arXiv:2511.08667v2` | the release the pricing paper's v2.6 sits above | **verified** (HTML text read) |
 | **P9** | IFoA *Machine Learning in Reserving* working party — blog `institute-and-faculty-of-actuaries.github.io/mlr-blog` and book `mlrwp.github.io/mlrwp-book` | the working-party literature: GLM in R/Python, LASSO, an mlr3 worked example with GLM-CL/random forest/XGBoost/LASSO, NN diagnostics, uncertainty, surveys | **verified** (posts and chapters fetched; the pages quoted are reproduced) |
-| **P10** | Taylor & McGuire (2023), *Model Error (or Ambiguity) and Its Estimation, with Particular Application to Loss Reserving*, Risks 11(11):185 (`10.3390/risks11110185`) | the working party's own uncertainty paper (Bayesian LASSO model averaging over admissible models) | **abstract verified via the publisher's DOI record; full text NOT reached** (MDPI returns 403 to this box). Any statement about whether it reports *coverage* is therefore **unverified** and must not be made |
-| **P11** | Taylor (2019), *Loss Reserving Models: Granular and Machine Learning Forms*, Risks 7(3):82 | the survey that compares granular and ML reserving | **abstract verified** (DOI record); full text not reached |
+| **P10** | Taylor & McGuire (2023), *Model Error (or Ambiguity) and Its Estimation, with Particular Application to Loss Reserving*, Risks 11(11):185 (`10.3390/risks11110185`) | the working party's own uncertainty paper (Bayesian LASSO model averaging over admissible models) | **verified — full text read at source 2026-09-19** via MDPI's asset host (route in §1.2a), and swept for coverage words: 28 pages, zero occurrences of *coverage*, *calibrat\**, *interval*, *empirical* or *back-test* |
+| **P11** | Taylor (2019), *Loss Reserving Models: Granular and Machine Learning Forms*, Risks 7(3):82 | the survey that compares granular and ML reserving | **verified — full text read at source 2026-09-19** (same MDPI asset host; §1.2a), swept: zero *coverage*, *interval*, *empirical* |
 | **P12** | Ben Taieb & Atiya (2016), *A Bias and Variance Analysis for Multistep-Ahead Time Series Forecasting*, IEEE TNNLS (`10.1109/TNNLS.2015.2411629`) | the primary source for multi-step error accumulation | **bibliographic record verified** (title/venue/year/DOI); the abstract was not retrievable from the indexes reachable here — **wording unverified** |
 | **P13** | Xu & Xie (2021), *Conformal prediction for time series* (`arXiv:2010.09107v15`, **EnbPI**) | distribution-free intervals for ordered data without exchangeability | **verified** (abstract) |
 | **P14** | Romano, Patterson & Candès (2019), *Conformalized Quantile Regression* (`arXiv:1905.03222`) | conformal + quantile regression, adaptive to heteroscedasticity | **verified** (abstract) |
@@ -163,13 +164,14 @@ earned by the measurement in `results/fleet/COVERAGE.md`, not asserted.
 
 **Not found — with one adjacent exception that has to be attributed.** Concretely:
 
-- **In reserving: no.** (i) P1 states in its own conclusion that uncertainty is out of scope. (ii) P2, the one
-  neural-reserving paper whose subject is the *distribution*, scores it with quantile scores (pinball) and a
-  log score and never reports empirical coverage. (iii) P3 selects techniques on point accuracy. (iv) P25
-  ensembles distributions and reports quantiles. (v) The working party's own uncertainty paper (P10) estimates
-  error *components*, including internal model error — it is the nearest thing to a calibration study in
-  reserving, and **its full text was not reachable from this box**, so no statement about whether it validates
-  coverage may be made here (it is on the list to read before submission).
+- **In reserving: no — and the two nearest candidates were then read at source (§1.2a).** (i) P1 states in its own
+  conclusion that uncertainty is out of scope. (ii) P2, the one neural-reserving paper whose subject is the
+  *distribution*, scores it with quantile scores (pinball) and a log score and never reports empirical coverage;
+  its nearest relative is a visual comparison of its risk margins against the simulator's own margins (§1.2a).
+  (iii) P3 selects techniques on point accuracy. (iv) P25 ensembles distributions and reports quantiles.
+  (v) The working party's own uncertainty paper (P10) estimates error *components*, including internal model
+  error — the nearest thing to a calibration study in reserving — and **its full text has now been read: it
+  reports no coverage and no calibration, and neither word, nor *interval*, appears in it (§1.2a)**.
 - **For tabular foundation models: yes, and it must be attributed.** P5 measures **PIT-based calibration and
   empirical 90% coverage** of TabPFN's (and TabICL's) predictive distributions across **n = 50 to 20,000** on 39
   real datasets, and finds calibration *best at small n* and comparatively worse at larger n; and it reports a
@@ -185,6 +187,125 @@ from n = 50 upward, in an i.i.d. regression setting (arXiv:2603.26611). What is 
 object, the order (our units are steps of a recursive projection, not exchangeable rows), the scale (6–33
 training rows, median 25), and the comparison against the incumbent's intervals on identical units.* The last
 of those four is the one that is not yet done — it is #20/E3a in `docs/experiments.md` §5.2 and it is still open.
+
+### 1.2a. The two nearest candidates read at source, and what that does to the coverage claim
+
+*Added by the follow-up pass E11a (2026-09-19). Same rule as §1.2: reading and analysis only, nothing of ours
+quoted except from a file under `results/`. This is the item §7 of the first pass listed as "must be read before
+submission", and the one that could still have killed the entry's strongest "first".*
+
+**P10, Taylor & McGuire (2023), *Risks* 11(11):185 — obtained and read in full.** Route: MDPI's own asset host,
+`https://res.mdpi.com/d_attachment/risks/risks-11-00185/article_deploy/risks-11-00185.pdf`, fetched 2026-09-19
+(open access, CC-BY, 28 pages, text extracted locally). `www.mdpi.com` still returns HTTP 403 to this box's
+`curl`; the asset host does not — that is the route the previous pass did not try, and it is recorded because it
+generalises: the same host serves the second MDPI text §7 listed as unreached (see the last paragraph below).
+
+What the paper reports about uncertainty:
+
+- **The analysis is entirely synthetic, the truth is known, and the truth is used for *point* comparisons.**
+  §8.1: "All data submitted to analysis in this paper are synthetic. Thus, all data sets contain known features.
+  Four synthetic data sets were constructed and analysed. Each consisted of a 40 × 40 quarterly triangle of
+  incremental paid claims *Yij*; thus, 810 cells." §8.2: "Since the data are synthetic, the true reserves are
+  known, and these have also been included in the table." Table 3's columns are *True AUDB* · *Forecast Raw 1se
+  AUDB* · *Posterior AUDB* · *Estimated IMSE (CoV) %*; Table 4 repeats it after bootstrapping (*Posterior
+  Forecast AUDB*, *IMSE (CoV) %*, *Number of Surviving Bootstraps*); Table 5 sets the error components side by
+  side as coefficients of variation (*IMSE %*, *Parameter %*, *IMSE+Parameter %*, *Process %*, *"Sub-Total" %*)
+  next to the true and the posterior liability. Every comparison in the numerical section is a point, or a
+  dispersion, against the truth. None of them is a bound against a realisation.
+- **The one independent check is between two estimators of the same quantity, not against outcomes.** §8.5,
+  "Reasonableness Check of Results": "It is interesting to use a different methodology in an attempt to provide
+  an independent check on the reasonableness of the above estimates of PaE plus IMSE. For this purpose, a GLM
+  has been fitted to each data set, treating the model structure as known ... The GLMs have then been
+  bootstrapped to yield estimates of PaE." It closes: "These results appear consistent with the expectations set
+  out earlier in this sub-section."
+- **Percentiles appear only as the *target* of the calculation, never as something checked.** §9: "IMSE has been
+  evaluated as a standard error in the numerical examples. As a component of forecast error, this standard error
+  could be combined with the other components ... If the reserve is to be supplemented with a risk margin such
+  that the total lies at some prescribed percentile of the liability at which the reserve is aimed, then the
+  standard error may be sufficient for computation of the percentile. This will usually be so if the percentile
+  concerned is moderate (e.g., 75%) ...". For higher percentiles the paper offers the convolution that "may be
+  obtained to yield the full distribution of the loss reserve forecast, and hence its percentiles" — a route to
+  a number, with no test of the number.
+- **The words are absent from the whole paper.** Sweep of the full text (98 inflated streams, 515,342 characters
+  of literal strings; controls *LASSO* 79, *reserve* 40, *data* 125, *Bayes* 26, *posterior* 46): **zero**
+  occurrences of *coverage*, *calibrat\**, *interval*, *empirical* and *back-test*. The only *validation\** uses
+  are §6.1.2's 8-fold cross-validation of the LASSO fit and §6.2.5's remark that a good cross-validation fit
+  "provides no assurance of reasonable forecast behaviour".
+
+**Verdict on P10: not found.** The paper estimates forecast-error components — internal model structure error
+included, through Bayesian model averaging over a bootstrapped LASSO — as standard errors and coefficients of
+variation, for a risk-margin calculation, and prints them beside a known synthetic truth. It forms no interval,
+back-tests none, and reports no coverage rate anywhere. The entry's sentence stands as written. Two things are
+worth recording beyond the verdict: the gap is now confirmed *inside the literature that owns the question* —
+the working party's own uncertainty paper is not the counter-example the first pass feared, which is a stronger
+position than "we could not reach it"; and P9's own blog characterisation of the estimate, "still incomplete"
+(quoted in §1.1), remains the accurate description of it.
+
+**P2, Al-Mudafer, Avanzi, Taylor & Wong (2022), IME 105:144–174 — the preprint read at source, the published
+version not reached.**
+
+- The preprint (`arXiv:2108.07924v1`, 18 August 2021; read in full, appendices A–D included) measures three
+  things (§4.4, "Model evaluation"): a **log score** on individual cells (4.8), **RMSE** on cells and on total
+  reserves (4.9–4.10), and **quantile scores at the 75% and 95% levels** (4.11–4.12) — the pinball loss,
+  introduced as "Quantile forecast accuracy (75% and 95%)". It states the regulatory frame first: "Capital
+  standards set by APRA and Solvency II require reserve allocations to meet total reserves in the lower triangle
+  with a 75% and 99.5% probability of sufficiency, respectively." It then scores 75% and 95% — not 99.5% — and
+  never the sufficiency *probability* that sentence is about.
+- Its qualitative arm is the nearest thing in this literature to a calibration check: "**Risk Margins:** Plots of
+  the MDN and ccODP's mean-centred risk margins (at the 25%, 75% and 95% level) were compared to empirical risk
+  margins", and "**Total reserves:** The distributions of total reserves estimated by the MDN and ccODP, *R̂*,
+  were plotted alongside the empirical distribution of total reserves" (§4.4). Those empirical margins come from
+  the simulator — 250–500 simulations of the same environment — so a margin *is* compared with the truth of the
+  data-generating process in the forecast region. But it is done **by eye, on simulated data only, and never
+  reduced to a coverage rate**; and on the real (AUSI) triangles the "empirical" margins are the ten
+  sub-triangles' own margins, which is not a truth at all.
+- The paper also records a distributional failure without quantifying it as coverage: "The log score wasn't
+  calculated when analysing total reserves, as the fitted distributions usually fell completely outside the
+  simulated empirical distribution, setting the likelihood to 0." (§4.4, item 1.) A fitted predictive
+  distribution lying outside the truth's support is the same failure mode our own `results/fleet/COVERAGE.md`
+  measures as 84.7% coverage at a nominal 95%; here it is reported for total reserves, as "the likelihood is 0",
+  and left there.
+- Where the quantiles *are* scored, the win is not uniform — which matters for anyone tempted to read this line
+  as "the intervals were validated": Table 2 (share of triangles where the MDN beats the ccODP) gives **60% at
+  the 75% level and 58% at the 95% level** in environment 1, and **50% at 95%** in environment 4; Table 3
+  (total reserves) gives environment 1 to the ccODP on all three metrics (RMSE 92.9 against 111.7, QS(75%) 28.9
+  against 37.3, QS(95%) 13.2 against 15.4).
+- Sweep of the preprint (132 inflated streams, 138,633 characters; controls *triangle* 136, *data* 120, *log
+  score* 16, *quantile score* 14): **zero** occurrences of *coverage*, *interval*, *pinball*, *coverage rate*
+  and *rank histogram*. *calibrat\** appears twice, neither about the forecasts: the §1.2.2 heading "Model
+  calibration and selection", which is about model *selection*, and a sentence saying a simulator's reporting
+  and settlement delays "have been approximately calibrated to show similar characteristics" to an earlier
+  simulator.
+- **The published version could not be reached from this box, and that miss is recorded rather than papered
+  over.** Routes tried on 2026-09-19, with outcomes: ScienceDirect (article and `/abs/` forms of PII
+  `S0167668722000373`) — HTTP 403 to `curl`, "Upstream forbidden" to the extractor; Unpaywall, OpenAlex and
+  Semantic Scholar — the only open full text any of them lists is the arXiv preprint (green, `submittedVersion`),
+  and the two repository records they add (UNSW, Minerva) carry no file; the UNSW repository record
+  (`hdl 1959.4/unsworks_79938`) — `dcterms.accessRights = "metadata only access"`, no file; Minerva Access
+  (`hdl 11343/324128`) — bot wall; the
+  authors' own analysis repository (`github.com/agi-lab/reserving-MDN-ResMDN`, last commit 2022-01-30, i.e.
+  during review) — **no coverage or calibration step**: its analysis modules are `3.4 Empirical Mean and
+  Margins.R` and `4.1 Total Reserves.R`, and the statistics they compute are empirical means/margins and
+  quantiles; the publisher's deposited abstract (Crossref, and the same text via RePEc and zbMATH) — identical
+  in substance to the preprint's, naming the same contributions (ResMDN, projection constraints) and claiming
+  nothing about calibration or coverage. **So the review delta cannot be excluded; it is small but it is not
+  zero, and closing it needs institutional ScienceDirect access.**
+
+**Verdict on P2: partially — and this is the change §1.2 needed.** What is *close*: an estimated risk margin of
+a learning method compared against the truth of the data-generating process, in the forecast region, on a
+reserving task, plus proper-score evaluation of the 75% and 95% quantiles. What is *not*: no coverage rate, no
+calibration test, no back-test, no interval; the margin comparison is visual and exists only because the data are
+simulated; and on real triangles there is no comparison against truth at all. What is *unverified*: whether the
+review process added a calibration or coverage table. The entry's sentence therefore stands for the preprint and
+for everything reachable — but it must not be written as though the published version had been checked, hence
+the clause added to `docs/submission.md`'s calibration bullet, which now names what the mixture-density line
+does measure (quantile and log scores, and a visual margin comparison) next to what it does not (coverage).
+
+**One more gap closes for free.** The same asset host serves the other MDPI text §7 had listed as unreached:
+Taylor (2019), *Loss Reserving Models: Granular and Machine Learning Forms*, *Risks* 7(3):82 (18 pages, fetched
+2026-09-19). Its sweep returns zero for *coverage*, *interval* and *empirical*, and one incidental *calibrat*
+(the time and cost of GLM calibration). The working party's survey of the field does not measure coverage
+either.
 
 ### 1.3 Answer to the second decisive question
 
@@ -601,7 +722,8 @@ recorded numbers unless its baseline cell reproduces them.
    §5.2/#20). Anything broader than those three is not supported by this search.
 4. **The neural-reserving literature is not a point-estimate literature, and must not be described as one.**
    P2 (MDN) and P25 (distributional ensembles) both take the distribution seriously; they evaluate it with
-   quantile/log scores rather than coverage. The entry's framing should be *the literature scores distributions
+   quantile/log scores rather than coverage, and P2 additionally compares its risk margins against the
+   simulator's own margins by eye (§1.2a). The entry's framing should be *the literature scores distributions
    but does not audit their coverage*, not *nobody has modelled uncertainty*.
 5. **The one published insurance evaluation of this model family is negative (P4) and should be cited as such.**
    It strengthens the entry's negative and pre-empts "did you check whether anyone else found this?" — and it
@@ -615,12 +737,17 @@ recorded numbers unless its baseline cell reproduces them.
 
 ## 7. What could not be reached, and what that costs
 
-- **P10, Taylor & McGuire (2023), Risks 11(11):185 — full text.** MDPI returns 403 to this box (and the browser
-  fallback is unavailable here: no Chrome is installed). Only the published abstract was read. **Consequence:
-  the strongest candidate for "someone already measured an ML method's reserving uncertainty" is unexamined in
-  its detail**, and it is the one item that could still kill the entry's "first coverage measurement" framing.
-  It must be read before submission.
-- **P11, Taylor (2019) Risks 7(3):82 — full text**, same cause; abstract only.
+- **P10, Taylor & McGuire (2023) — no longer open; read at source.** E11's HTTP 403 is a property of
+  `www.mdpi.com` for this box's `curl`, not of the paper: MDPI's asset host serves the PDF, and it was read in
+  full on 2026-09-19 (route in §1.2a). The same route closed **P11, Taylor (2019)**. Both gaps are retired.
+- **P2, Al-Mudafer et al. (2022) — the *published* version (IME 105:144–174).** Not reached: ScienceDirect
+  returns HTTP 403 to this box's `curl` and "Upstream forbidden" to the extractor; Unpaywall, OpenAlex and
+  Semantic Scholar each list exactly one open full text, the arXiv preprint; the UNSW record is
+  `metadata only access`; Minerva Access is behind a bot wall. **Consequence: whether the review process added a
+  coverage or calibration table is unverified** — the one residual on the entry's coverage sentence. The
+  published abstract is unchanged in kind and the authors' own analysis code (last commit during review) has no
+  such step (§1.2a), so the risk is small; it is not zero, and closing it needs institutional ScienceDirect
+  access.
 - **P12, Ben Taieb & Atiya (2016) — the abstract.** The bibliographic record is verified; the paper's own
   wording of the bias/variance decomposition is not. Any sentence that attributes a *statement* to it needs the
   paper first.
@@ -662,5 +789,14 @@ recorded numbers unless its baseline cell reproduces them.
 - External sources were fetched 2026-09-19 as described in §0.2, and are listed with identifiers in §0.1. Quotes
   are reproduced from those fetches; where a claim is quoted from a *search result* rather than the document, it
   is tagged **unverified** at the claim and named in §7.
+- **§1.2a was added by the follow-up pass E11a (2026-09-19); its provenance is part of the finding.** The three
+  PDFs it reads came from MDPI's asset host and `arxiv.org/pdf/2108.07924`, fetched with `curl` and read as
+  extracted text. No browser was used: the one configured here refuses to start without Chrome, which is worth
+  recording because a working browser would have reached ScienceDirect and settled §1.2a's residual directly.
+  The coverage-word sweeps are mechanical and repeatable from those URLs: every FlateDecode stream is inflated,
+  the literal strings of the text operators are joined and searched with whitespace-tolerant patterns — a word
+  split across two show-text operators by kerning (which made a naive search miss "Quan tile Score") still
+  matches — and the control counts are printed beside the zeros, because a sweep that cannot find the words it
+  should find has demonstrated nothing.
 - No new measurement was produced by this pass; there is nothing here to reproduce beyond the quotes, and every
   quote's URL is in §0.1.
