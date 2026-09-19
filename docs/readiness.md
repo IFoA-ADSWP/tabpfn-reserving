@@ -152,6 +152,19 @@ own documented envelope, three-method coverage on identical units (**#20**), the
 flag where Mack's intervals fail), and the fleet-as-context arm with its bar restated in fleet terms. Ordered
 cheapest-that-can-invalidate first, each with a decision rule, a stop rule and a claim it supports.
 
+**Stage 2, step 5.1 is done** — `results/conditions/FINDINGS.md`. Neither pre-registered trigger fired: the
+vendor states no training-row floor and does not exclude extrapolation. Our regime is **unreached** by their
+evidence base (theirs spans 100–1M rows and declares sub-100-row prediction out of scope; ours runs 6–33).
+Their documentation predicts our negative on the **split** — on temporal and grouped data it expects parity
+with tuned conventional models, not a win — and three conditions point the other way, which became step
+**5.1b** (**#22**): declare the identifier columns categorical and use the extrapolating quantile transform,
+both on units already on disk. The check corrected two claims of ours: the row count (a **6–33** recount, not
+the single-triangle "40–60") and **"no feature engineering"**, which was not true.
+
+**Landed since:** the E5 timing harness (`scripts/timing_bench.py`, merged) — which refuses to measure while
+the machine is busy, on battery, or when the test suite has drifted from its baseline, and names what is in the
+way. The measurement itself still waits (`t_22989d51`, blocked with a kind, commented with why).
+
 ## 6. The one thing that is not mine to do
 
 **Joining the hackathon and submitting (#1)** — about thirty minutes of the entrant's time. Until it happens
