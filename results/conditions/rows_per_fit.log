@@ -1,0 +1,9 @@
+recount of the training rows each fleet fit saw (direct arm, IncurLoss, 464 units)
+  units recorded in results/fleet/clrd-IncurLoss.jsonl : 464
+  units recounted                                      : 464
+  unusable                                             : 0
+  rows per fit: min 6  p25 18  median 25  p75 33  max 33
+  units below 20 rows  : 193
+  units above 40 rows  : 0
+  units above 60 rows  : 0
+  histogram (rows: units) : {6: 1, 7: 23, 11: 1, 12: 26, 16: 2, 18: 140, 21: 1, 25: 128, 28: 1, 31: 1, 33: 140}
