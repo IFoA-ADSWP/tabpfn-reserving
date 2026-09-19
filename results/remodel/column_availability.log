@@ -1,0 +1,30 @@
+E10 column availability recount -- units: 464  containers: 257
+read-only: no model fitted, no repository file modified
+
+identity check over all clrd cells where all three columns are finite
+  cells                      : 19988
+  inc == paid + bulk         : share within 1e-6 relative = 0.0634
+  relative residual quantiles: p10=0.007 p50=0.173 p90=0.485
+
+  first usable containers, on the latest diagonal: is bulk = inc - paid?
+   #0: a0: inc=7 paid=3 bulk=4 (inc-paid)=4
+   #4: a0: inc=583 paid=541 bulk=4 (inc-paid)=42 | a1: inc=637 paid=361 bulk=215 (inc-paid)=276 | a2: inc=712 paid=293 bulk=259 (inc-paid)=419
+   #5: a3: inc=4,356 paid=4,287 bulk=2 (inc-paid)=69 | a4: inc=3,341 paid=3,187 bulk=5 (inc-paid)=154 | a5: inc=4,936 paid=4,421 bulk=20 (inc-paid)=515
+   #7: a0: inc=236 paid=184 bulk=8 (inc-paid)=52 | a4: inc=629 paid=623 bulk=1 (inc-paid)=6 | a5: inc=964 paid=852 bulk=21 (inc-paid)=112
+   #8: a4: inc=8 paid=5 bulk=2 (inc-paid)=3 | a6: inc=37 paid=16 bulk=21 (inc-paid)=21 | a7: inc=213 paid=136 bulk=12 (inc-paid)=77
+
+over the 464 fleet units (same window, same anchors as scripts/fleet_eval.py):
+  column            known>=5 cells   future fully observed  future partly
+  IncurLoss                    464                     464            464
+  CumPaidLoss                  464                     460            464
+  BulkLoss                     454                      88            428
+  EarnedPremDIR                464                     464            464
+  EarnedPremCeded              441                     379            448
+  EarnedPremNet                464                     464            464
+
+BulkLoss / IncurLoss on the anchor diagonal, 2352 origin-cells across 257 containers
+  p10=0.002 p25=0.014 p50=0.073 p75=0.245 p90=0.491  share>0.5: 0.096
+
+EarnedPremNet at the first development age, per unit:
+  present and non-zero 464   all-zero 0   missing 0
+  positive premium per origin: n=3577 median 1,515 p10 130 p90 16,078
