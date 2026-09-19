@@ -76,11 +76,13 @@ for the fleet rather than more work here.
 |---|---|---|---|---|---|---|
 | `abc` | 5,211,802 | 5,329,680 | 5,581,983 | 2,351,587 | 7,413,958 | 5,277,760 |
 | `genins` | 14,298,765 | 13,631,064 | 15,065,690 | 3,045,318 | 23,625,730 | 18,680,856 |
+| `ukmotor` | 19,253 | 18,726 | 21,787 | 4,643 | 29,112 | 28,656 |
 
-**The interval now contains the incumbent's answer on both triangles.** On `abc` the recursive arm's p5 was
-7,452,235 — above Chain Ladder's 5,277,760, so it ruled the standard method out entirely, which is a
-distribution making a claim it had no business making. The direct arm's p5 is 2,351,587 and Chain Ladder sits
-comfortably inside. On `genins` it does too (18.68m between p75 18.19m and p90 20.84m).
+**The interval contains the incumbent's answer on all three triangles**, where the recursive arm's ruled it
+out: on `abc` its p5 was 7,452,235 against Chain Ladder's 5,277,760, so the whole interval sat above the
+standard method — a distribution asserting the incumbent was impossible. The direct arm's p5 is 2,351,587
+with Chain Ladder comfortably inside; `genins` places it between p75 and p90, and `ukmotor` between p90 and
+p95.
 
 That is the distributional consequence of deleting the compounding, and it is the more defensible statement
 regardless of the point estimate: an honest interval should *cover* the incumbent where the incumbent is
