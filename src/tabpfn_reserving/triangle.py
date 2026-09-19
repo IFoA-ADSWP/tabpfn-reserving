@@ -100,6 +100,65 @@ class Triangle:
             "sha256_16": hashlib.sha256(np.round(a, 6).tobytes()).hexdigest()[:16],
         }
 
+    def regular_block(self) -> tuple[int, int] | None:
+        """The largest contiguous block of origins that forms a *proper* triangle, or None.
+
+        A proper triangle needs each origin's observations to be a gapless prefix of ages, and each
+        successive origin to be exactly one age shorter. Returns `(first_origin, size)`.
+
+        This exists because the CAS database ships its triangles in fixed-size containers: a company with
+        three accident years occupies the *last* three origins of a 10x10 array and leaves the rest NaN, and
+        a company that changed line of business can leave gaps in the middle. Summing over all ten origins
+        then returns NaN, and every number downstream becomes silently nothing.
+        """
+        obs = np.isfinite(self.values)
+        n = self.n
+        last_age = np.full(n, -1)
+        gapless = np.zeros(n, dtype=bool)
+        for a in range(n):
+            filled = np.flatnonzero(obs[a])
+            if len(filled) == 0:
+                continue
+            last_age[a] = int(filled[-1])
+            gapless[a] = len(filled) == last_age[a] + 1 and filled[0] == 0
+
+        best: tuple[int, int] | None = None
+        for start in range(n):
+            if not gapless[start]:
+                continue
+            size = 1
+            while (start + size < n and gapless[start + size]
+                   and last_age[start + size] == last_age[start] - size):
+                size += 1
+            if size < 3:
+                continue
+            # A proper triangle of size `size` needs the first origin to reach age `size - 1`.
+            if last_age[start] + 1 < size:
+                continue
+            if best is None or size > best[1]:
+                best = (start, size)
+        return best
+
+    def trim(self) -> "Triangle":
+        """The effective triangle, or raise if there is not one.
+
+        Everything else in this package assumes a proper triangle, and the fleet containers are not one.
+        """
+        block = self.regular_block()
+        if block is None:
+            raise ValueError(f"{self.name!r}: no gapless triangular block of at least 3 origins")
+        start, size = block
+        return Triangle(
+            name=self.name,
+            values=self.values[start:start + size, :size].copy(),
+            columns=list(self.columns),
+            origin=self.origin[start:start + size],
+            ages=self.ages[:size],
+            raw=self.raw,
+            column_index=self.column_index,
+            column=self.column,
+        )
+
     def known(self, anchor: int) -> np.ndarray:
         """Cells observable at `anchor`: origins 0..anchor, development up to the anchor diagonal."""
         mask = np.zeros_like(self.values, dtype=bool)
@@ -136,11 +195,20 @@ class Triangle:
     def actual_future(self, anchor: int) -> float:
         """The observed part of the future: what actually developed after the anchor.
 
-        The tail beyond the last diagonal is unmeasurable from data and is deliberately excluded, which
-        is why the classical reserve's own `ibnr` (which includes it) is not used as the head-to-head.
+        Only finite contributions are summed, and a NaN is reported as NaN rather than skipped silently --
+        an origin with no data after the anchor is not a zero, it is an absence, and averaging the two is how
+        a fleet measurement becomes fiction.
+
+        The tail beyond the last diagonal is unmeasurable from data and is deliberately excluded, which is
+        why the classical reserve's own `ibnr` (which includes it) is not used as the head-to-head.
         """
-        return float(sum(self.values[a, self.n - 1 - a] - self.values[a, anchor - a]
-                         for a in range(anchor + 1)))
+        total = 0.0
+        for a in range(anchor + 1):
+            end, base = self.values[a, self.n - 1 - a], self.values[a, anchor - a]
+            if not (np.isfinite(end) and np.isfinite(base)):
+                return float("nan")
+            total += end - base
+        return float(total)
 
 
 FEATURES = ["origin_idx", "dev_idx", "cal_idx", "latest_cum", "log_latest_cum",
@@ -269,20 +337,28 @@ def direct_features(tri: Triangle, a: int, anchor: int, gf: np.ndarray, target_a
     return row + [horizon, float(np.log(cl)) if cl > 0 else np.nan]
 
 
-def direct_training_rows(tri: Triangle, anchors, target: str = "delta"):
+def direct_training_rows(tri: Triangle, anchors, target: str = "delta", known_until: int | None = None):
     """Rows for the direct arm: one per (anchor, origin) pair across every training anchor.
 
     The horizon is what varies here, and it only varies *across* anchors -- at a fixed anchor every origin
     develops to its own last observed age, so every row from that anchor shares a horizon. Training across
     anchors is therefore the only way the model sees a range of horizons at all, which is what makes it able
     to answer for a horizon production asks about.
+
+    `known_until` is the *evaluation* anchor's diagonal, and it exists to stop a subtle leak: a training row
+    from anchor `k'` normally takes its label from each origin's last observed age, which in a backtest lies
+    beyond the anchor being evaluated -- so the model would be trained on the tail it is about to be asked to
+    predict. Passing `known_until=anchor` clamps every training label to a cell the evaluation anchor could
+    already see, and the training horizon becomes the interval between the two valuation dates rather than
+    the full run to the ultimate.
     """
+    ceiling = (tri.n - 1) if known_until is None else int(known_until)
     X, y = [], []
     for k in anchors:
         gf = tri.global_factors(tri.known(k))
         for a in range(k + 1):
             age = k - a
-            target_age = tri.n - 1 - a
+            target_age = min(tri.n - 1 - a, ceiling - a)
             if target_age <= age:
                 continue
             base, end = tri.values[a, age], tri.values[a, target_age]

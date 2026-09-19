@@ -1,0 +1,36 @@
+fleet: column=IncurLoss held out=3 diagonals | already done: 0
+       loaded 775 triangles from clrd
+  25 rows | 2.3 min | last GRNAME / LOB#48 k=8
+  50 rows | 4.5 min | last GRNAME / LOB#85 k=8
+  75 rows | 6.2 min | last GRNAME / LOB#133 k=6
+  100 rows | 8.1 min | last GRNAME / LOB#175 k=8
+  125 rows | 11.1 min | last GRNAME / LOB#216 k=8
+  150 rows | 13.0 min | last GRNAME / LOB#255 k=7
+  175 rows | 15.7 min | last GRNAME / LOB#311 k=8
+  200 rows | 18.0 min | last GRNAME / LOB#350 k=4
+  225 rows | 19.8 min | last GRNAME / LOB#393 k=8
+  250 rows | 21.1 min | last GRNAME / LOB#447 k=4
+  275 rows | 25.0 min | last GRNAME / LOB#482 k=8
+  300 rows | 27.8 min | last GRNAME / LOB#517 k=7
+  325 rows | 29.4 min | last GRNAME / LOB#553 k=5
+  350 rows | 31.9 min | last GRNAME / LOB#605 k=8
+  375 rows | 48.8 min | last GRNAME / LOB#635 k=7
+  400 rows | 50.3 min | last GRNAME / LOB#658 k=8
+  425 rows | 52.1 min | last GRNAME / LOB#695 k=8
+  450 rows | 54.3 min | last GRNAME / LOB#753 k=8
+
+wrote 464 rows to results/fleet/clrd-IncurLoss.jsonl in 55.4 min
+skipped, by reason (no unit is dropped silently):
+     1288  no scoreable future
+      165  too few training rows (direct)
+      136  not a proper triangle (sparse or fragmented container)
+
+=== fleet summary: 464 evaluations ===
+
+  direct arm, 464 scored evaluations
+    |error| median   162.6%   vs Chain Ladder     0.0%
+    |error| mean    4613.1%   vs Chain Ladder     0.0%
+    closer than Chain Ladder on   0.0% of triangles (paired mean improvement +4613.1 percentage points)
+      horizon 1: n= 177  |error| median  169.5%
+      horizon 2: n= 148  |error| median  134.8%
+      horizon 3: n= 139  |error| median  173.8%

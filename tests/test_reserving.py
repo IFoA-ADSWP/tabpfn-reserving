@@ -257,8 +257,68 @@ def test_frozen_features_are_blind_to_the_projection_and_running_ones_are_not() 
 
 
 # ---------------------------------------------------------------------------------------------
-# The direct arm (#18): one prediction per origin, no recursion
+# Fleet containers: sparse, shifted, and not triangles until trimmed
 # ---------------------------------------------------------------------------------------------
+
+def _shifted_container() -> Triangle:
+    """A proper 5x5 triangle sitting inside a 10x10 container, as clrd actually ships them."""
+    vals = np.full((10, 10), np.nan)
+    for a in range(5):
+        for d in range(5 - a):
+            vals[3 + a, d] = 100.0 * (a + 1) * (1 + 0.1 * d)
+    return Triangle(name="shifted", values=vals, columns=["IncurLoss"],
+                    origin=[str(2000 + i) for i in range(10)], ages=list(range(10)))
+
+
+def test_trim_finds_the_effective_triangle_inside_a_container() -> None:
+    tri = _shifted_container().trim()
+    assert tri.n == 5
+    assert tri.origin[0] == "2003"          # the block starts at container origin 3
+    # A proper triangle is filled exactly on and above the diagonal -- `isfinite().all()` would be the
+    # assertion that the data is *not* a triangle.
+    expected = np.zeros((5, 5), dtype=bool)
+    for a in range(5):
+        for d in range(5 - a):
+            expected[a, d] = True
+    assert np.array_equal(np.isfinite(tri.values), expected)
+    assert np.isfinite(tri.values).sum() == tri.n * (tri.n + 1) // 2
+
+
+def test_trim_refuses_a_fragmented_container() -> None:
+    """Gaps in the middle are not a triangle, and pretending otherwise turns every downstream number into
+    NaN without an error."""
+    vals = np.full((10, 10), np.nan)
+    for a in range(5):
+        for d in range(5 - a):
+            vals[2 + a, d] = 1.0
+    vals[4, 0] = np.nan                      # punch a hole in the middle
+    with pytest.raises(ValueError, match="gapless"):
+        Triangle(name="fragmented", values=vals, columns=["x"],
+                 origin=[str(i) for i in range(10)], ages=list(range(10))).trim()
+
+
+def test_training_labels_cannot_come_from_beyond_the_evaluation_anchor() -> None:
+    """Without the clamp the direct arm is trained on the very tail it is asked to predict -- which would
+    flatter every fleet number. The check is made non-vacuous: turning the clamp off must *change* the
+    labels when the future is corrupted, or the test proves nothing."""
+    tri = Triangle.load("abc")
+    anchor = 6
+    known = tri.known(anchor)
+    train = list(range(2, anchor))
+
+    corrupted = tri.values.copy()
+    corrupted[~known] = 9.9e9
+    doctored = Triangle(name=tri.name, values=corrupted, columns=tri.columns,
+                        origin=tri.origin, ages=tri.ages)
+
+    _, y_clamped_clean = direct_training_rows(tri, train, target="ratio", known_until=anchor)
+    _, y_clamped_dirty = direct_training_rows(doctored, train, target="ratio", known_until=anchor)
+    _, y_open_dirty = direct_training_rows(doctored, train, target="ratio")
+
+    assert np.array_equal(y_clamped_clean, y_clamped_dirty), "labels read past the evaluation anchor"
+    assert not np.allclose(y_clamped_clean, y_open_dirty), "the clamp never mattered -- vacuous test"
+
+
 
 def test_direct_arm_covers_a_range_of_horizons_and_the_recursive_one_cannot() -> None:
     """The horizon only varies *across* anchors -- at one anchor every origin develops to its own last
