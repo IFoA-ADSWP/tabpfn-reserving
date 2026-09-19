@@ -75,7 +75,9 @@ CANONICAL = [
     (r"121\.3%", 1, "Chain Ladder's median |error| — same"),
     (r"39\.2%", 1, "coverage at nominal 50% — results/fleet/COVERAGE.md"),
     (r"84\.7%", 1, "coverage at nominal 95% — same"),
-    (r"14\.7%", 1, "units above the model's own 95% upper bound — results/fleet/CALIBRATION.md"),
+    (r"14\.7%", 1, "units above the model's own 95% upper bound, on the 231-unit analysis half — results/fleet/CALIBRATION.md"),
+    (r"13\.8%", 1, "the same rate over all 464 units, the canonical sample — results/fleet/COVERAGE.md"),
+
     (r"5,211,802", 1, "the direct arm's reserve on abc — results/runs/direct-arm.md"),
 ]
 

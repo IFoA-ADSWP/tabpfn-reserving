@@ -68,13 +68,14 @@ must reproduce the incumbent before any comparison means anything.
   same failure the point estimate shows from the other side. `results/fleet/COVERAGE.md`. **Not** established:
   whether Mack's or the ODP bootstrap's intervals do better on the same units — that comparison has not been
   run, so the honest claim is that this model is miscalibrated, not that it is worse than the standard method.
-- **The failure is one-sided, and we know the mechanism.** **14.7%** of units have their truth above the model's
-  own 95% upper bound against a nominal 2.5%, while only **0.9%** fall below. The mechanism is documented *and*
-  verified in the installed code: the regression distribution is a bucket grid **fixed on the pretraining prior**,
-  rescaled at inference to the training target's mean and standard deviation — so what you predict sets the grid's
-  shape. A free arithmetic check confirms the direction: the truth leaves the range of training labels the fit was
-  shown on **21.1% of units** (5.3% of cells), one-sided upward. `results/fleet/CALIBRATION.md`,
-  `results/runs/20260919-target-support/`.
+- **The failure is one-sided, and we know the mechanism.** Over all **464** units, **13.8%** have their truth above
+  the model's own 95% upper bound against a nominal 2.5%, while only **1.5%** fall below. The mechanism is
+  documented *and* verified in the installed code: the regression distribution is a bucket grid **fixed on the
+  pretraining prior**, rescaled at inference to the training target's mean and standard deviation — so what you
+  predict sets the grid's shape. A free arithmetic check confirms the direction: the truth leaves the range of
+  training labels the fit was shown on **21.1% of units** (5.3% of cells), one-sided upward.
+  `results/fleet/CALIBRATION.md`, `results/runs/20260919-target-support/`, and the figure
+  `results/figures/tail_asymmetry.png`.
 - **Three explanations were tested and closed, not argued away.** It is not the **column** (paid 36.2% against
   incurred 38.2%, paired −1.9% inside a 2.3pp floor), not the **configuration** (the vendor's two documented
   changes move the *centre* and never the tail), and not the **target's unit** (amounts, ratios, a

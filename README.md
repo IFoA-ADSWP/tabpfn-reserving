@@ -135,10 +135,18 @@ fleet scale rather than asserted:
   median error of 162.6% against the incumbent's 121.3%, losing at every horizon, while moving the reserve by a
   median of 142% of Chain Ladder's. It is not hedging toward the standard method — it overrides it and loses.
   → [`results/fleet/FINDINGS.md`](results/fleet/FINDINGS.md)
-- **The distribution is miscalibrated.** Coverage 39.2% / 59.9% / 78.0% / 84.7% against nominal 50 / 75 / 90 /
-  95 (z between −4.8 and −6.6), with intervals that are *wide* (the 90% one is 4.55× the point estimate) and the
-  truth above the sampled median in **67.7%** of cases. A centring failure, not a width one.
+- **The distribution is miscalibrated, and one-sidedly so.** Coverage 39.2% / 59.9% / 78.0% / 84.7% against
+  nominal 50 / 75 / 90 / 95 (z between −4.8 and −6.6), with intervals that are *wide* (the 90% one is 4.55× the
+  point estimate). The miss is not spread across both tails: over all 464 units **13.8%** of truths sit above the
+  model's own 95% upper bound against a claimed 2.5%, while only **1.5%** fall below it — and the truth exceeds the
+  sampled median in **67.7%** of cases. A failed upper tail and a low centre, not general sloppiness.
   → [`results/fleet/COVERAGE.md`](results/fleet/COVERAGE.md)
+
+![Where the truth lands inside the model's own predictive distribution](results/figures/tail_asymmetry.png)
+
+Left: how often the truth falls outside each 95% bound, claimed against observed. Right: where it sits relative to
+the median. Every number on this figure is computed from the 464 recorded units by `scripts/make_figures.py` rather
+than typed in, so it cannot drift from the record.
 
 **What did work,** and is why this is a result rather than a shrug: the reframing runs end to end; the
 distribution is drawn from the model's own bar distribution with the arithmetic underneath reproducing the CAS

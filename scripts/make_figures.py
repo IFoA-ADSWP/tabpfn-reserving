@@ -7,6 +7,7 @@ hand-made illustration of something that might have changed since.
 """
 from __future__ import annotations
 
+import json
 import pathlib
 
 import matplotlib
@@ -173,6 +174,58 @@ def coverage_curve(path: pathlib.Path | str = "results/fleet/coverage.jsonl") ->
     return OUT / "coverage_curve.png"
 
 
+def tail_asymmetry(path: pathlib.Path | str = "results/fleet/coverage.jsonl") -> pathlib.Path:
+    """Where the truth actually lands relative to the model's own 95% bounds.
+
+    The sharpest single number in this repository, and until now it lived only in prose: the intervals
+    under-cover *one-sidedly*. Every figure on this plot is computed from the recorded units here -- nothing is
+    typed in -- so the picture cannot drift away from `results/fleet/coverage.jsonl`.
+    """
+    rows = [json.loads(l) for l in pathlib.Path(path).read_text().splitlines() if l.strip()]
+    rows = [r for r in rows if "hi_95" in r and "median" in r]
+    if not rows:
+        raise SystemExit(f"no recorded units in {path}")
+    n = len(rows)
+    above = sum(1 for r in rows if r["actual"] > r["hi_95"])
+    below = sum(1 for r in rows if r["actual"] < r["lo_95"])
+    above_med = sum(1 for r in rows if r["actual"] > r["median"])
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.2, 3.9))
+    x = np.arange(2)
+    w = 0.36
+    ax1.bar(x - w / 2, [0.025, 0.025], w, label="claimed (nominal 2.5%)", color="#999999")
+    ax1.bar(x + w / 2, [above / n, below / n], w, label="observed", color="#C44E52")
+    for xi, (cnt, val) in zip(x, ((above, above / n), (below, below / n))):
+        ax1.text(xi + w / 2, val + 0.006, f"{cnt} of {n}\n{100*val:.1f}%", ha="center", fontsize=9)
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(["truth ABOVE the\n95% upper bound", "truth BELOW the\n95% lower bound"], fontsize=9)
+    ax1.set_ylabel("share of units")
+    ax1.set_ylim(0, max(above, below) / n * 1.35)
+    ax1.set_title("The miss is one-sided", fontsize=10)
+    ax1.grid(alpha=0.25, linewidth=0.5, axis="y")
+    ax1.legend(frameon=False, fontsize=8)
+
+    ax2.bar([0, 1], [0.5, above_med / n], 0.5, color=["#999999", "#C44E52"])
+    ax2.text(0, 0.51, "claimed 50%", ha="center", fontsize=9)
+    ax2.text(1, above_med / n + 0.01, f"{above_med} of {n}\n{100*above_med/n:.1f}%", ha="center", fontsize=9)
+    ax2.set_xticks([0, 1])
+    ax2.set_xticklabels(["nominal", "observed"], fontsize=9)
+    ax2.set_ylim(0, 0.95)
+    ax2.set_title("…and the centre sits low too", fontsize=10)
+    ax2.grid(alpha=0.25, linewidth=0.5, axis="y")
+
+    fig.suptitle(f"Where the truth lands inside the model's own predictive distribution  (n = {n} fleet units)",
+                 fontsize=11)
+    fig.tight_layout(rect=(0, 0, 1, 0.94))
+    OUT.mkdir(parents=True, exist_ok=True)
+    for ext in ("png", "pdf"):
+        fig.savefig(OUT / f"tail_asymmetry.{ext}", dpi=150)
+    plt.close(fig)
+    print(f"  tail asymmetry: above 95% bound {100*above/n:.1f}%, below {100*below/n:.1f}%, "
+          f"above median {100*above_med/n:.1f}%  (n={n})")
+    return OUT / "tail_asymmetry.png"
+
+
 if __name__ == "__main__":
     p = reframing()
     print(f"wrote {p} and {p.with_suffix('.pdf')}")
@@ -181,3 +234,8 @@ if __name__ == "__main__":
         print(f"wrote {c} and {c.with_suffix('.pdf')}")
     except SystemExit as exc:
         print(f"coverage curve skipped: {exc}")
+    try:
+        t = tail_asymmetry()
+        print(f"wrote {t} and {t.with_suffix('.pdf')}")
+    except SystemExit as exc:
+        print(f"tail asymmetry skipped: {exc}")

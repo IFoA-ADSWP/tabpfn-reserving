@@ -60,7 +60,7 @@ External evidence is worthless against an unstated profile, so it is stated here
 | **Model** | OSS `tabpfn` **9.0.0** (the TabPFN-3.5 family), `TabPFNRegressor(device="cpu")`, **default inference configuration**, no tuning, no Thinking mode, no fine-tuning | `requirements.txt`; `src/tabpfn_reserving/arm.py` (`make_model`); `docs/method.md` "no hyperparameter to set" |
 | **Distribution** | 300 inverse-CDF draws from the model's own bar distribution per unit | `results/fleet/COVERAGE.md` |
 | **Baseline** | Chain Ladder arithmetic on the same cells, via the CAS package (`chainladder` 0.10.1) | `results/fleet/FINDINGS.md` |
-| **Measured result** | Closer than Chain Ladder on **38.8%** of 464; median \|error\| **162.6%** vs **121.3%**; coverage **39.2 / 59.9 / 78.0 / 84.7%** against 50 / 75 / 90 / 95; **14.7%** of units above the model's own 95% upper bound against a nominal 2.5% | `results/fleet/FINDINGS.md`, `results/fleet/COVERAGE.md`, `results/fleet/CALIBRATION.md` |
+| **Measured result** | Closer than Chain Ladder on **38.8%** of 464; median \|error\| **162.6%** vs **121.3%**; coverage **39.2 / 59.9 / 78.0 / 84.7%** against 50 / 75 / 90 / 95; **13.8%** of units above the model's own 95% upper bound against a nominal 2.5% (14.7% on the 231-unit held-out half; both cited from `results/fleet/COVERAGE.md`, which reconciles them) | `results/fleet/FINDINGS.md`, `results/fleet/COVERAGE.md`, `results/fleet/CALIBRATION.md` |
 
 **Corrected on our side while building this table.** The entry had been describing the model as seeing
 **"40–60 training rows per fit"** (`README.md` "Did it work?", `docs/experiments.md` §5). That number came from
