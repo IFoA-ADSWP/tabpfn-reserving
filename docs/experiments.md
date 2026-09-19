@@ -167,3 +167,118 @@ each is cheap, and E2 measures them against each other rather than asserting one
 2. The reframing is not packaging: four formulations of the same question, measured (E2).
 3. It is a measurement, not a pitch: a placebo arm, shared folds, pre-registered bars, and the failures
    published next to the wins (E0, E6).
+
+---
+
+# 5. Stage 2 — the programme after the first results
+
+> **Status: written 2026-09-19, after E1–E4 and the fleet ran.** §2 above is unchanged: it is the
+> pre-registration, dated before any run, and it stays legible as such. This section is what the results
+> changed. Findings it builds on: `results/fleet/FINDINGS.md` (the point estimate loses),
+> `results/fleet/COVERAGE.md` (the intervals under-cover at every level, one-sided at the tail),
+> `results/fleet/CALIBRATION.md` (widening repairs coverage; nothing *learnable* was found),
+> `results/runs/20260918-023600_depth-bias/FINDINGS.md` (the mechanism).
+
+**The question, in one sentence.** Which of these three methods — TabPFN-3.5, Mack's method, the ODP
+bootstrap — produces intervals that actually cover on real loss triangles, and what does each one cost in
+width to do it?
+
+That sentence is now the whole programme. Everything below bears on it, and anything that does not is out of
+scope and named in §5.5.
+
+## 5.1 E7 — the conditions check: is our negative inside the vendor's own envelope?
+
+**Cheapest step, first, because it can change what the entry claims rather than merely adding to it.** Our
+negative so far has been explained by our own hypothesis (40–60 training rows is too few). But a negative is
+only informative once it is checked against the conditions the *source* documents: if Prior Labs' own guidance
+says the model does not extrapolate, or states a row count it needs, then our failure is **predicted by the
+documentation** — and the entry's claim changes from "we tried a model and it did not work" to "we reproduced
+the documented envelope limit on a new domain", which is a stronger and more useful sentence.
+
+| | |
+|---|---|
+| Method | Read the primary sources — the TabPFN-3.5 technical report and the current docs, at source, not via summaries. Tag every claim **verified / unverified / corrected**, and keep the external-evidence record separate from our own results |
+| Conditions list | Both directions: where the source says the method succeeds, and where it says it fails or is unlikely to help — including operational guidance and the vendor's own defaults |
+| Verdict per condition | **Fits** (predicts our negative) · **predicts the opposite** (we meet a success condition — the most valuable line in the report) · **ruled out** (our setup is outside it) · **outside the evidence** (our regime is not covered at all) |
+| Cost | ~1 hour, no compute |
+| Claim if we stop here | "Our negative on this domain is / is not explained by the method's own documented conditions, at a scale those conditions do / do not cover" |
+| Stop rule | If the source documents a row-count floor above ours, or excludes extrapolation, then E2b is **promoted**: it becomes the test of the vendor's stated fix rather than a speculative arm |
+
+## 5.2 E3a — three-method coverage on identical units (#20)
+
+E3 already names this arm. It is now the hinge: every claim the entry currently makes is *about our model*,
+and this is the only step that can make any claim *comparative*.
+
+| | |
+|---|---|
+| Objects | The same 464 coverage units, same column (`IncurLoss`), same held-out diagonals, same realised futures — already on disk, so the comparison is paired rather than three separate rates |
+| Arms | TabPFN-3.5 (measured) · Mack (`clchainladder.MackChainladder`) · ODP bootstrap (`BootstrapODPSample`) — both present in the pinned environment, v0.10.1 |
+| Metrics | Empirical coverage at 50/75/90/95 with binomial intervals · **paired** per-unit: does the truth fall outside Mack's interval on the same units where it falls outside ours · interval width relative to the point, per method |
+| Price first | **Measure one unit before designing the run.** Mack is analytical and instant; the bootstrap is a simulation and could cost seconds or minutes per triangle. Price 1 unit, multiply by 464, and only then commit |
+| Pre-registered decision rule | Judge a gap real when it exceeds **2 binomial SE** (≈2.2pp at n=464). Two outcomes, both publishable: **(a)** Mack/ODP within 2 SE of nominal while ours is 5–7 SE off → the comparative claim is earned: *this method's intervals are wrong where the standard one's are right, and here is how*. **(b)** All three outside 2 SE → the finding stops being about TabPFN and becomes about the field: *reserving intervals do not cover as advertised on real triangles, including the classical ones* |
+| Cost | Pricing + ~2–4 hours compute, unattended |
+| Claim if we stop here | One of (a) or (b) above, plus the one-sided tail finding: the failure is a too-short upper tail, not general sloppiness |
+| Stop rule | None — it is a measurement, and both branches are usable. It **gates** E9 and E10 |
+
+## 5.3 E9 — can the model flag where the classical intervals fail? (new claim, cheap)
+
+Only reachable once 5.2 has per-unit Mack intervals. **This is the one arm that could give the model something
+it wins at**, and it plays to the entry's existing strongest section (knowing when not to trust it).
+
+| | |
+|---|---|
+| Question | Does anything the model emits — its disagreement with Chain Ladder, or its interval width — predict the units where **Mack's own interval misses**? |
+| Design | Rank correlation between the model's signal and Mack's miss indicator on the same units, with a **feature-permutation control** (preserves each signal's marginal, destroys its pairing with the outcome) — the control that discriminates, unlike the shuffled-target placebo in `CALIBRATION.md` |
+| Pre-registered rule | Claim it only if the correlation's 95% interval excludes zero **and** the permutation control is flat. Report the paired difference, not two rates |
+| Cost | Minutes on data already on disk |
+| Claim if it passes | "Not a better reserving method, but a detector for where the standard method's uncertainty is unreliable" — a positive result, and novel |
+| Stop rule | If the correlation interval includes zero, record one line and drop it. No re-slicing until it passes |
+
+## 5.4 E2b — the fleet as context (#10), gated last
+
+Already pre-registered in §2 above, including the five leakage rules and the bar. **Two amendments, both
+forced by the fleet results:**
+
+1. **The bar is restated in fleet terms.** E2b's original bar (beat 14.9% median |error|; do not lose to Chain
+   Ladder on the mean) was set on the n=11 spike. Against the fleet it must instead be paired against the
+   direct arm **on the same units**, with the effect required to clear the measured noise floor (draw noise
+   ≈1.6% on the median at 300 draws; the "closer than Chain Ladder" rate is 38.8% ± 2.3pp).
+2. **One replication cell is mandatory.** Re-run the direct arm on `abc` inside the same run and require
+   **5,211,802** — a known prior result. If it does not land, the harness changed and no other cell in the run
+   is interpretable. One arm, free.
+
+| | |
+|---|---|
+| Isolation | **One factor varies**: the context contents (none · same-line-of-business neighbours · random triangles). Anchors, targets, arms and scoring are held fixed at the fleet evaluation's settings, so every cell is directly comparable to a number we already have |
+| Cost | Build, then 464 units × ~13s ≈ 2 hours compute, unattended; plus the R1–R5 guard tests |
+| Claim if it passes | A competitive point estimate, and the entry's headline changes: the fleet as context is what the model needed |
+| Claim if it fails | **The negative becomes definitive** — the diagnosis was tested with the fix it implies, and it did not hold. Worth more than the arm that would have been run instead |
+| Stop rule | If the R3 cross-triangle null scores *better* than the self-fit, the guard is broken: stop, fix, do not interpret |
+
+## 5.5 Not doing (named, so they can be declined explicitly)
+
+- **Conditional recalibration (#21)** until 5.2 exists — a widening cannot be judged without Mack's width on
+  the same units. It is minutes of work, gated, not forgotten.
+- **Joint sampling / correlation structure (#15)** — a real gap, and it changes no current claim.
+- **The regime map (#11)** — slicing a failing method by regime is premature; 5.2 and 5.3 set the regime
+  question properly.
+- **Fine-tuning** (GPU hours, and it contradicts the entry's claim) · **blending with the classical methods**
+  (idea #12: it makes the model a meta-learner, which the rubric punishes at 50% weight) · **any further
+  single-triangle tuning** (`abc`, `genins` and `ukmotor` are characterised; more of it is repetition).
+
+## 5.6 Claims, and what stopping buys
+
+| Stop after | The claim, stated as a sentence a stranger can check |
+|---|---|
+| 5.1 | Our negative is (or is not) explained by the method's own documented conditions, at a scale those conditions do (or do not) cover |
+| 5.2 | This method's intervals fail to cover at every level; the standard method's do / do not, measured on the same units — and the failure is a too-short upper tail |
+| 5.3 | The model's disagreement with Chain Ladder flags where Mack's intervals are unreliable (only if the control is flat) |
+| 5.4 | Cross-triangle context does / does not make the deviation learnable — the last arm the diagnosis implies |
+
+**The recommendation, and the ask.** Run **5.1 then 5.2**. Together they are about a day, they need no new
+model code, and between them they decide which entry we are submitting — a comparative result, or a finding
+about the field. 5.3 is minutes after 5.2 and is the only arm that could hand the model a win. 5.4 is the
+biggest build and the only path to a competitive point estimate, and it is better run *after* 5.1 has said
+whether the vendor's own documentation predicts our negative.
+
+**Not part of this:** any spend. Every step runs on the local CPU, on data already in the repository.

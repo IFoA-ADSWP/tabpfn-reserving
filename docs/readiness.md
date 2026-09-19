@@ -147,6 +147,11 @@ direct test of the leading explanation for the failure, so it is worth more than
 **#15** the correlation structure (worth doing properly or stating as a limitation, not half-doing), **#9** clean
 timings (parked in kanban as `t_22989d51`, waiting for an idle machine), **#19** the CLI for a user's own triangle.
 
+**Stage 2 is planned and pre-registered** in `docs/experiments.md` §5: the conditions check against the vendor's
+own documented envelope, three-method coverage on identical units (**#20**), the diagnostic arm (can the model
+flag where Mack's intervals fail), and the fleet-as-context arm with its bar restated in fleet terms. Ordered
+cheapest-that-can-invalidate first, each with a decision rule, a stop rule and a claim it supports.
+
 ## 6. The one thing that is not mine to do
 
 **Joining the hackathon and submitting (#1)** — about thirty minutes of the entrant's time. Until it happens
