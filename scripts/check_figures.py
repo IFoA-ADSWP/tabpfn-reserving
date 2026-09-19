@@ -77,6 +77,8 @@ CANONICAL = [
     (r"84\.7%", 1, "coverage at nominal 95% — same"),
     (r"14\.7%", 1, "units above the model's own 95% upper bound, on the 231-unit analysis half — results/fleet/CALIBRATION.md"),
     (r"13\.8%", 1, "the same rate over all 464 units, the canonical sample — results/fleet/COVERAGE.md"),
+    (r"79\.3%", 1, "Mack's coverage at nominal 95% on the shared units — results/runs/20260919-three-method-coverage/FINDINGS.md"),
+    (r"74\.6%", 1, "Mack's coverage at nominal 90% — same"),
 
     (r"5,211,802", 1, "the direct arm's reserve on abc — results/runs/direct-arm.md"),
 ]
@@ -193,14 +195,15 @@ def self_test() -> int:
         good = d / "good.md"
         good.write_text(
             "6–33 rows, median 25\n38.8% closer\n162.6% and 121.3%\n39.2% and 84.7%\n14.7% above\n"
-            "13.8% over all units\n5,211,802\n"
+            "13.8% over all units\nMack covers 79.3% and 74.6% at the two upper levels\n5,211,802\n"
             "This corrects an earlier claim of 40–60 training rows.\n"
         )
         # A corpus that MUST fail: otherwise healthy -- every canonical figure present -- with ONE unmarked
         # superseded figure. It has to be otherwise healthy, or its exit code means "the checker is blind"
         # rather than "the checker caught the regression", and the control tests nothing.
         bad = d / "bad.md"
-        bad.write_text("6–33 rows, median 25\n38.8%\n162.6%\n121.3%\n39.2%\n84.7%\n14.7%\n13.8%\n5,211,802\n"
+        bad.write_text("6–33 rows, median 25\n38.8%\n162.6%\n121.3%\n39.2%\n84.7%\n14.7%\n13.8%\n"
+                       "Mack 79.3% and 74.6%\n5,211,802\n"
                        "The model gets 40–60 training rows per fit and needs no feature engineering.\n")
         for label, corpus in (("healthy", good), ("must-fail", bad)):
             missing = [pat for pat, _m, _w in CANONICAL if not re.search(pat, corpus.read_text())]

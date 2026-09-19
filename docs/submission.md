@@ -65,9 +65,15 @@ must reproduce the incumbent before any comparison means anything.
   under-cover at **every** nominal level — 39.2% at 50, 59.9% at 75, 78.0% at 90, 84.7% at 95, at z between
   −4.8 and −6.6 — and not because they are narrow (the median 90% interval is 4.55 times the point estimate).
   The actual future exceeds the sampled median in **67.7%** of cases, so this is a systematic low centring, the
-  same failure the point estimate shows from the other side. `results/fleet/COVERAGE.md`. **Not** established:
-  whether Mack's or the ODP bootstrap's intervals do better on the same units — that comparison has not been
-  run, so the honest claim is that this model is miscalibrated, not that it is worse than the standard method.
+  same failure the point estimate shows from the other side. `results/fleet/COVERAGE.md`.
+- **And it is not only this model — which was the entry's largest open question.** Mack's method and the ODP
+  bootstrap were measured on the **identical** 464 units. All three under-cover, and at the levels a risk margin
+  is actually read **Mack's is the worst of the three**: 74.6% at nominal 90% and 79.3% at nominal 95%, against
+  the model's 78.0% and 84.7%, with the bootstrap best at 87.1% and 90.9% while still outside 2 SE at three of
+  four levels. The failures are shared rather than distinctive — at 95%, of the 71 units the model misses, Mack
+  also misses 37. So the honest comparative claim is the reverse of the one the entry feared it might have to
+  make: this model's intervals are miscalibrated *like the standard method's*, and at the levels that matter
+  they are less miscalibrated than Mack's. `results/runs/20260919-three-method-coverage/FINDINGS.md`.
   **Attributed, in `results/prior-art/FINDINGS.md`:** the neural-reserving literature scores distributions but
   does not measure their interval *coverage*. The mixture-density line's own metrics are the quantile (pinball)
   score at 75% and 95% and a log score, and its risk margins are compared against the simulator's empirical

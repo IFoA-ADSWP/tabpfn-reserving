@@ -16,6 +16,14 @@ harness*.
 > The bars were pre-registered in [`docs/method.md`](docs/method.md) before any of these numbers existed, and
 > live status is in [`docs/readiness.md`](docs/readiness.md).
 
+## Five minutes, if that is all you have
+
+1. **[Did it work?](#did-it-work)** — the result, stated once, with what it does and does not mean.
+2. **`results/figures/tail_asymmetry.png`** — where the truth lands inside the model's own predictive distribution: the miss is one-sided.
+3. **`results/figures/three_method_coverage.png`** — the same measurement for Mack's method and the ODP bootstrap on identical units: **none of the three covers**, and at 90/95 Mack's is the worst.
+4. **One command** — `python -m tabpfn_reserving abc --distribution` prints a reserve, its distribution and its quantiles beside Mack's and the bootstrap's, and writes its own run record.
+5. **The two documents a reviewer needs**: [`docs/submission.md`](docs/submission.md) (the third-party description) and [`results/prior-art/FINDINGS.md`](results/prior-art/FINDINGS.md) (**what is new here, and what is attributed**).
+
 ## In plain terms
 
 An insurer collects premiums now and pays claims later, sometimes years later. It has to hold money aside
@@ -82,7 +90,7 @@ That is the claim this repository sets out to measure rather than assert.
 | 1 | **The reframing** | The same numbers twice: as a shaded triangle, then as a table of cells. A domain object, turned into a prediction task, in twenty lines |
 | 2 | **The reserve, zero-shot** | TabPFN-3.5 against Chain Ladder on the same triangle — no tuning and nothing fitted per triangle. *Not* "no feature engineering": the features are domain ratios chosen by hand (the link ratio, the last observed ratio, Chain Ladder's own implied factor handed in as a prior to correct), and the vendor's column-typing guidance is **not** followed — which is now an arm of its own ([#22](https://github.com/IFoA-ADSWP/tabpfn-reserving/issues/22)) |
 | 3 | **The distribution** | The reserve as a distribution, drawn from the model's own bar distribution, with Chain Ladder's point estimate and Mack's standard error reported beside it in the same run. A percentile-by-percentile comparison against Mack and the ODP bootstrap is **not** built: [#20](https://github.com/IFoA-ADSWP/tabpfn-reserving/issues/20) |
-| 4 | **Coverage** | Do the intervals contain the truth as often as they claim — measured for **this** method over 464 real triangles (they do not, at any level). The same measurement for Mack and the ODP bootstrap is **not** done: [#20](https://github.com/IFoA-ADSWP/tabpfn-reserving/issues/20) |
+| 4 | **Coverage** | Do the intervals contain the truth as often as they claim — measured for **all three methods** (this one, Mack, the ODP bootstrap) on the identical 464 real triangles. **None of them do**, and at the levels a risk margin is read Mack's is the worst of the three |
 | 5 | **Scale** | 464 real triangles reserved in one unattended run (the fleet evaluation). Per-triangle wall-clock is deliberately **not** quoted — every timing taken so far is contaminated by other work on the same machine ([#9](https://github.com/IFoA-ADSWP/tabpfn-reserving/issues/9)) |
 | 6 | **Where it does not win** | The triangles and cells where Chain Ladder is closer, stated in the open |
 
@@ -148,6 +156,26 @@ Left: how often the truth falls outside each 95% bound, claimed against observed
 the median. Every number on this figure is computed from the 464 recorded units by `scripts/make_figures.py` rather
 than typed in, so it cannot drift from the record.
 
+**And it is not just this model.** The comparison the entry previously could not make has now been run: **Mack's
+method and the ODP bootstrap, on the identical 464 units**, same column, same held-out diagonals, same realised
+futures, so the three are one paired comparison rather than three runs.
+
+![Coverage for all three methods on the same units](results/figures/three_method_coverage.png)
+
+| nominal | TabPFN-3.5 | Mack | ODP bootstrap |
+|---|---|---|---|
+| 50% | 39.2% (−4.6 SE) | 43.8% (−2.7 SE) | 55.2% (+2.2 SE) |
+| 75% | 59.9% (−7.5) | 63.4% (−5.8) | 74.8% (−0.1) |
+| **90%** | 78.0% (−8.6) | **74.6% (−11.1)** | 87.1% (−2.1) |
+| **95%** | 84.7% (−10.2) | **79.3% (−15.5)** | 90.9% (−4.0) |
+
+**Every method misses its own claim, and at the levels a risk margin is actually read — 90% and 95% — Mack's is
+the worst of the three, worse than the model whose miscalibration motivated the experiment.** The failures are
+shared rather than distinctive: at 95%, of the 71 units the model misses, Mack also misses 37 — and each covers
+many units the other does not. A model whose interval failures were its own would miss where the standard method
+is right; this one misses in the same weather. Full record, including the paired discordance and the width
+comparison: [`results/runs/20260919-three-method-coverage/FINDINGS.md`](results/runs/20260919-three-method-coverage/FINDINGS.md).
+
 **What did work,** and is why this is a result rather than a shrug: the reframing runs end to end; the
 distribution is drawn from the model's own bar distribution with the arithmetic underneath reproducing the CAS
 package **to the pound**; the pipeline is deterministic (the same command twice gives the same reserve, and the
@@ -169,11 +197,11 @@ starts at 100 rows and declares sub-100-row prediction out of scope, so our regi
 evidence base rather than excluded by it. What their documentation *does* predict is the split: on temporal and
 grouped data, tuned conventional models retain the highest performance and TabPFN-3.5 only matches them.
 
-**Two things this does *not* mean.** It is **not** evidence that the model is worse than Mack's method or the
-ODP bootstrap — that comparison has not been run on the same units, so the honest claim is "this model is
-miscalibrated", never "worse than the standard method" (#20). And it is not evidence that foundation models
-cannot help with reserving: it is evidence about *this* approach, in *this* small-n regime, with the failure
-mode characterised well enough to know what would have to change.
+**What this does *not* mean.** It is **not** evidence that the model is worse than standard practice — and that
+is now measured rather than assumed: on the identical 464 units, at 90% and 95% **Mack's intervals are the worse
+of the two** (74.6% and 79.3% against 78.0% and 84.7%). And it is not evidence that foundation models cannot help
+with reserving: it is evidence about *this* approach, in *this* small-n regime, with the failure mode
+characterised well enough to know what would have to change.
 
 ## Why a triangle is a different problem from claims modelling
 

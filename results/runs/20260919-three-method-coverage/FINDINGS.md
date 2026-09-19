@@ -12,8 +12,10 @@ The model was not refitted: its side is read from `results/fleet/coverage.jsonl`
 
 **The verdict, stated explicitly: neither branch as pre-registered, and the honest reading is nearer (b) than
 (a).** All three methods under-cover on these units, Mack at every level by −6.2 to −15.7pp (−2.7 to −15.5 SE),
-and the ODP bootstrap at three of four levels. The model is not uniquely miscalibrated — it is the *worst*
-calibrated of the three at every level, which is a weaker and different claim from (a). Branch (a) is
+and the ODP bootstrap at three of four levels. The model is **not uniquely miscalibrated, and not even the worst**
+of the three: it is worst at the two lowest levels, while **Mack is worse at 90% and 95%** — the levels a risk
+margin is actually read (74.6% and 79.3% against the model's 78.0% and 84.7%; see the table below). That is a
+weaker and a different claim from (a). Branch (a) is
 excluded: no standard method lands within 2 SE throughout. Branch (b) is *not* satisfied as written, because
 one method at one level does: the ODP bootstrap at 75% (−0.2pp, −0.11 SE). If (b) is restated as "no method
 covers as advertised at the levels a risk margin is read (90/95)", then (b) holds and all three methods fail

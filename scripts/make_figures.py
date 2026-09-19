@@ -226,6 +226,54 @@ def tail_asymmetry(path: pathlib.Path | str = "results/fleet/coverage.jsonl") ->
     return OUT / "tail_asymmetry.png"
 
 
+def three_method_coverage(path: pathlib.Path | str = "results/runs/20260919-three-method-coverage/per_unit.jsonl"):
+    """Do the intervals contain the truth as often as they claim -- for all three methods, same units.
+
+    The comparative figure the entry could not draw until #20 ran: the model, Mack's method and the ODP
+    bootstrap, measured on the identical 464 units, same column, same held-out diagonals, same realised futures.
+    Coverage is a per-unit 0/1 outcome, so it needs no denominator and cannot be distorted by a triangle whose
+    reserve is a few hundred units. Bars carry 95% binomial intervals; the diagonal marks the claim.
+    """
+    rows = [json.loads(l) for l in pathlib.Path(path).read_text().splitlines() if l.strip()]
+    levels = [50, 75, 90, 95]
+    methods = [("TabPFN-3.5", "model", "#C44E52"), ("Mack", "mack", "#4C72B0"), ("ODP bootstrap", "odp", "#55A868")]
+    rows = [r for r in rows if all(f"{m}_covered_95" in r for _, m, _ in methods)]
+    if not rows:
+        raise SystemExit(f"no per-unit records in {path}")
+    n = len(rows)
+
+    fig, ax = plt.subplots(figsize=(8.4, 4.4))
+    x = np.arange(len(levels))
+    w = 0.26
+    for i, (label, key, colour) in enumerate(methods):
+        cov = np.array([np.mean([bool(r[f"{key}_covered_{lv}"]) for r in rows]) for lv in levels])
+        se = np.sqrt(cov * (1 - cov) / n)
+        pos = x + (i - 1) * w
+        ax.bar(pos, cov, w, label=f"{label}  (n={n})", color=colour)
+        ax.errorbar(pos, cov, yerr=1.96 * se, fmt="none", ecolor="#333333", elinewidth=1, capsize=2.5)
+        for xi, c in zip(pos, cov):
+            ax.text(xi, c + 0.035, f"{100*c:.0f}", ha="center", fontsize=7.5)
+    ax.plot(x, [lv / 100 for lv in levels], "k--", linewidth=1, label="claimed (nominal)")
+    ax.set_xticks(x)
+    ax.set_xticklabels([f"{lv}%" for lv in levels])
+    ax.set_xlabel("nominal coverage level")
+    ax.set_ylabel("empirical coverage")
+    ax.set_ylim(0, 1.02)
+    ax.set_title("Every method misses its own claim — on 464 identical units\n"
+                 f"same column, held-out diagonals and realised futures; bars are 95% binomial", fontsize=10)
+    ax.grid(alpha=0.25, linewidth=0.5, axis="y")
+    ax.legend(frameon=False, fontsize=8, loc="lower right")
+    fig.tight_layout()
+    OUT.mkdir(parents=True, exist_ok=True)
+    for ext in ("png", "pdf"):
+        fig.savefig(OUT / f"three_method_coverage.{ext}", dpi=150)
+    plt.close(fig)
+    for label, key, _ in methods:
+        cov = [100 * float(np.mean([bool(r[f"{key}_covered_{lv}"]) for r in rows])) for lv in levels]
+        print(f"  {label:>14}: " + "  ".join(f"{lv}%: {c:.1f}%" for lv, c in zip(levels, cov)))
+    return OUT / "three_method_coverage.png"
+
+
 if __name__ == "__main__":
     p = reframing()
     print(f"wrote {p} and {p.with_suffix('.pdf')}")
@@ -239,3 +287,8 @@ if __name__ == "__main__":
         print(f"wrote {t} and {t.with_suffix('.pdf')}")
     except SystemExit as exc:
         print(f"tail asymmetry skipped: {exc}")
+    try:
+        m = three_method_coverage()
+        print(f"wrote {m} and {m.with_suffix('.pdf')}")
+    except SystemExit as exc:
+        print(f"three-method coverage skipped: {exc}")
