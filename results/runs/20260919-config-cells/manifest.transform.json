@@ -1,0 +1,52 @@
+{
+  "cell": "transform",
+  "options": {
+    "categorical_identifiers": false,
+    "extrapolating_target": true
+  },
+  "units_source": "results/fleet/coverage.jsonl",
+  "n_units": 75,
+  "draws": 300,
+  "seed": 0,
+  "column": "IncurLoss",
+  "git": {
+    "revision": "3c34318aeb14a0990ad686c04dc6c3028b4d9f42",
+    "branch": "wt/22-config-cells",
+    "dirty": true
+  },
+  "versions": {
+    "python": "3.12.7",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "tabpfn": "9.0.0",
+    "torch": "2.14.0",
+    "sklearn": "1.9.0",
+    "numpy": "2.5.3",
+    "chainladder": "0.10.1"
+  },
+  "command": "scripts/config_cells.py --cell transform --limit 75",
+  "started": "2026-09-19T17:17:16+0100",
+  "resolved": {
+    "requested": {
+      "categorical_identifiers": false,
+      "extrapolating_target": true
+    },
+    "constructor_params": {
+      "categorical_features_indices": null,
+      "device": "cpu",
+      "inference_config": {
+        "REGRESSION_Y_PREPROCESS_TRANSFORMS": [
+          "quantile_uni_extrapolate"
+        ]
+      }
+    },
+    "inference_config_.REGRESSION_Y_PREPROCESS_TRANSFORMS": [
+      "quantile_uni_extrapolate"
+    ],
+    "categorical_features_indices_": null
+  },
+  "finished": "2026-09-19T17:30:40+0100",
+  "n_rows_written": 75,
+  "skipped": {},
+  "seconds": 803.3,
+  "sha256": "e94eee3b0abeb4f26ca173fda990198d7818fd6b38b7646587e5294427026242"
+}

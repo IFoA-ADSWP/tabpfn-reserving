@@ -1,0 +1,13 @@
+cell both: options={'categorical_identifiers': True, 'extrapolating_target': True} | units 150 (first 150 of results/fleet/coverage.jsonl) | done 0 | todo 150 | draws 300 | seed 0
+/opt/anaconda3/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+cell both: options={'categorical_identifiers': True, 'extrapolating_target': True} | units 75 (first 75 of results/fleet/coverage.jsonl) | done 0 | todo 75 | draws 300 | seed 0
+  10/75 | 2.9 min | 17.4 s/unit | eta 19 min | GRNAME / LOB#21 k=8
+  20/75 | 4.9 min | 14.8 s/unit | eta 14 min | GRNAME / LOB#33 k=5
+  30/75 | 6.4 min | 12.8 s/unit | eta 10 min | GRNAME / LOB#63 k=8
+  40/75 | 9.1 min | 13.7 s/unit | eta 8 min | GRNAME / LOB#79 k=8
+  50/75 | 10.7 min | 12.9 s/unit | eta 5 min | GRNAME / LOB#85 k=8
+  60/75 | 12.2 min | 12.2 s/unit | eta 3 min | GRNAME / LOB#111 k=5
+  70/75 | 13.9 min | 11.9 s/unit | eta 1 min | GRNAME / LOB#125 k=6
+
+cell both: wrote 75 rows to results/runs/20260919-config-cells/both.jsonl in 14.6 min

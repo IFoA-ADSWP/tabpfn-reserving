@@ -1,0 +1,299 @@
+# The run log for the configuration cells (#22)
+
+Driver lines (one per cell launch; `exit=143` is a SIGTERM from the operator, not a crash):
+
+# The run log for the configuration cells (#22)
+
+Driver lines (one per cell launch; `exit=143` is a SIGTERM from the operator, not a crash):
+
+=== cell baseline starting 16:26:25
+=== cell baseline exit=143 16:33:59
+=== cell categorical starting 16:33:59
+=== cell baseline starting 16:34:09 (limit 75)
+=== cell baseline exit=0 16:44:43
+=== cell categorical starting 16:44:43 (limit 75)
+=== cell categorical exit=0 17:01:49
+=== cell transform starting 17:01:49 (limit 75)
+=== cell transform exit=1 17:02:04
+=== cell both starting 17:02:04 (limit 75)
+=== cell both exit=0 17:16:54
+ALL CELLS DONE 17:16:54
+=== cell transform starting 17:17:00 (limit 75, re-run after the mid-edit crash)
+=== cell transform exit=0 17:30:42
+
+Per-cell logs (progress every 10 units, then the skip census):
+
+===== baseline.log =====
+cell baseline: options={'categorical_identifiers': False, 'extrapolating_target': False} | units 150 (first 150 of results/fleet/coverage.jsonl) | done 0 | todo 150 | draws 300 | seed 0
+  10/150 | 15.5 min | 93.0 s/unit | eta 217 min | GRNAME / LOB#21 k=8
+  20/150 | 36.1 min | 108.2 s/unit | eta 235 min | GRNAME / LOB#33 k=5
+/opt/anaconda3/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+cell baseline: options={'categorical_identifiers': False, 'extrapolating_target': False} | units 60 (first 60 of results/fleet/coverage.jsonl) | done 27 | todo 33 | draws 300 | seed 0
+  10/33 | 3.0 min | 18.3 s/unit | eta 7 min | GRNAME / LOB#76 k=8
+  20/33 | 5.8 min | 17.3 s/unit | eta 4 min | GRNAME / LOB#84 k=8
+/opt/anaconda3/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+cell baseline: options={'categorical_identifiers': False, 'extrapolating_target': False} | units 75 (first 75 of results/fleet/coverage.jsonl) | done 54 | todo 21 | draws 300 | seed 0
+  10/21 | 5.0 min | 30.3 s/unit | eta 6 min | GRNAME / LOB#123 k=8
+  20/21 | 9.8 min | 29.5 s/unit | eta 0 min | GRNAME / LOB#133 k=7
+
+cell baseline: wrote 21 rows to results/runs/20260919-config-cells/baseline.jsonl in 10.1 min
+
+===== categorical.log =====
+cell categorical: options={'categorical_identifiers': True, 'extrapolating_target': False} | units 150 (first 150 of results/fleet/coverage.jsonl) | done 0 | todo 150 | draws 300 | seed 0
+/opt/anaconda3/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+cell categorical: options={'categorical_identifiers': True, 'extrapolating_target': False} | units 150 (first 150 of results/fleet/coverage.jsonl) | done 8 | todo 142 | draws 300 | seed 0
+/opt/anaconda3/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+cell categorical: options={'categorical_identifiers': True, 'extrapolating_target': False} | units 60 (first 60 of results/fleet/coverage.jsonl) | done 8 | todo 52 | draws 300 | seed 0
+  10/52 | 5.4 min | 32.2 s/unit | eta 23 min | GRNAME / LOB#33 k=7
+  20/52 | 10.1 min | 30.4 s/unit | eta 16 min | GRNAME / LOB#53 k=6
+cell categorical: options={'categorical_identifiers': True, 'extrapolating_target': False} | units 75 (first 75 of results/fleet/coverage.jsonl) | done 30 | todo 45 | draws 300 | seed 0
+  30/52 | 14.7 min | 29.4 s/unit | eta 11 min | GRNAME / LOB#76 k=7
+  10/45 | 6.0 min | 35.8 s/unit | eta 21 min | GRNAME / LOB#79 k=8
+  40/52 | 19.0 min | 28.5 s/unit | eta 6 min | GRNAME / LOB#84 k=7
+  20/45 | 9.8 min | 29.3 s/unit | eta 12 min | GRNAME / LOB#85 k=8
+  50/52 | 23.2 min | 27.9 s/unit | eta 1 min | GRNAME / LOB#111 k=7
+
+cell categorical: wrote 52 rows to results/runs/20260919-config-cells/categorical.jsonl in 23.8 min
+  30/45 | 13.3 min | 26.7 s/unit | eta 7 min | GRNAME / LOB#111 k=5
+  40/45 | 15.6 min | 23.4 s/unit | eta 2 min | GRNAME / LOB#125 k=6
+
+cell categorical: wrote 45 rows to results/runs/20260919-config-cells/categorical.jsonl in 16.6 min
+
+===== transform.log =====
+cell transform: options={'categorical_identifiers': False, 'extrapolating_target': True} | units 150 (first 150 of results/fleet/coverage.jsonl) | done 0 | todo 150 | draws 300 | seed 0
+/opt/anaconda3/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+Traceback (most recent call last):
+  File "/Users/Scott/projects/tabpfn-reserving/.worktrees/t_9f441703/scripts/config_cells.py", line 423, in <module>
+    "draws": args.draws, "seed": SEED, "n_shared": n}
+     ^^^^^^
+  File "/Users/Scott/projects/tabpfn-reserving/.worktrees/t_9f441703/scripts/config_cells.py", line 419, in main
+    if args.report_out:
+           ^^^^^^^^^^^^^
+  File "/Users/Scott/projects/tabpfn-reserving/.worktrees/t_9f441703/scripts/config_cells.py", line 132, in run_cell
+    raise SystemExit(f"{out_path} is being written by pid {other}; refusing to be a second writer")
+                    ^^
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+cell transform: options={'categorical_identifiers': False, 'extrapolating_target': True} | units 75 (first 75 of results/fleet/coverage.jsonl) | done 0 | todo 75 | draws 300 | seed 0
+  10/75 | 1.8 min | 10.7 s/unit | eta 12 min | GRNAME / LOB#21 k=8
+  20/75 | 3.8 min | 11.3 s/unit | eta 10 min | GRNAME / LOB#33 k=5
+  30/75 | 5.5 min | 11.0 s/unit | eta 8 min | GRNAME / LOB#63 k=8
+  40/75 | 7.5 min | 11.2 s/unit | eta 7 min | GRNAME / LOB#79 k=8
+  50/75 | 8.9 min | 10.7 s/unit | eta 4 min | GRNAME / LOB#85 k=8
+  60/75 | 10.7 min | 10.7 s/unit | eta 3 min | GRNAME / LOB#111 k=5
+  70/75 | 12.4 min | 10.6 s/unit | eta 1 min | GRNAME / LOB#125 k=6
+
+cell transform: wrote 75 rows to results/runs/20260919-config-cells/transform.jsonl in 13.4 min
+
+===== both.log =====
+cell both: options={'categorical_identifiers': True, 'extrapolating_target': True} | units 150 (first 150 of results/fleet/coverage.jsonl) | done 0 | todo 150 | draws 300 | seed 0
+/opt/anaconda3/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+cell both: options={'categorical_identifiers': True, 'extrapolating_target': True} | units 75 (first 75 of results/fleet/coverage.jsonl) | done 0 | todo 75 | draws 300 | seed 0
+  10/75 | 2.9 min | 17.4 s/unit | eta 19 min | GRNAME / LOB#21 k=8
+  20/75 | 4.9 min | 14.8 s/unit | eta 14 min | GRNAME / LOB#33 k=5
+  30/75 | 6.4 min | 12.8 s/unit | eta 10 min | GRNAME / LOB#63 k=8
+  40/75 | 9.1 min | 13.7 s/unit | eta 8 min | GRNAME / LOB#79 k=8
+  50/75 | 10.7 min | 12.9 s/unit | eta 5 min | GRNAME / LOB#85 k=8
+  60/75 | 12.2 min | 12.2 s/unit | eta 3 min | GRNAME / LOB#111 k=5
+  70/75 | 13.9 min | 11.9 s/unit | eta 1 min | GRNAME / LOB#125 k=6
+
+cell both: wrote 75 rows to results/runs/20260919-config-cells/both.jsonl in 14.6 min
+
+===== report.txt =====
+baseline       75 units
+categorical    75 units
+transform      75 units
+both           75 units
+
+=== config cells: 75 units present in all four cells (of 75 in the subset) ===
+
+cell          level  covered  empirical      gap           95% CI      z
+baseline        50%       30      40.0%   -10.0pp [ 28.9, 51.1]  -1.77
+baseline        75%       47      62.7%   -12.3pp [ 51.7, 73.6]  -2.21
+baseline        90%       59      78.7%   -11.3pp [ 69.4, 87.9]  -2.40
+baseline        95%       66      88.0%    -7.0pp [ 80.6, 95.4]  -1.87
+categorical     50%       34      45.3%    -4.7pp [ 34.1, 56.6]  -0.81
+categorical     75%       47      62.7%   -12.3pp [ 51.7, 73.6]  -2.21
+categorical     90%       59      78.7%   -11.3pp [ 69.4, 87.9]  -2.40
+categorical     95%       68      90.7%    -4.3pp [ 84.1, 97.3]  -1.29
+transform       50%       35      46.7%    -3.3pp [ 35.4, 58.0]  -0.58
+transform       75%       47      62.7%   -12.3pp [ 51.7, 73.6]  -2.21
+transform       90%       59      78.7%   -11.3pp [ 69.4, 87.9]  -2.40
+transform       95%       61      81.3%   -13.7pp [ 72.5, 90.2]  -3.04
+both            50%       37      49.3%    -0.7pp [ 38.0, 60.6]  -0.12
+both            75%       47      62.7%   -12.3pp [ 51.7, 73.6]  -2.21
+both            90%       60      80.0%   -10.0pp [ 70.9, 89.1]  -2.17
+both            95%       63      84.0%   -11.0pp [ 75.7, 92.3]  -2.60
+
+=== the replication cell against the record (the same 75 units) ===
+  rows compared: 75
+  coverage-flag mismatches against coverage.jsonl: 0
+   50%: recorded 40.0% vs baseline cell 40.0%
+   75%: recorded 62.7% vs baseline cell 62.7%
+   90%: recorded 78.7% vs baseline cell 78.7%
+   95%: recorded 88.0% vs baseline cell 88.0%
+
+=== paired against the baseline cell (units the baseline missed, and vice versa) ===
+cell          level    base    cell    diff  fixed  broke  McNemar p     gap
+categorical     50%   40.0%   45.3%   +5.3pp      8      4     0.3877   -4.7pp
+categorical     75%   62.7%   62.7%   +0.0pp      5      5     1.0000  -12.3pp
+categorical     90%   78.7%   78.7%   +0.0pp      3      3     1.0000  -11.3pp
+categorical     95%   88.0%   90.7%   +2.7pp      3      1     0.6250   -4.3pp
+transform       50%   40.0%   46.7%   +6.7pp      7      2     0.1797   -3.3pp
+transform       75%   62.7%   62.7%   +0.0pp      6      6     1.0000  -12.3pp
+transform       90%   78.7%   78.7%   +0.0pp      3      3     1.0000  -11.3pp
+transform       95%   88.0%   81.3%   -6.7pp      1      6     0.1250  -13.7pp
+both            50%   40.0%   49.3%   +9.3pp      9      2     0.0654   -0.7pp
+both            75%   62.7%   62.7%   +0.0pp      6      6     1.0000  -12.3pp
+both            90%   78.7%   80.0%   +1.3pp      5      4     1.0000  -10.0pp
+both            95%   88.0%   84.0%   -4.0pp      2      5     0.4531  -11.0pp
+
+=== the pre-registered falsifier ===
+  n = 75. The bar is the binomial sampling error at this n: 11.3pp at the worst case (p=0.5), 6.8pp at the 90% level, 4.9pp at 95%. The task quotes ~7pp for the pre-registered n=150 (8.0pp worst case, 4.8pp at 90%).
+  no cell moves 90/95 coverage toward nominal beyond its bar -- the configuration explanation is dead on this subset
+
+wrote manifest to results/runs/20260919-config-cells/manifest.json
+
+Per-cell logs (progress every 10 units, then the skip census):
+
+===== baseline.log =====
+cell baseline: options={'categorical_identifiers': False, 'extrapolating_target': False} | units 150 (first 150 of results/fleet/coverage.jsonl) | done 0 | todo 150 | draws 300 | seed 0
+  10/150 | 15.5 min | 93.0 s/unit | eta 217 min | GRNAME / LOB#21 k=8
+  20/150 | 36.1 min | 108.2 s/unit | eta 235 min | GRNAME / LOB#33 k=5
+/opt/anaconda3/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+cell baseline: options={'categorical_identifiers': False, 'extrapolating_target': False} | units 60 (first 60 of results/fleet/coverage.jsonl) | done 27 | todo 33 | draws 300 | seed 0
+  10/33 | 3.0 min | 18.3 s/unit | eta 7 min | GRNAME / LOB#76 k=8
+  20/33 | 5.8 min | 17.3 s/unit | eta 4 min | GRNAME / LOB#84 k=8
+/opt/anaconda3/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+cell baseline: options={'categorical_identifiers': False, 'extrapolating_target': False} | units 75 (first 75 of results/fleet/coverage.jsonl) | done 54 | todo 21 | draws 300 | seed 0
+  10/21 | 5.0 min | 30.3 s/unit | eta 6 min | GRNAME / LOB#123 k=8
+  20/21 | 9.8 min | 29.5 s/unit | eta 0 min | GRNAME / LOB#133 k=7
+
+cell baseline: wrote 21 rows to results/runs/20260919-config-cells/baseline.jsonl in 10.1 min
+
+===== categorical.log =====
+cell categorical: options={'categorical_identifiers': True, 'extrapolating_target': False} | units 150 (first 150 of results/fleet/coverage.jsonl) | done 0 | todo 150 | draws 300 | seed 0
+/opt/anaconda3/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+cell categorical: options={'categorical_identifiers': True, 'extrapolating_target': False} | units 150 (first 150 of results/fleet/coverage.jsonl) | done 8 | todo 142 | draws 300 | seed 0
+/opt/anaconda3/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+cell categorical: options={'categorical_identifiers': True, 'extrapolating_target': False} | units 60 (first 60 of results/fleet/coverage.jsonl) | done 8 | todo 52 | draws 300 | seed 0
+  10/52 | 5.4 min | 32.2 s/unit | eta 23 min | GRNAME / LOB#33 k=7
+  20/52 | 10.1 min | 30.4 s/unit | eta 16 min | GRNAME / LOB#53 k=6
+cell categorical: options={'categorical_identifiers': True, 'extrapolating_target': False} | units 75 (first 75 of results/fleet/coverage.jsonl) | done 30 | todo 45 | draws 300 | seed 0
+  30/52 | 14.7 min | 29.4 s/unit | eta 11 min | GRNAME / LOB#76 k=7
+  10/45 | 6.0 min | 35.8 s/unit | eta 21 min | GRNAME / LOB#79 k=8
+  40/52 | 19.0 min | 28.5 s/unit | eta 6 min | GRNAME / LOB#84 k=7
+  20/45 | 9.8 min | 29.3 s/unit | eta 12 min | GRNAME / LOB#85 k=8
+  50/52 | 23.2 min | 27.9 s/unit | eta 1 min | GRNAME / LOB#111 k=7
+
+cell categorical: wrote 52 rows to results/runs/20260919-config-cells/categorical.jsonl in 23.8 min
+  30/45 | 13.3 min | 26.7 s/unit | eta 7 min | GRNAME / LOB#111 k=5
+  40/45 | 15.6 min | 23.4 s/unit | eta 2 min | GRNAME / LOB#125 k=6
+
+cell categorical: wrote 45 rows to results/runs/20260919-config-cells/categorical.jsonl in 16.6 min
+
+===== transform.log =====
+cell transform: options={'categorical_identifiers': False, 'extrapolating_target': True} | units 150 (first 150 of results/fleet/coverage.jsonl) | done 0 | todo 150 | draws 300 | seed 0
+/opt/anaconda3/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+Traceback (most recent call last):
+  File "/Users/Scott/projects/tabpfn-reserving/.worktrees/t_9f441703/scripts/config_cells.py", line 423, in <module>
+    "draws": args.draws, "seed": SEED, "n_shared": n}
+     ^^^^^^
+  File "/Users/Scott/projects/tabpfn-reserving/.worktrees/t_9f441703/scripts/config_cells.py", line 419, in main
+    if args.report_out:
+           ^^^^^^^^^^^^^
+  File "/Users/Scott/projects/tabpfn-reserving/.worktrees/t_9f441703/scripts/config_cells.py", line 132, in run_cell
+    raise SystemExit(f"{out_path} is being written by pid {other}; refusing to be a second writer")
+                    ^^
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+cell transform: options={'categorical_identifiers': False, 'extrapolating_target': True} | units 75 (first 75 of results/fleet/coverage.jsonl) | done 0 | todo 75 | draws 300 | seed 0
+  10/75 | 1.8 min | 10.7 s/unit | eta 12 min | GRNAME / LOB#21 k=8
+  20/75 | 3.8 min | 11.3 s/unit | eta 10 min | GRNAME / LOB#33 k=5
+  30/75 | 5.5 min | 11.0 s/unit | eta 8 min | GRNAME / LOB#63 k=8
+  40/75 | 7.5 min | 11.2 s/unit | eta 7 min | GRNAME / LOB#79 k=8
+  50/75 | 8.9 min | 10.7 s/unit | eta 4 min | GRNAME / LOB#85 k=8
+  60/75 | 10.7 min | 10.7 s/unit | eta 3 min | GRNAME / LOB#111 k=5
+  70/75 | 12.4 min | 10.6 s/unit | eta 1 min | GRNAME / LOB#125 k=6
+
+cell transform: wrote 75 rows to results/runs/20260919-config-cells/transform.jsonl in 13.4 min
+
+===== both.log =====
+cell both: options={'categorical_identifiers': True, 'extrapolating_target': True} | units 150 (first 150 of results/fleet/coverage.jsonl) | done 0 | todo 150 | draws 300 | seed 0
+/opt/anaconda3/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+cell both: options={'categorical_identifiers': True, 'extrapolating_target': True} | units 75 (first 75 of results/fleet/coverage.jsonl) | done 0 | todo 75 | draws 300 | seed 0
+  10/75 | 2.9 min | 17.4 s/unit | eta 19 min | GRNAME / LOB#21 k=8
+  20/75 | 4.9 min | 14.8 s/unit | eta 14 min | GRNAME / LOB#33 k=5
+  30/75 | 6.4 min | 12.8 s/unit | eta 10 min | GRNAME / LOB#63 k=8
+  40/75 | 9.1 min | 13.7 s/unit | eta 8 min | GRNAME / LOB#79 k=8
+  50/75 | 10.7 min | 12.9 s/unit | eta 5 min | GRNAME / LOB#85 k=8
+  60/75 | 12.2 min | 12.2 s/unit | eta 3 min | GRNAME / LOB#111 k=5
+  70/75 | 13.9 min | 11.9 s/unit | eta 1 min | GRNAME / LOB#125 k=6
+
+cell both: wrote 75 rows to results/runs/20260919-config-cells/both.jsonl in 14.6 min
+
+===== report.txt =====
+baseline       75 units
+categorical    75 units
+transform      75 units
+both           75 units
+
+=== config cells: 75 units present in all four cells (of 75 in the subset) ===
+
+cell          level  covered  empirical      gap           95% CI      z
+baseline        50%       30      40.0%   -10.0pp [ 28.9, 51.1]  -1.77
+baseline        75%       47      62.7%   -12.3pp [ 51.7, 73.6]  -2.21
+baseline        90%       59      78.7%   -11.3pp [ 69.4, 87.9]  -2.40
+baseline        95%       66      88.0%    -7.0pp [ 80.6, 95.4]  -1.87
+categorical     50%       34      45.3%    -4.7pp [ 34.1, 56.6]  -0.81
+categorical     75%       47      62.7%   -12.3pp [ 51.7, 73.6]  -2.21
+categorical     90%       59      78.7%   -11.3pp [ 69.4, 87.9]  -2.40
+categorical     95%       68      90.7%    -4.3pp [ 84.1, 97.3]  -1.29
+transform       50%       35      46.7%    -3.3pp [ 35.4, 58.0]  -0.58
+transform       75%       47      62.7%   -12.3pp [ 51.7, 73.6]  -2.21
+transform       90%       59      78.7%   -11.3pp [ 69.4, 87.9]  -2.40
+transform       95%       61      81.3%   -13.7pp [ 72.5, 90.2]  -3.04
+both            50%       37      49.3%    -0.7pp [ 38.0, 60.6]  -0.12
+both            75%       47      62.7%   -12.3pp [ 51.7, 73.6]  -2.21
+both            90%       60      80.0%   -10.0pp [ 70.9, 89.1]  -2.17
+both            95%       63      84.0%   -11.0pp [ 75.7, 92.3]  -2.60
+
+=== the replication cell against the record (the same 75 units) ===
+  rows compared: 75
+  coverage-flag mismatches against coverage.jsonl: 0
+   50%: recorded 40.0% vs baseline cell 40.0%
+   75%: recorded 62.7% vs baseline cell 62.7%
+   90%: recorded 78.7% vs baseline cell 78.7%
+   95%: recorded 88.0% vs baseline cell 88.0%
+
+=== paired against the baseline cell (units the baseline missed, and vice versa) ===
+cell          level    base    cell    diff  fixed  broke  McNemar p     gap
+categorical     50%   40.0%   45.3%   +5.3pp      8      4     0.3877   -4.7pp
+categorical     75%   62.7%   62.7%   +0.0pp      5      5     1.0000  -12.3pp
+categorical     90%   78.7%   78.7%   +0.0pp      3      3     1.0000  -11.3pp
+categorical     95%   88.0%   90.7%   +2.7pp      3      1     0.6250   -4.3pp
+transform       50%   40.0%   46.7%   +6.7pp      7      2     0.1797   -3.3pp
+transform       75%   62.7%   62.7%   +0.0pp      6      6     1.0000  -12.3pp
+transform       90%   78.7%   78.7%   +0.0pp      3      3     1.0000  -11.3pp
+transform       95%   88.0%   81.3%   -6.7pp      1      6     0.1250  -13.7pp
+both            50%   40.0%   49.3%   +9.3pp      9      2     0.0654   -0.7pp
+both            75%   62.7%   62.7%   +0.0pp      6      6     1.0000  -12.3pp
+both            90%   78.7%   80.0%   +1.3pp      5      4     1.0000  -10.0pp
+both            95%   88.0%   84.0%   -4.0pp      2      5     0.4531  -11.0pp
+
+=== the pre-registered falsifier ===
+  n = 75. The bar is the binomial sampling error at this n: 11.3pp at the worst case (p=0.5), 6.8pp at the 90% level, 4.9pp at 95%. The task quotes ~7pp for the pre-registered n=150 (8.0pp worst case, 4.8pp at 90%).
+  no cell moves 90/95 coverage toward nominal beyond its bar -- the configuration explanation is dead on this subset
+
+wrote manifest to results/runs/20260919-config-cells/manifest.json
+

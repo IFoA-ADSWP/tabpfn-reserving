@@ -16,16 +16,48 @@ from __future__ import annotations
 import numpy as np
 from tabpfn import TabPFNRegressor
 
-from .triangle import (Triangle, direct_predict_rows, features_for, gf_used, target_ages)
+from .triangle import (IDENTIFIER_INDICES, Triangle, direct_predict_rows, features_for, gf_used,
+                       target_ages)
 
 QUANTILE_LEVELS = [0.01, 0.025, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.975, 0.99]
 
+# The vendor's documented target transform for a target whose tail has to extend past the training range.
+# The default stack is (None, "safepower"); this replaces it rather than adding to it, which is what the
+# documented configuration means ("the extrapolating version keeps some information about how far a new value
+# is outside that range").
+EXTRAPOLATING_TRANSFORMS = ("quantile_uni_extrapolate",)
 
-def make_model(backend: str = "local"):
+
+def make_model(backend: str = "local", categorical_identifiers: bool = False,
+               extrapolating_target: bool = False):
+    """The single construction point for the model. **Every option defaults to the recorded configuration.**
+
+    The two options are opt-in on purpose: every number in `results/` came from the bare constructor, so
+    changing what the defaults build would quietly invalidate the recorded runs instead of adding a cell to
+    them (#22). Both are configuration the vendor's own documentation names for our regime:
+
+    * `categorical_identifiers` -- declares `origin_idx`, `dev_idx`, `cal_idx` categorical, on the vendor's
+      instruction not to leave an identifier as a number ("do not replace the identifier with the fingerprint
+      feature or hash it into a number"). They are integer-valued, but they travel inside a float array, so
+      without this the model reads them as positions on a scale.
+    * `extrapolating_target` -- replaces the default target-transform stack with
+      `("quantile_uni_extrapolate",)`, the documented answer to a target whose tail must extend beyond the
+      range of training labels. The default clips to that range, and the upper tail is the thing under test.
+    """
     if backend == "client":
+        if categorical_identifiers or extrapolating_target:
+            raise ValueError(
+                "categorical_identifiers/extrapolating_target are TabPFNRegressor parameters and the client "
+                "backend does not accept them; ignoring them would report an unconfigured cell as a result"
+            )
         from tabpfn_client import TabPFNRegressor as ClientRegressor
         return ClientRegressor()
-    return TabPFNRegressor(device="cpu")
+    options: dict = {}
+    if categorical_identifiers:
+        options["categorical_features_indices"] = list(IDENTIFIER_INDICES)
+    if extrapolating_target:
+        options["inference_config"] = {"REGRESSION_Y_PREPROCESS_TRANSFORMS": EXTRAPOLATING_TRANSFORMS}
+    return TabPFNRegressor(device="cpu", **options)
 
 
 def _borders_from(full: dict) -> np.ndarray | None:
