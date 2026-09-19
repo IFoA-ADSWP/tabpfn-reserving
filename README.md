@@ -121,7 +121,7 @@ The point estimate is not competitive and the table says so rather than leading 
 | **Coverage** — do the intervals contain the truth as often as they claim? | **No, at every level**: 39.2% at 50, 59.9% at 75, 78.0% at 90, 84.7% at 95 (z between −4.8 and −6.6, n=464). The intervals are wide (the 90% one is 4.55× the point estimate) and the actual sits above the median in 67.7% of cases, so it is a centring failure rather than a width failure — `results/fleet/COVERAGE.md` |
 | **Where the model fails, and why** | per-step bias is zero where the model has training rows and **+3.2% per step** (se 0.36%) where it extrapolates — `results/runs/20260918-023600_depth-bias/FINDINGS.md` |
 | **Determinism** | the same command twice gives the same reserve to the pound; the point estimate is seed-independent; the draw noise floor is ~1.6% on the median at 300 draws |
-| **Tests** | 32, in ~8 seconds, with no token and no model fit required |
+| **Tests** | 47, in seconds, with no token and no model fit required |
 
 The honest summary: **the distribution is the deliverable; the point estimate is not.** That was a
 pre-registered possible outcome, and `results/fleet/FINDINGS.md` is where it is documented at fleet scale.

@@ -201,7 +201,16 @@ def reserve_direct(
     predicts a correction of 1.0 everywhere reproduces Chain Ladder exactly. A near-tie with Chain Ladder is
     therefore partly by construction, and the honest question is not whether this arm agrees with Chain
     Ladder but whether it deviates usefully where Chain Ladder is wrong.
+
+    `target="unrevealed"` (#24) predicts the **share of the ultimate still to emerge**, in `[0, 1)`, and
+    reconstructs `IBNR(origin) = predicted_share x ultimate(origin)` with **the ultimate taken from Chain
+    Ladder** -- deliberately, so the level stays where it was and only the *support* of the predicted
+    quantity changes. For the two targets the same property holds by the same argument: a model that
+    reproduces Chain Ladder's own share (`1 - 1/cl`) reproduces Chain Ladder's reserve, so the arm's value
+    is again in the correction it predicts rather than in the arithmetic it wraps.
     """
+    if target not in ("ratio", "delta", "unrevealed"):
+        raise ValueError(f"unknown target {target!r}: expected 'ratio', 'delta' or 'unrevealed'")
     n = tri.n
     tgt = targets if targets is not None else target_ages(n, "production")
     gf = tri.global_factors(tri.known(anchor))
@@ -216,17 +225,33 @@ def reserve_direct(
     cl = np.where(np.isfinite(X[:, -1]), np.exp(X[:, -1]), 1.0)
     base = np.array([tri.values[a, anchor - a] for a in origins], dtype=float)
     point = np.atleast_1d(np.asarray(model.predict(X), dtype=float))
-    factors = point * (cl if target == "delta" else 1.0)
-    reserve = float(np.sum(base * (factors - 1.0)))
+    if target == "unrevealed":
+        # The share is of the *ultimate*, and the ultimate is Chain Ladder's: the level is held fixed on
+        # purpose, so any movement in the coverage is the support change and nothing else.
+        ultimate = base * cl
+        factors = point
+        reserve = float(np.sum(point * ultimate))
+    else:
+        factors = point * (cl if target == "delta" else 1.0)
+        reserve = float(np.sum(base * (factors - 1.0)))
 
     samples, route, method = None, "none", "none"
+    shares_over_one = None
     if n_draws:
         d_draws, info = draws(model, X, n_draws, rng)
         route = str(info.get("quantile_route", "unknown"))
         method = str(info.get("method", "unknown"))
         if d_draws is not None:
-            factors_draw = d_draws * (cl[None, :] if target == "delta" else 1.0)
-            samples = np.sum(factors_draw * base[None, :], axis=1) - float(np.sum(base))
+            if target == "unrevealed":
+                samples = np.sum(d_draws * base[None, :] * cl[None, :], axis=1)
+                # How far the model's own grid runs past the bound the target is supposed to end at. The
+                # bar distribution is fixed on the prior and rescaled to the training labels' mean and sd,
+                # so it does *not* inherit a hard bound from them -- this is the measured size of that gap,
+                # and the reason the draws are not clipped to [0, 1) behind the reader's back.
+                shares_over_one = float(np.mean(d_draws > 1.0))
+            else:
+                factors_draw = d_draws * (cl[None, :] if target == "delta" else 1.0)
+                samples = np.sum(factors_draw * base[None, :], axis=1) - float(np.sum(base))
 
     return {
         "triangle": tri.name,
@@ -242,6 +267,7 @@ def reserve_direct(
         "targets": [int(t) for t in tgt[: anchor + 1]],
         "origins": [int(a) for a in origins],
         "horizons": [int(tgt[a] - (anchor - a)) for a in origins],
+        "shares_over_one": shares_over_one,
     }
 
 

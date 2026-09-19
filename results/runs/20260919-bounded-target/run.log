@@ -1,0 +1,29 @@
+===== R2 driver start 2026-09-19T17:49:02Z (local 18:49:02) =====
+subset: first 75 rows of results/fleet/coverage.jsonl
+load before: 18:49  up 13 days,  6:04, 3 users, load averages: 11.74 13.12 12.18
+----- cell baseline start 18:49:03 -----
+cell baseline: target='delta' | units 75 (first 75 of results/fleet/coverage.jsonl) | done 0 | todo 75 | draws 300 | seed 0
+  10/75 | 7.0 min | 42.3 s/unit | eta 46 min | GRNAME / LOB#21 k=8
+  20/75 | 21.7 min | 65.0 s/unit | eta 60 min | GRNAME / LOB#33 k=5
+  30/75 | 25.6 min | 51.3 s/unit | eta 38 min | GRNAME / LOB#63 k=8
+  40/75 | 28.5 min | 42.8 s/unit | eta 25 min | GRNAME / LOB#79 k=8
+  50/75 | 32.3 min | 38.7 s/unit | eta 16 min | GRNAME / LOB#85 k=8
+  60/75 | 34.1 min | 34.1 s/unit | eta 9 min | GRNAME / LOB#111 k=5
+  70/75 | 40.8 min | 35.0 s/unit | eta 3 min | GRNAME / LOB#125 k=6
+
+cell baseline: wrote 75 rows to /Users/Scott/projects/tabpfn-reserving/.worktrees/t_88f291ba/results/runs/20260919-bounded-target/baseline.jsonl in 43.4 min
+----- cell baseline end 19:32:58 exit=0 -----
+----- cell unrevealed start 19:32:58 -----
+cell unrevealed: target='unrevealed' | units 75 (first 75 of results/fleet/coverage.jsonl) | done 0 | todo 75 | draws 300 | seed 0
+  10/75 | 7.6 min | 45.8 s/unit | eta 50 min | GRNAME / LOB#21 k=8
+  20/75 | 14.7 min | 44.1 s/unit | eta 40 min | GRNAME / LOB#33 k=5
+  30/75 | 19.7 min | 39.3 s/unit | eta 29 min | GRNAME / LOB#63 k=8
+  40/75 | 24.7 min | 37.1 s/unit | eta 22 min | GRNAME / LOB#79 k=8
+  50/75 | 29.3 min | 35.1 s/unit | eta 15 min | GRNAME / LOB#85 k=8
+  60/75 | 32.8 min | 32.8 s/unit | eta 8 min | GRNAME / LOB#111 k=5
+  70/75 | 36.3 min | 31.1 s/unit | eta 3 min | GRNAME / LOB#125 k=6
+
+cell unrevealed: wrote 75 rows to /Users/Scott/projects/tabpfn-reserving/.worktrees/t_88f291ba/results/runs/20260919-bounded-target/unrevealed.jsonl in 38.3 min
+----- cell unrevealed end 20:11:38 exit=0 -----
+load after: 20:11  up 13 days,  7:27, 3 users, load averages: 16.80 15.71 16.30
+===== R2 driver end 20:11:38 =====

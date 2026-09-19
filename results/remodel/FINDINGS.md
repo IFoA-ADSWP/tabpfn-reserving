@@ -281,6 +281,34 @@ supposed to move *support*, not the centre. **Falsifier: if coverage at the 95% 
 SE of 84.7%, the support/parameterisation explanation of the one-sided tail is dead** and R3/R6 are the
 remaining candidates.
 
+**Outcome — run 2026-09-19 (#24), 75 units × 2 cells** (`results/runs/20260919-bounded-target/FINDINGS.md`):
+
+```
+cell         50%     75%     90%     95%      (n=75, paired; subset baseline 40.0/62.7/78.7/88.0%)
+baseline    40.0%   62.7%   78.7%   88.0%
+unrevealed  25.3%   44.0%   60.0%   70.7%     paired at 95%: 2 fixed, 15 broke, McNemar p=0.0023
+units above the model's own 95% upper bound: 12.0% (baseline) -> 29.3%
+the point estimate is below zero on 72.0% of units (baseline 33.3%)
+training labels below zero: 48.0% of 1,809 -- a share of a falling cumulative is negative
+```
+
+**Neither branch of the pre-registration is the outcome, and that is the finding.** The expectation is not met
+(coverage moved 14.0pp *away* from nominal, significantly); the falsifier's condition is also not met (70.7%
+is outside the 2 SE band around 84.7%), so the support explanation is **not** killed by this run — but nor is it
+supported. What the run does establish is that the instrument cannot isolate the factor it was built to
+isolate: the expected level is Chain Ladder's, yet the reconstruction of `share × ultimate` came out **below
+zero on 72% of units**, because on this column the share is a **signed** difference of two levels (cumulative
+incurred falls between the training diagonal and the evaluation diagonal on 48% of training rows), and a signed
+share multiplied by a positive ultimate is a signed reserve. The coverage collapse therefore measures a
+**level** defect as much as a support change.
+
+**What it does say about the mechanism.** The bounded target bounded the *labels* exactly as constructed (the
+largest per-unit training-label maximum across the 75 fits is 0.860, nothing clipped) and still produced draws
+above 1 on **0.36%** of the 300-draw samples per unit — because the bar distribution is rescaled to the
+training labels' mean and sd and does not inherit their range. So a bounded target gives bounded labels, not a
+bounded predictive support; §1.1's mechanism is untouched by this. R2 **as pre-registered is closed**; a
+bounded *correction* on an anchored level (R1) is a different instrument and stays open.
+
 ### R3 — A4, run at last: a threshold ladder, distribution rebuilt from the survival curve
 
 **Idea.** Predict `P(development exceeds threshold)` over a ladder of thresholds placed where the risk margin is

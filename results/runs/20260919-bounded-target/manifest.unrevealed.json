@@ -1,0 +1,36 @@
+{
+  "cell": "unrevealed",
+  "target": "unrevealed",
+  "units_source": "results/fleet/coverage.jsonl",
+  "n_units": 75,
+  "draws": 300,
+  "seed": 0,
+  "column": "IncurLoss",
+  "git": {
+    "revision": "79846bc49b0032ba73bed55f4857b5beb2d5ce15",
+    "branch": "wt/24-bounded-target",
+    "dirty": true
+  },
+  "versions": {
+    "python": "3.12.7",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "tabpfn": "9.0.0",
+    "torch": "2.14.0",
+    "sklearn": "1.9.0",
+    "numpy": "2.5.3",
+    "chainladder": "0.10.1"
+  },
+  "command": "scripts/unrevealed_target.py --cell unrevealed --limit 75 --out /Users/Scott/projects/tabpfn-reserving/.worktrees/t_88f291ba/results/runs/20260919-bounded-target",
+  "started": "2026-09-19T19:33:17+0100",
+  "resolved": {
+    "requested": {
+      "target": "unrevealed"
+    },
+    "constructor": "arm.make_model('local') with no options"
+  },
+  "finished": "2026-09-19T20:11:35+0100",
+  "n_rows_written": 75,
+  "skipped": {},
+  "seconds": 2297.1,
+  "sha256": "bca98c42c3a18f5ef376ea707f538b88b7755c0b187581e0a7ea9f1e90bcd001"
+}
