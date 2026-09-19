@@ -91,6 +91,37 @@ The point estimate is not competitive and the table says so rather than leading 
 The honest summary: **the distribution is the deliverable; the point estimate is not.** That was a
 pre-registered possible outcome, and `results/fleet/FINDINGS.md` is where it is documented at fleet scale.
 
+## Did it work?
+
+**No.** The point estimate is not competitive and the distribution is not calibrated, and both are measured at
+fleet scale rather than asserted:
+
+- **The point estimate loses.** Closer than Chain Ladder on **38.8%** of 464 paired fleet evaluations, with a
+  median error of 162.6% against the incumbent's 121.3%, losing at every horizon, while moving the reserve by a
+  median of 142% of Chain Ladder's. It is not hedging toward the standard method — it overrides it and loses.
+  → [`results/fleet/FINDINGS.md`](results/fleet/FINDINGS.md)
+- **The distribution is miscalibrated.** Coverage 39.2% / 59.9% / 78.0% / 84.7% against nominal 50 / 75 / 90 /
+  95 (z between −4.8 and −6.6), with intervals that are *wide* (the 90% one is 4.55× the point estimate) and the
+  truth above the sampled median in **67.7%** of cases. A centring failure, not a width one.
+  → [`results/fleet/COVERAGE.md`](results/fleet/COVERAGE.md)
+
+**What did work,** and is why this is a result rather than a shrug: the reframing runs end to end; the
+distribution is drawn from the model's own bar distribution with the arithmetic underneath reproducing the CAS
+package **to the pound**; the pipeline is deterministic (the same command twice gives the same reserve, and the
+point estimate does not depend on the seed); and the mechanism behind the failure is measured, not guessed.
+
+**Why it failed, as best we can tell — a hypothesis, not a measurement.** The model gets **40–60 training rows
+per fit**. That is too few to learn development patterns, so it falls back on its prior, and where that prior
+pushes it off Chain Ladder it is wrong more often than right. That is consistent with everything measured: it is
+unbiased where it has training examples and drifts by +3.2% per step where it extrapolates. The experiment that
+would test the explanation directly is giving it more examples — [#10](https://github.com/IFoA-ADSWP/tabpfn-reserving/issues/10).
+
+**Two things this does *not* mean.** It is **not** evidence that the model is worse than Mack's method or the
+ODP bootstrap — that comparison has not been run on the same units, so the honest claim is "this model is
+miscalibrated", never "worse than the standard method" (#20). And it is not evidence that foundation models
+cannot help with reserving: it is evidence about *this* approach, in *this* small-n regime, with the failure
+mode characterised well enough to know what would have to change.
+
 ## Why a triangle is a different problem from claims modelling
 
 Prior work on tabular foundation models in insurance has mostly tested flat, claim-level regression at scale

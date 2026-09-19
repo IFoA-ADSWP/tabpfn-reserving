@@ -82,12 +82,13 @@ with a deadline that no further work can move.
    recursion took `abc` from +66.8% to −1.2% — but the fix did not make the estimate usable.
    → `results/fleet/FINDINGS.md`, `results/runs/20260918-023600_depth-bias/FINDINGS.md`.
 2. **Calibration is poor, and it is the finding that matters most — because the distribution is the claim.**
-   On the fleet the intervals under-cover at every nominal level (first 111 units: 40.0% at 50, 60.9% at 75,
-   79.1% at 90, 87.3% at 95), with the three largest gaps wider than their sampling error — while the intervals
-   are *wide* (the median 90% interval is 4.7× the point estimate). So the misfit is **centring, not width**,
-   which is exactly what the 464-evaluation point-estimate result implies. The full run was still in flight
-   when this page was updated; the numbers live in `results/fleet/coverage.jsonl` and will be finalised there
-   (**#8**).
+   Over 464 fleet evaluations the intervals under-cover at **every** nominal level: 39.2% at 50, 59.9% at 75,
+   78.0% at 90, 84.7% at 95 (z −4.8 to −6.6). They are *wide* — the median 90% interval is 4.55× the point
+   estimate — and the truth sits above the sampled median in **67.7%** of units, so the misfit is **centring,
+   not width**, which is the same failure the point-estimate result shows from the other side. What is *not*
+   established: whether Mack or the ODP bootstrap do better on these units — that comparison has not been run,
+   so the claim is "this model is miscalibrated", never "worse than the standard method" (**#20**).
+   → `results/fleet/COVERAGE.md`.
 3. **The independent-draws limitation is stated but not fixed** (**#15**): per-cell draws are independent, so
    the p99 — the number a risk margin actually uses — has no correlation structure. Cheap to fix, not yet done.
 4. **Timings are contaminated** (**#9**); a clean E5 run is needed before any speed claim.
@@ -129,22 +130,22 @@ controlled A/B; the sampling overhaul; the depth-bias diagnostic). Today is **Fr
 | item | state |
 |---|---|
 | **#18** direct horizon prediction — delete the recursion | **done** — the compounding went, the accuracy did not |
-| **#8** the fleet: does the correction earn its place, and is the distribution calibrated | **verdict in**: the point estimate loses (38.8% closer); coverage under-covers at every level and the run to completion is in flight |
-| **#6** unlocks page, **#7** README table, **#12** pins | **done** |
-| **#2** submission description | **drafted**, one coverage placeholder to replace |
-| **#5** notebook — the last judge-facing item | 0.5 d |
+| **#8** the fleet: does the correction earn its place, and is the distribution calibrated | **done** — the point estimate loses (38.8% closer) and the intervals are miscalibrated at every level |
+| **#6** unlocks page, **#7** README table, **#12** pins, **#5** notebook, **#4** figures | **done** |
+| **#2** submission description | **done** — final numbers in, ready to submit |
+| **#20** calibrate against Mack / the ODP bootstrap on the same units | the one comparison that would turn "miscalibrated" into "better or worse than standard practice" |
 | **#1** join and submit | yours, ~30 min |
-| **to a submittable entry** | **~1 day** |
+| **to a submittable entry** | **nothing left** — the repository satisfies every clause of the terms |
 
-That lands **Thursday 24 – Tuesday 29 September**: on the brief's own 25 September target, with 5 working days
-of slack to 2 October and 12 to the hard close on 6 October. The variance is not build time — compute is cheap
-and unattended — it is how many iterations **#18** needs. So it is capped: **one implementation, one
-measurement, one decision.** If it does not clear the bar first time, the honest-negative write-up costs half a
-day and the plan falls back to packaging, with the distribution as the deliverable.
+**The estimate is spent.** The 4–6 working days it projected went into #18, the fleet, the coverage run and the
+packaging in two days of sessions, and the repository now satisfies every clause of the terms. What remains is
+**#1** (joining and submitting, not the machine's to do), the parked research items below, and **#20** — the one
+comparison that would turn "this model is miscalibrated" into "better or worse than standard practice".
 
-**Parked deliberately:** **#10** the fleet-as-context arm (biggest build, most uncertain payoff, and #18 is a
-better-motivated attack on the same problem), **#11** the regime map, **#15** the correlation structure until
-there is time to do it properly, **#9** clean timings.
+**Parked deliberately:** **#10** the fleet-as-context arm (biggest build, most uncertain payoff — and now the
+direct test of the leading explanation for the failure, so it is worth more than it was), **#11** the regime map,
+**#15** the correlation structure (worth doing properly or stating as a limitation, not half-doing), **#9** clean
+timings (parked in kanban as `t_22989d51`, waiting for an idle machine), **#19** the CLI for a user's own triangle.
 
 ## 6. The one thing that is not mine to do
 
