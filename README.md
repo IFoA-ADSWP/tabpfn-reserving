@@ -116,7 +116,8 @@ Route by route with the numbers and their standard errors, and the stopping rule
 A recursive forecast asks the model for the next step, feeds its own answer back, and asks again — nine times
 over for the youngest accident year. So the per-step behaviour is where the error lives, and it can be measured
 directly: `scripts/depth_bias.py` records `log(predicted ratio / actual ratio)` for every step of every
-projection, against how deep into the projection that step sits. 287 scored steps across two triangles:
+projection, against how deep into the projection that step sits. Terms are defined in [GLOSSARY.md](GLOSSARY.md).
+287 scored steps across two triangles:
 
 | depth | 0 | 1 | 2 | 3 | 4 | 5 |
 |---|---|---|---|---|---|---|
