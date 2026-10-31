@@ -17,7 +17,10 @@ dependencies = [
     # The baseline side: the Casualty Actuarial Society's own package, and the CAS Loss Reserve
     # Database that ships inside it.
     "chainladder==0.10.1",
-    "pandas>=2.3",
+    # chainladder 0.10.1 declares pandas!=3.0.4,>=2.3.3 but is not pandas-3 clean: under pandas
+    # 3.1.0 its ChainLadder/Mack/ODP paths return NaN and 9 tests fail in CI. requirements.txt pins
+    # 2.3.3; CI installs from here, so the bound has to say it too.
+    "pandas>=2.3,<3",
     "numpy>=2.0",
     "matplotlib>=3.9",
 ]
