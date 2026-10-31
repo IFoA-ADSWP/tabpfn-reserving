@@ -63,7 +63,7 @@ with a deadline that no further work can move.
 | 3.1 | Built with TabPFN-3.5, as a core part | ✅ `tabpfn` 9.0.0 = the 3.5 family, running locally on CPU |
 | 3.2 | The repository must contain **the code and instructions to run it** | ✅ **Closed (#3, 6ae586b).** `src/tabpfn_reserving` + `pip install -e .`; the README's quickstart is copied from real output, and 25 tests run in 7 seconds without a token |
 | 3.2 | Input data included **or available at a public URL** | ✅ Ships inside the pinned `chainladder` package; CAS publishes the source. **Now explicit**: `mcl` carries incurred *and* paid, so the column must be named or the run is refused |
-| 3.3 | Rights to everything published | ✅ No third-party restricted data |
+| 3.3 | Rights to everything published | ⚠️ **Unsupported as written (#27).** The triangles are the CAS Loss Reserve Database, redistributed inside the pinned `chainladder` package. The CAS Terms of Use permit personal noncommercial viewing, printing and temporary storage only; every other use — including transmission to a third party and use for model training — requires prior written permission, which has not been sought. Whether publishing results derived from the data is itself a distribution or derivative-work use is an open legal question. Permission request drafted, not yet sent. |
 | 3.5 | Public repository **under Apache-2.0** | ✅ `IFoA-ADSWP/tabpfn-reserving` |
 | 3.5 | **A description** a third-party developer can comprehend | ❌ **Still does not exist (#2)** |
 | 3.7 | Submit before 6 Oct, 23:59 CEST | ⚠️ Nothing submitted; target 2 Oct (**#1**) |
