@@ -67,3 +67,35 @@ Run `gh --version` and record it here on setup:
 - gh version: 2.101.0 (2026-09-15)
 
 External-PR rule repeated for triage: external = author != owner.
+
+## Local vocabulary
+
+The canonical roles above are the **only** state labels the skills route on:
+`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`.
+This repo also uses the labels below. They annotate or classify work; none of
+them substitutes for a state label.
+
+**Rule.** An issue that could be picked up carries **exactly one** canonical
+state label, plus any number of the labels below. Every one of this repo's nine
+open issues carried only the labels below on 2026-10-31, which makes the whole
+repo invisible to `implement` — apply a state label whenever you touch one.
+
+### Work type
+
+| Label | Means |
+| --- | --- |
+| `experiment` | An investigation whose answer is a finding, not a diff (#11, #17, #18, #23). Close it with the finding recorded, not with merged code. |
+| `redesign` | The existing approach has to be replaced rather than patched (#15). |
+
+### Priority and audience
+
+| Label | Means |
+| --- | --- |
+| `submission-blocker` | Must land before the hackathon submission (#1, #27). |
+| `judge-facing` | Visible to the judges (#27). |
+
+### State alias — replace, do not add
+
+| Label | Becomes |
+| --- | --- |
+| `human-only` | Apply `ready-for-human`. This label does not route; on its own the issue is invisible (#1). |
