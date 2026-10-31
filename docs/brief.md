@@ -121,7 +121,8 @@ version counts.
 - **No number in the README that a command in the repository cannot regenerate.**
 - Claims and falsifiers are written **before** the runs (`method.md`), not after.
 - Results are committed, and the environment that produced them is pinned next to them.
-- Data is downloaded at run time, never vendored; no secrets, tokens or portfolio data in the repository.
+- Data ships inside the pinned `chainladder` package and is never vendored here; no secrets, tokens or portfolio
+  data in the repository. Its licence terms are the subject of #27.
 - Every figure carries the command that made it.
 - Failures are reported in the same place as successes.
 
