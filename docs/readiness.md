@@ -61,7 +61,7 @@ with a deadline that no further work can move.
 | 2.2 | A valid Prior Labs account; **entries are tied to the account** | ⚠️ Account exists (token works, 3.5 licence accepted), but **the entry is not joined and nothing is submitted**. Only the entrant can do this (**#1**) |
 | 2.4 | Accept the terms | ⚠️ Same step as joining |
 | 3.1 | Built with TabPFN-3.5, as a core part | ✅ `tabpfn` 9.0.0 = the 3.5 family, running locally on CPU |
-| 3.2 | The repository must contain **the code and instructions to run it** | ✅ **Closed (#3, 6ae586b).** `src/tabpfn_reserving` + `pip install -e .`; the README's quickstart is copied from real output, and 25 tests run in 7 seconds without a token |
+| 3.2 | The repository must contain **the code and instructions to run it** | ✅ **Closed (#3, 6ae586b).** `src/tabpfn_reserving` + `pip install -e .`; the README's quickstart is copied from real output, and 61 tests run in about 15 seconds without a token |
 | 3.2 | Input data included **or available at a public URL** | ✅ Ships inside the pinned `chainladder` package; CAS publishes the source. **Now explicit**: `mcl` carries incurred *and* paid, so the column must be named or the run is refused |
 | 3.3 | Rights to everything published | ⚠️ **Unsupported as written (#27).** The triangles are the CAS Loss Reserve Database, redistributed inside the pinned `chainladder` package. The CAS Terms of Use permit personal noncommercial viewing, printing and temporary storage only; every other use — including transmission to a third party and use for model training — requires prior written permission, which has not been sought. Whether publishing results derived from the data is itself a distribution or derivative-work use is an open legal question. Permission request drafted, not yet sent. |
 | 3.5 | Public repository **under Apache-2.0** | ✅ `IFoA-ADSWP/tabpfn-reserving` |
@@ -74,7 +74,7 @@ with a deadline that no further work can move.
 |---|---|---|
 | **50%** Showcase of TabPFN-3.5 | A working prototype demonstrating the capabilities convincingly | ✅/⚠️ The distribution is now shown, not described: a log-scaled figure read off the model's own bar distribution, with the exact sampling route recorded per run (**#16**). Still missing: the reframing view and the coverage curve (**#4**) |
 | **30%** Creativity and originality | The reframing, plus practical value | ⚠️ The reframing is real, and the **depth-bias finding** is now the strongest originality evidence in the repository (§3.1). `docs/what_it_unlocks.md` still does not exist (**#6**) |
-| **20%** Technical quality and reproducibility | A stranger can run it | ✅/⚠️ Package, CLI, 25 tests, CI on 3.11/3.12, per-run records with fingerprints and the draws themselves. Missing: the notebook (**#5**), pinned requirements (**#12**) |
+| **20%** Technical quality and reproducibility | A stranger can run it | ✅/⚠️ Package, CLI, 61 tests, CI on 3.11/3.12, per-run records with fingerprints and the draws themselves. Missing: the notebook (**#5**), pinned requirements (**#12**) |
 
 ## 3. Scientific — the honest ones
 
